@@ -691,16 +691,12 @@ class JsonMapper
      */
     protected function getParameterType(\ReflectionParameter $param)
     {
-        if (null !== $class = $param->getClass()) {
-            return "\\" . $class->getName();
-        }
-
         if (is_callable([$param, 'hasType']) && $param->hasType()) {
             $type = $param->getType();
             if ($type->isBuiltIn()) {
                 $typeName = static::reflectionTypeToString($type); 
             } else {
-                $typeName = "\\" + static::reflectionTypeToString($type);
+                $typeName = "\\" . static::reflectionTypeToString($type);
             }
             return $type->allowsNull() ? "$typeName|null" : $typeName;
         }
