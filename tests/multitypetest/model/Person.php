@@ -116,7 +116,7 @@ class Person implements \JsonSerializable
      *
      * @required
      * @maps birthday
-     * @factory \DateTimeHelper::fromSimpleDate
+     * @factory multitypetest\model\DateTimeHelper::fromSimpleDate
      */
     public function setBirthday(\DateTime $birthday): void
     {
@@ -136,7 +136,7 @@ class Person implements \JsonSerializable
      *
      * @required
      * @maps birthtime
-     * @factory \DateTimeHelper::fromRfc3339DateTime
+     * @factory multitypetest\model\DateTimeHelper::fromRfc3339DateTime
      */
     public function setBirthtime(\DateTime $birthtime): void
     {

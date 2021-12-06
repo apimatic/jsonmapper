@@ -117,7 +117,7 @@ class Employee extends Person implements \JsonSerializable
      *
      * @required
      * @maps hiredAt
-     * @factory \DateTimeHelper::fromRfc1123DateTime
+     * @factory multitypetest\model\DateTimeHelper::fromRfc1123DateTime
      */
     public function setHiredAt(\DateTime $hiredAt): void
     {
