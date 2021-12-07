@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Part of JsonMapper
  *
@@ -205,13 +206,16 @@ class JsonMapper
     }
 
     /**
-     * @param  $factoryMethod string  factory method in the format "type method()"
-     * @param  $value         mixed   value to be passed in as param into factory method
-     * @param  $className     string  className referencing this factory method
+     * Try calling the factory method if exists, otherwise throw JsonMapperException
+     *
+     * @param $factoryMethod string  factory method in the format "type method()"
+     * @param $value         mixed   value to be passed in as param into factory method
+     * @param $className     string  className referencing this factory method
+     *
      * @return mixed|false
      * @throws JsonMapperException
      */
-    private function callFactoryMethod($factoryMethod, $value, $className)
+    private function _callFactoryMethod($factoryMethod, $value, $className)
     {
         $factoryMethod = explode(' ', $factoryMethod)[0];
         if (!is_callable($factoryMethod)) {
@@ -250,7 +254,7 @@ class JsonMapper
         }
         //use factory method generated value if factory provided
         if ($factoryMethods !== null && isset($factoryMethods[0])) {
-            return $this->callFactoryMethod($factoryMethods[0], $jvalue, $className);
+            return $this->_callFactoryMethod($factoryMethods[0], $jvalue, $className);
         }
 
         if ($this->isNullable($type)) {
@@ -322,23 +326,25 @@ class JsonMapper
     /**
      * Checks mappings for all types with mappedObject, provided by mappedObjectCallback.
      *
-     * @param bool          $oneOf           true if outer array represent OneOf, false if AnyOf
-     * @param array         $types           Nested string arrays to hold information for types with oneOf and
-     *                                       anyOf mappings, types in the outer array will follow anyOf mapping,
-     *                                       while elements in the next inner array will follow oneOf mappings,
-     *                                       and the next inner array will again follow anyOf mappings and so on.
-     * @param mixed         $json            Json value for which we have to check for mappings of each of the types.
-     * @param string[]|null $factoryMethods  Callable factory methods for property
-     * @param string|null   $className       Name of the class
-     * @param string        $namespace       Namespace of the class
-     * @param callable $mappedObjectCallback Callback function to be called with each type in provided types, and the
-     *                                       inverse of oneOf, this function must return the mappedObject, for which
-     *                                       the mapping will be checked, and to ignore any type, it can throw
-     *                                       JsonMapperException
+     * @param bool          $oneOf                true if outer array represent OneOf, false if AnyOf
+     * @param array         $types                Nested string arrays to hold information for types with oneOf and
+     *                                            anyOf mappings, types in the outer array will follow anyOf
+     *                                            mapping, while elements in the next inner array will follow oneOf
+     *                                            mappings, and the next inner array will again follow anyOf
+     *                                            mappings and so on.
+     * @param mixed         $json                 Json value for which we have to check for mappings of each of the types.
+     * @param string[]|null $factoryMethods       Callable factory methods for property
+     * @param string|null   $className            Name of the class
+     * @param string        $namespace            Namespace of the class
+     * @param callable      $mappedObjectCallback Callback function to be called with each type in provided types, and the
+     *                                            inverse of oneOf, this function must return the mappedObject, for which
+     *                                            the mapping will be checked, and to ignore any type, it can throw
+     *                                            JsonMapperException
+     *
      * @return false|mixed|null     Returns the final mapped object after checking for oneOf and anyOf cases
      * @throws JsonMapperException|ReflectionException
      */
-    private function checkMappingsFor(
+    private function _checkMappingsFor(
         $oneOf,
         $types,
         $json,
@@ -353,7 +359,7 @@ class JsonMapper
         foreach ($types as $type) {
             try {
                 if (!is_array($type)) {
-                    list($m, $meth) = $this->isValueOfType($json, $type, $factoryMethods, $namespace, $className);
+                    list($m, $meth) = $this->_isValueOfType($json, $type, $factoryMethods, $namespace, $className);
                     if (!$m) {
                         // skip this type as it can't be mapped on the given json value.
                         continue;
@@ -371,8 +377,8 @@ class JsonMapper
             if ($oneOf && $mappedWith) {
                 // if its oneOf and we have a value that is already mapped, then throw jsonMapperException
                 throw new JsonMapperException(
-                    'Cannot map more then OneOf { ' . $this->flattenJoin($matchedType) . ' and ' .
-                    $this->flattenJoin($mappedWith) . ' } on: ' . json_encode($json)
+                    'Cannot map more then OneOf { ' . $this->_flattenJoin($matchedType) . ' and ' .
+                    $this->_flattenJoin($mappedWith) . ' } on: ' . json_encode($json)
                 );
             }
             $mappedWith = $matchedType;
@@ -382,34 +388,48 @@ class JsonMapper
         }
         if (!$mappedWith) {
             throw new JsonMapperException(
-                'Unable to map AnyOf ' . $this->flattenJoin($types) . ' on: ' . json_encode($json)
+                'Unable to map AnyOf ' . $this->_flattenJoin($types) . ' on: ' . json_encode($json)
             );
         }
         return $mappedObject;
     }
 
-    private function flattenJoin($subject)
+    /**
+     * Returns joined types in $subject array and its nested arrays with ','.
+     *
+     * @param array|string $subject Array of types or a single type.
+     *
+     * @return string
+     */
+    private function _flattenJoin($subject)
     {
         if (is_array($subject)) {
             $flatten = [];
-            array_walk_recursive($subject, function($a) use (&$flatten) { $flatten[] = $a; });
+            array_walk_recursive(
+                $subject, function ($a) use (&$flatten) {
+                    $flatten[] = $a; 
+                }
+            );
             return '(' . join(', ', $flatten) . ')';
         }
         return $subject;
     }
 
     /**
-     * @param  mixed         $json            Raw normalized data for the property
-     * @param  string|array  $types           Nested string arrays to hold information for types with oneOf and
-     *                                        anyOf mappings, types in the outer array will follow anyOf mapping,
-     *                                        while elements in the next inner array will follow oneOf mappings,
-     *                                        and the next inner array will again follow anyOf mappings and so on.
-     *                                        Or $types should be some typeHint string like OneOf(types..) or
-     *                                        AnyOf(types..)
-     * @param  string        $namespace       Namespace of the class
-     * @param  string[]|null $factoryMethods  Callable factory methods for property
-     * @param  string|null   $className       Name of the class
-     * @param  bool          $oneOf           If True, then check $typeOfs for oneOf, otherwise check for anyOf.
+     * Map the data in $json into the specified $types.
+     *
+     * @param mixed         $json           Raw normalized data for the property
+     * @param string|array  $types          Nested string arrays to hold information for types with oneOf and
+     *                                      anyOf mappings, types in the outer array will follow anyOf
+     *                                      mapping, while elements in the next inner array will follow oneOf
+     *                                      mappings, and the next inner array will again follow anyOf
+     *                                      mappings and so on. Or $types should be some typeHint string like
+     *                                      OneOf(types..) or AnyOf(types..)
+     * @param string        $namespace      Namespace of the class
+     * @param string[]|null $factoryMethods Callable factory methods for property
+     * @param string|null   $className      Name of the class
+     * @param bool          $oneOf          If True, then check $typeOfs for oneOf, otherwise check for anyOf.
+     *
      * @return array|mixed|object
      * @throws JsonMapperException|ReflectionException
      */
@@ -423,12 +443,12 @@ class JsonMapper
     ) {
         if (is_string($types)) {
             if (strpos($types, 'Of(') != false) {
-                list($types, $oneOf) = $this->extractTypeOfs($types);
+                list($types, $oneOf) = $this->_extractTypeOfs($types);
             } else {
                 $types = [$types];
             }
         }
-        return $this->checkMappingsFor(
+        return $this->_checkMappingsFor(
             $oneOf,
             $types,
             $json,
@@ -446,17 +466,18 @@ class JsonMapper
     /**
      * Checks types against the value.
      *
-     * @param mixed $value param's value
-     * @param string $type type defined in param's typehint
+     * @param mixed         $value          param's value
+     * @param string        $type           type defined in param's typehint
      * @param string[]|null $factoryMethods Callable factory methods for property
-     * @param string $namespace Namespace of the class
-     * @param string $className Class refrencing the factory methods
+     * @param string        $namespace      Namespace of the class
+     * @param string        $className      Class refrencing the factory methods
      *
      * @return array array(bool $matched, ?string $method) $matched represents if Type matched with value,
      *               $method represents the selected factory method (if any)
      * @throws ReflectionException
+     * @throws JsonMapperException
      */
-    private function isValueOfType($value, $type, $factoryMethods, $namespace, $className)
+    private function _isValueOfType($value, $type, $factoryMethods, $namespace, $className)
     {
         if (isset($factoryMethods)) {
             $methodFound = false;
@@ -465,10 +486,10 @@ class JsonMapper
                     $methodFound = true;
                     if (version_compare(phpversion(), '7.0', '<')) {
                         // if php version is less than 7.0
-                        $this->callFactoryMethod($method, $value, $className);
+                        $this->_callFactoryMethod($method, $value, $className);
                     } else {
                         try {
-                            $this->callFactoryMethod($method, $value, $className);
+                            $this->_callFactoryMethod($method, $value, $className);
                         } catch (\Throwable $e){
                             continue; // continue if method not accessible
                         }
@@ -487,7 +508,7 @@ class JsonMapper
                 // if value is also of array type
                 $type = substr($type, 0, -2);
                 foreach ($value as $element) {
-                    if (!$this->isValueOfType($element, $type, null, $namespace, '')[0]) {
+                    if (!$this->_isValueOfType($element, $type, null, $namespace, '')[0]) {
                         return array(false, null); // false if any element is not of same type
                     }
                 }
@@ -520,28 +541,33 @@ class JsonMapper
     }
 
     /**
+     * Returns an array of (types nested array) and (isOneOf/isAnyOf) type.
+     *
      * @param string $typeOfHint param's types hint from maps annotation
+     *
      * @return array
      */
-    private function extractTypeOfs($typeOfHint) {
+    private function _extractTypeOfs($typeOfHint)
+    {
         $oneOf = strpos($typeOfHint, 'OneOf(') === 0;
-        $types = str_replace(['OneOf(','AnyOf('],'[', $typeOfHint);
-        $types = str_replace(')',']', $types);
+        $types = str_replace(['OneOf(','AnyOf('], '[', $typeOfHint);
+        $types = str_replace(')', ']', $types);
         return array(json_decode($types), $oneOf);
     }
 
     /**
      * Map all data in $json into a new instance of $type class.
      *
-     * @param object|null $json              JSON object structure from json_decode()
-     * @param string      $type              The type of class instance to map into.
-     * @param bool        $forMultipleTypes  True if looking to map for multiple types, Default: false
+     * @param object|null $json             JSON object structure from json_decode()
+     * @param string      $type             The type of class instance to map into.
+     * @param bool        $forMultipleTypes True if looking to map for multiple types, Default: false
      *
      * @return object|null      Mapped object is returned.
      * @throws ReflectionException|JsonMapperException
      * @see    mapClassArray()
      */
-    public function mapClass($json, $type, $forMultipleTypes = false) {
+    public function mapClass($json, $type, $forMultipleTypes = false)
+    {
         if ($json === null) {
             return null;
         }
@@ -579,13 +605,14 @@ class JsonMapper
     /**
      * Get class instance that best matches the class
      *
-     * @param object|null $json JSON object structure from json_decode()
-     * @param ReflectionClass $rc Class to get instance of. This method
-     *                               will try to first match the discriminator
-     *                               field with the discriminator value of
-     *                               the current class or its child class.
-     *                               If no matches is found, then the current
-     *                               class's instance is returned.
+     * @param object|null     $json JSON object structure from json_decode()
+     * @param ReflectionClass $rc   Class to get instance of. This method
+     *                              will try to first match the
+     *                              discriminator field with the
+     *                              discriminator value of the current
+     *                              class or its child class. If no
+     *                              matches is found, then the current
+     *                              class's instance is returned.
      *
      * @return ReflectionClass|null Object instance if match is found.
      * @throws ReflectionException
@@ -705,7 +732,7 @@ class JsonMapper
     /**
      * Get additional properties setter method for the class.
      *
-     * @param ReflectionClass $rc  Reflection class to check
+     * @param ReflectionClass $rc Reflection class to check
      *
      * @return ReflectionMethod    Method or null if disabled.
      */
@@ -745,14 +772,15 @@ class JsonMapper
     /**
      * Map an array
      *
-     * @param array         $json    JSON array structure from json_decode()
-     * @param mixed         $array   Array or ArrayObject that gets filled with
-     *                               data from $json
-     * @param string|object $class   Class name for children objects.
-     *                               All children will get mapped onto this type.
-     *                               Supports class names and simple types
-     *                               like "string".
-     * @param bool $forMultipleTypes True if looking to map for multiple types, Default: false
+     * @param array         $json             JSON array structure from json_decode()
+     * @param mixed         $array            Array or ArrayObject that gets filled with
+     *                                        data from $json
+     * @param string|object $class            Class name for children objects.
+     *                                        All children will get mapped
+     *                                        onto this type. Supports class
+     *                                        names and simple types like
+     *                                        "string".
+     * @param bool          $forMultipleTypes True if looking to map for multiple types, Default: false
      *
      * @return mixed Mapped $array is returned
      */
@@ -811,8 +839,8 @@ class JsonMapper
      * Try to find out if a property exists in a given class.
      * Checks property first, falls back to setter method.
      *
-     * @param ReflectionClass $rc  Reflection class to check
-     * @param string $name         Property name
+     * @param ReflectionClass $rc   Reflection class to check
+     * @param string          $name Property name
      *
      * @return array First value: if the property exists
      *               Second value: the accessor to use (
@@ -837,8 +865,8 @@ class JsonMapper
         if ($rmeth === null) {
             //try setter method
             $setter = 'set' . str_replace(
-                    ' ', '', ucwords(str_replace('_', ' ', $name))
-                );
+                ' ', '', ucwords(str_replace('_', ' ', $name))
+            );
             if ($rc->hasMethod($setter)) {
                 $rmeth = $rc->getMethod($setter);
                 $annotations = $this->parseAnnotations($rmeth->getDocComment());
