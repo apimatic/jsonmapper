@@ -260,9 +260,9 @@ class MultiTypeTest extends TestCase
         $json = '{"value": "199402-19", "optional": {"value": [23,24]}}';
         $res = $mapper->mapClass(json_decode($json),'\multitypetest\model\ComplexCaseA');
         $this->assertInstanceOf('\multitypetest\model\ComplexCaseA', $res);
-        $this->assertIsString($res->getValue());
+        $this->assertTrue(is_string($res->getValue()));
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseA', $res->getOptional());
-        $this->assertIsInt($res->getOptional()->getValue()[0]);
+        $this->assertTrue(is_int($res->getOptional()->getValue()[0]));
 
         $json = '{"value": "1994-02-12", "optional": {"value": ["1994-02-13","1994-02-14"],
             "optional": {"value": {"numberOfTyres":4}, "optional":[234,567]}}}';
@@ -273,7 +273,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\DateTime', $res->getOptional()->getValue()[0]);
         $this->assertInstanceOf('\multitypetest\model\ComplexCaseB', $res->getOptional()->getOptional());
         $this->assertInstanceOf('\multitypetest\model\Vehicle', $res->getOptional()->getOptional()->getValue());
-        $this->assertIsInt($res->getOptional()->getOptional()->getOptional()[0]);
+        $this->assertTrue(is_int($res->getOptional()->getOptional()->getOptional()[0]));
     }
 
     public function testComplexCasesWithDescriminators()
