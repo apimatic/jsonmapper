@@ -47,7 +47,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertStringContainsString('Could not find required constructor arguments for', $res);
+        $this->assertTrue(strpos($res, 'Could not find required constructor arguments for') == 0);
 
         $json = '{"value":[false,true]}';
         try {
@@ -55,7 +55,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertStringContainsString('Unable to map AnyOf', $res);
+       $this->assertTrue(strpos($res, 'Unable to map AnyOf') == 0);
 
         $json = '{"value":"some string"}';
         try {
@@ -63,7 +63,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertStringContainsString('Unable to map AnyOf', $res);
+       $this->assertTrue(strpos($res, 'Unable to map AnyOf') == 0);
     }
 
     public function testSimpleCaseB()
@@ -87,7 +87,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertStringContainsString('Cannot map more then OneOf', $res);
+       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') == 0);
     }
 
     public function testStringOrStringList()
@@ -107,7 +107,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertStringContainsString('Unable to map AnyOf', $res);
+       $this->assertTrue(strpos($res, 'Unable to map AnyOf') == 0);
     }
 
     public function testObjectOrBool()
@@ -132,7 +132,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertStringContainsString('Unable to map AnyOf', $res);
+       $this->assertTrue(strpos($res, 'Unable to map AnyOf') == 0);
 
         $res = $mapper->mapFor(json_decode($json), 'OneOf("null","array","bool")');
         $this->assertEquals(null, $res);
@@ -155,7 +155,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertStringContainsString('Cannot map more then OneOf', $res);
+       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') == 0);
     }
 
     public function testStringOrSimpleCaseA()
@@ -203,7 +203,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertStringContainsString('Cannot map more then OneOf', $res);
+       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') == 0);
     }
 
     public function testAnyOfSimpleCases()
@@ -247,7 +247,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertStringContainsString('Unable to map AnyOf', $res);
+       $this->assertTrue(strpos($res, 'Unable to map AnyOf') == 0);
     }
 
     public function testComplexCases()
@@ -356,7 +356,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertStringContainsString('Cannot map more then OneOf', $res);
+       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') == 0);
 
         $json = '{"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321",' .
             '"birthday":"1994-02-13","personType":"Per"}';
@@ -369,7 +369,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertStringContainsString('Unable to map AnyOf', $res);
+       $this->assertTrue(strpos($res, 'Unable to map AnyOf') == 0);
 
         $json = '{"startsAt":"15:00","endsAt":"21:00","sessionType":"Morning"}';
         try {
@@ -381,6 +381,6 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertStringContainsString('Cannot map more then OneOf', $res);
+       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') == 0);
     }
 }
