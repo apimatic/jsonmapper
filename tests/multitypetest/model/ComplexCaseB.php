@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace multitypetest\model;
 
 use stdClass;
@@ -45,7 +43,7 @@ class ComplexCaseB implements \JsonSerializable
      * @required
      * @maps value AnyOf("Evening[]","Morning[]","Employee","Person[]",OneOf("Vehicle","Car"),"string")
      */
-    public function setValue($value): void
+    public function setValue($value)
     {
         $this->value = $value;
     }
@@ -67,7 +65,7 @@ class ComplexCaseB implements \JsonSerializable
      * @required
      * @maps optional AnyOf("ComplexCaseA","SimpleCaseB[]","array")
      */
-    public function setOptional($optional): void
+    public function setOptional($optional)
     {
         $this->optional = $optional;
     }
@@ -80,7 +78,7 @@ class ComplexCaseB implements \JsonSerializable
      *
      * @return mixed
      */
-    public function jsonSerialize(bool $asArrayWhenEmpty = false)
+    public function jsonSerialize($asArrayWhenEmpty = false)
     {
         $json = [];
         $json['value'] = $this->value;

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace multitypetest\model;
 
 use stdClass;
@@ -20,7 +18,7 @@ class Car extends Vehicle implements \JsonSerializable
      * @param int $numberOfTyres
      * @param bool $haveTrunk
      */
-    public function __construct(int $numberOfTyres, bool $haveTrunk)
+    public function __construct($numberOfTyres, $haveTrunk)
     {
         parent::__construct($numberOfTyres);
         $this->haveTrunk = $haveTrunk;
@@ -28,18 +26,20 @@ class Car extends Vehicle implements \JsonSerializable
 
     /**
      * Returns HaveTrunk.
+     * @return bool
      */
-    public function getHaveTrunk(): bool
+    public function getHaveTrunk()
     {
         return $this->haveTrunk;
     }
 
     /**
      * Sets HaveTrunk.
+     * @param bool $haveTrunk
      *
      * @maps haveTrunk
      */
-    public function setHaveTrunk(bool $haveTrunk): void
+    public function setHaveTrunk($haveTrunk)
     {
         $this->haveTrunk = $haveTrunk;
     }
@@ -52,7 +52,7 @@ class Car extends Vehicle implements \JsonSerializable
      *
      * @return array|stdClass
      */
-    public function jsonSerialize(bool $asArrayWhenEmpty = false)
+    public function jsonSerialize($asArrayWhenEmpty = false)
     {
         $json = [];
         $json['haveTrunk'] = $this->haveTrunk;

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace multitypetest\model;
 
 use stdClass;
@@ -53,12 +51,8 @@ class Person implements \JsonSerializable
      * @param string $name
      * @param string $uid
      */
-    public function __construct(
-        string $address,
-        int $age,
-        string $name,
-        string $uid
-    ) {
+    public function __construct($address, $age, $name, $uid)
+    {
         $this->address = $address;
         $this->age = $age;
         $this->name = $name;
@@ -68,7 +62,7 @@ class Person implements \JsonSerializable
     /**
      * Returns Address.
      */
-    public function getAddress(): string
+    public function getAddress()
     {
         return $this->address;
     }
@@ -79,7 +73,7 @@ class Person implements \JsonSerializable
      * @required
      * @maps address
      */
-    public function setAddress(string $address): void
+    public function setAddress($address)
     {
         $this->address = $address;
     }
@@ -87,7 +81,7 @@ class Person implements \JsonSerializable
     /**
      * Returns Age.
      */
-    public function getAge(): int
+    public function getAge()
     {
         return $this->age;
     }
@@ -98,7 +92,7 @@ class Person implements \JsonSerializable
      * @required
      * @maps age
      */
-    public function setAge(int $age): void
+    public function setAge($age)
     {
         $this->age = $age;
     }
@@ -106,7 +100,7 @@ class Person implements \JsonSerializable
     /**
      * Returns Birthday.
      */
-    public function getBirthday(): \DateTime
+    public function getBirthday()
     {
         return $this->birthday;
     }
@@ -118,7 +112,7 @@ class Person implements \JsonSerializable
      * @maps birthday
      * @factory multitypetest\model\DateTimeHelper::fromSimpleDate
      */
-    public function setBirthday(\DateTime $birthday): void
+    public function setBirthday($birthday)
     {
         $this->birthday = $birthday;
     }
@@ -126,7 +120,7 @@ class Person implements \JsonSerializable
     /**
      * Returns Birthtime.
      */
-    public function getBirthtime(): \DateTime
+    public function getBirthtime()
     {
         return $this->birthtime;
     }
@@ -138,7 +132,7 @@ class Person implements \JsonSerializable
      * @maps birthtime
      * @factory multitypetest\model\DateTimeHelper::fromRfc3339DateTime
      */
-    public function setBirthtime(\DateTime $birthtime): void
+    public function setBirthtime($birthtime)
     {
         $this->birthtime = $birthtime;
     }
@@ -146,7 +140,7 @@ class Person implements \JsonSerializable
     /**
      * Returns Name.
      */
-    public function getName(): string
+    public function getName()
     {
         return $this->name;
     }
@@ -157,7 +151,7 @@ class Person implements \JsonSerializable
      * @required
      * @maps name
      */
-    public function setName(string $name): void
+    public function setName($name)
     {
         $this->name = $name;
     }
@@ -165,7 +159,7 @@ class Person implements \JsonSerializable
     /**
      * Returns Uid.
      */
-    public function getUid(): string
+    public function getUid()
     {
         return $this->uid;
     }
@@ -176,7 +170,7 @@ class Person implements \JsonSerializable
      * @required
      * @maps uid
      */
-    public function setUid(string $uid): void
+    public function setUid($uid)
     {
         $this->uid = $uid;
     }
@@ -184,7 +178,7 @@ class Person implements \JsonSerializable
     /**
      * Returns Person Type.
      */
-    public function getPersonType(): ?string
+    public function getPersonType()
     {
         return $this->personType;
     }
@@ -194,7 +188,7 @@ class Person implements \JsonSerializable
      *
      * @maps personType
      */
-    public function setPersonType(?string $personType): void
+    public function setPersonType($personType)
     {
         $this->personType = $personType;
     }
@@ -207,7 +201,7 @@ class Person implements \JsonSerializable
      * @param string $name Name of property
      * @param mixed $value Value of property
      */
-    public function addAdditionalProperty(string $name, $value)
+    public function addAdditionalProperty($name, $value)
     {
         $this->additionalProperties[$name] = $value;
     }
@@ -220,7 +214,7 @@ class Person implements \JsonSerializable
      *
      * @return mixed
      */
-    public function jsonSerialize(bool $asArrayWhenEmpty = false)
+    public function jsonSerialize($asArrayWhenEmpty = false)
     {
         $json = [];
         $json['address']    = $this->address;

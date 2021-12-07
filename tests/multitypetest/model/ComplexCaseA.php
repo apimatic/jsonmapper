@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace multitypetest\model;
 require_once __DIR__ . '/DateTimeHelper.php';
 
@@ -49,7 +47,7 @@ class ComplexCaseA implements \JsonSerializable
      * @factory multitypetest\model\DateTimeHelper::fromSimpleDate DateTime
      * @factory multitypetest\model\DateTimeHelper::fromSimpleDateArray DateTime[]
      */
-    public function setValue($value): void
+    public function setValue($value)
     {
         $this->value = $value;
     }
@@ -71,7 +69,7 @@ class ComplexCaseA implements \JsonSerializable
      * @required
      * @maps optional OneOf("ComplexCaseA","ComplexCaseB","SimpleCaseA")
      */
-    public function setOptional($optional): void
+    public function setOptional($optional)
     {
         $this->optional = $optional;
     }
@@ -84,7 +82,7 @@ class ComplexCaseA implements \JsonSerializable
      *
      * @return array|stdClass
      */
-    public function jsonSerialize(bool $asArrayWhenEmpty = false)
+    public function jsonSerialize($asArrayWhenEmpty = false)
     {
         $json = [];
         $json['value'] = $this->value;

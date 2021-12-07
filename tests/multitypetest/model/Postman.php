@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace multitypetest\model;
 
 use stdClass;
@@ -48,19 +46,15 @@ class Postman extends Person implements \JsonSerializable
      * @param string $name
      * @param string $uid
      */
-    public function __construct(
-        string $address,
-        int $age,
-        string $name,
-        string $uid
-    ) {
+    public function __construct($address, $age, $name, $uid)
+    {
         parent::__construct($address, $age, $name, $uid);
     }
 
     /**
      * Returns Department.
      */
-    public function getDepartment(): string
+    public function getDepartment()
     {
         return $this->department;
     }
@@ -71,7 +65,7 @@ class Postman extends Person implements \JsonSerializable
      * @required
      * @maps department
      */
-    public function setDepartment(string $department): void
+    public function setDepartment($department)
     {
         $this->department = $department;
     }
@@ -81,7 +75,7 @@ class Postman extends Person implements \JsonSerializable
      *
      * @return Person[]
      */
-    public function getDependents(): array
+    public function getDependents()
     {
         return $this->dependents;
     }
@@ -94,7 +88,7 @@ class Postman extends Person implements \JsonSerializable
      *
      * @param Person[] $dependents
      */
-    public function setDependents(array $dependents): void
+    public function setDependents($dependents)
     {
         $this->dependents = $dependents;
     }
@@ -102,7 +96,7 @@ class Postman extends Person implements \JsonSerializable
     /**
      * Returns Hired At.
      */
-    public function getHiredAt(): \DateTime
+    public function getHiredAt()
     {
         return $this->hiredAt;
     }
@@ -114,7 +108,7 @@ class Postman extends Person implements \JsonSerializable
      * @maps hiredAt
      * @factory multitypetest\model\DateTimeHelper::fromRfc1123DateTime
      */
-    public function setHiredAt(\DateTime $hiredAt): void
+    public function setHiredAt($hiredAt)
     {
         $this->hiredAt = $hiredAt;
     }
@@ -122,7 +116,7 @@ class Postman extends Person implements \JsonSerializable
     /**
      * Returns Joining Day.
      */
-    public function getJoiningDay(): string
+    public function getJoiningDay()
     {
         return $this->joiningDay;
     }
@@ -133,7 +127,7 @@ class Postman extends Person implements \JsonSerializable
      * @required
      * @maps joiningDay
      */
-    public function setJoiningDay(string $joiningDay): void
+    public function setJoiningDay($joiningDay)
     {
         $this->joiningDay = $joiningDay;
     }
@@ -141,7 +135,7 @@ class Postman extends Person implements \JsonSerializable
     /**
      * Returns Salary.
      */
-    public function getSalary(): int
+    public function getSalary()
     {
         return $this->salary;
     }
@@ -152,7 +146,7 @@ class Postman extends Person implements \JsonSerializable
      * @required
      * @maps salary
      */
-    public function setSalary(int $salary): void
+    public function setSalary($salary)
     {
         $this->salary = $salary;
     }
@@ -162,7 +156,7 @@ class Postman extends Person implements \JsonSerializable
      *
      * @return string[]
      */
-    public function getWorkingDays(): array
+    public function getWorkingDays()
     {
         return $this->workingDays;
     }
@@ -175,7 +169,7 @@ class Postman extends Person implements \JsonSerializable
      *
      * @param string[] $workingDays
      */
-    public function setWorkingDays(array $workingDays): void
+    public function setWorkingDays($workingDays)
     {
         $this->workingDays = $workingDays;
     }
@@ -188,7 +182,7 @@ class Postman extends Person implements \JsonSerializable
      * @param string $name Name of property
      * @param mixed $value Value of property
      */
-    public function addAdditionalProperty(string $name, $value)
+    public function addAdditionalProperty($name, $value)
     {
         $this->additionalProperties[$name] = $value;
     }
@@ -201,7 +195,7 @@ class Postman extends Person implements \JsonSerializable
      *
      * @return mixed
      */
-    public function jsonSerialize(bool $asArrayWhenEmpty = false)
+    public function jsonSerialize($asArrayWhenEmpty = false)
     {
         $json = [];
         $json['department']  = $this->department;

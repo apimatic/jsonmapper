@@ -17,7 +17,6 @@ use Exception;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
-use ReflectionType;
 
 /**
  * Automatically map JSON structures into objects.
@@ -464,10 +463,15 @@ class JsonMapper
             foreach ($factoryMethods as $method) {
                 if (isset($method) && explode(' ', $method)[1] == $type) {
                     $methodFound = true;
-                    try {
+                    if (version_compare(phpversion(), '7.0', '<')) {
+                        // if php version is less than 7.0
                         $this->callFactoryMethod($method, $value, $className);
-                    } catch (\Throwable $e){
-                        continue; // continue if method not accessible
+                    } else {
+                        try {
+                            $this->callFactoryMethod($method, $value, $className);
+                        } catch (\Throwable $e){
+                            continue; // continue if method not accessible
+                        }
                     }
                     return array(true, $method); // return true immediatly if method found, is accessible.
                 }
@@ -949,13 +953,13 @@ class JsonMapper
     /**
      * Get name for a ReflectionType instance
      *
-     * @param ReflectionType $type Reflection type instance
+     * @param \ReflectionType $type Reflection type instance
      *
      * @return string
      *
      * @codeCoverageIgnore
      */
-    protected static function reflectionTypeToString(ReflectionType $type)
+    protected static function reflectionTypeToString($type)
     {
         if (\class_exists('ReflectionNamedType')
             && $type instanceof \ReflectionNamedType

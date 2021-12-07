@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace multitypetest\model;
 
 use stdClass;
@@ -19,26 +17,28 @@ class Vehicle implements \JsonSerializable
     /**
      * @param int $numberOfTyres
      */
-    public function __construct(int $numberOfTyres)
+    public function __construct($numberOfTyres)
     {
         $this->numberOfTyres = $numberOfTyres;
     }
 
     /**
      * Returns NumberOfTyres.
+     * @return int
      */
-    public function getNumberOfTyres(): int
+    public function getNumberOfTyres()
     {
         return $this->numberOfTyres;
     }
 
     /**
      * Sets Value.
+     * @param int
      *
      * @required
      * @maps numberOfTyres
      */
-    public function setNumberOfTyres(int $numberOfTyres): void
+    public function setNumberOfTyres($numberOfTyres)
     {
         $this->numberOfTyres = $numberOfTyres;
     }
@@ -51,7 +51,7 @@ class Vehicle implements \JsonSerializable
      *
      * @return array|stdClass
      */
-    public function jsonSerialize(bool $asArrayWhenEmpty = false)
+    public function jsonSerialize($asArrayWhenEmpty = false)
     {
         $json = [];
         $json['numberOfTyres'] = $this->numberOfTyres;

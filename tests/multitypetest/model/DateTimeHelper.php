@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * TesterLib
  *
@@ -20,17 +18,17 @@ class DateTimeHelper
     /**
      * Match the pattern for a datetime string in simeple date format
      */
-    public const SIMPLE_DATE = 'Y-m-d';
+    const SIMPLE_DATE = 'Y-m-d';
 
     /**
      * Match the pattern for a datetime string in Rfc1123 format
      */
-    public const RFC1123 = 'D, d M Y H:i:s T';
+    const RFC1123 = 'D, d M Y H:i:s T';
 
     /**
      * Match the pattern for a datetime string in RFC3339 format
      */
-    public const RFC3339 = 'Y-m-d\TH:i:sP';
+    const RFC3339 = 'Y-m-d\TH:i:sP';
 
     /**
      * Convert a DateTime object to a string in simple date format
@@ -40,7 +38,7 @@ class DateTimeHelper
      * @return string|null The datetime as a string in simple date format
      * @throws Exception
      */
-    public static function toSimpleDate(?DateTime $date): ?string
+    public static function toSimpleDate($date)
     {
         if (is_null($date)) {
             return null;
@@ -57,7 +55,7 @@ class DateTimeHelper
      *
      * @return array|null The array of datetime strings in simple date format
      */
-    public static function toSimpleDateArray(?array $dates): ?array
+    public static function toSimpleDateArray($dates)
     {
         if (is_null($dates)) {
             return null;
@@ -73,7 +71,7 @@ class DateTimeHelper
      * @return DateTime|null The parsed DateTime object
      * @throws Exception
      */
-    public static function fromSimpleDate(?string $date): ?DateTime
+    public static function fromSimpleDate($date)
     {
         if (is_null($date)) {
             return null;
@@ -92,7 +90,7 @@ class DateTimeHelper
      *
      * @return array|null An array of parsed DateTime objects
      */
-    public static function fromSimpleDateArray(?array $dates): ?array
+    public static function fromSimpleDateArray($dates)
     {
         if (is_null($dates)) {
             return null;
@@ -107,7 +105,7 @@ class DateTimeHelper
      *
      * @return array|null An array of parsed DateTime objects
      */
-    public static function fromSimpleDateMap(?stdClass $datetimes): ?array
+    public static function fromSimpleDateMap($datetimes)
     {
         if (is_null($datetimes)) {
             return null;
@@ -124,7 +122,7 @@ class DateTimeHelper
      * @return string|null The datetime as a string in Rfc1123 format
      * @throws Exception
      */
-    public static function toRfc1123DateTime(?DateTime $datetime): ?string
+    public static function toRfc1123DateTime($datetime)
     {
         if (is_null($datetime)) {
             return null;
@@ -141,7 +139,7 @@ class DateTimeHelper
      *
      * @return array|null The array of datetime strings in Rfc1123 format
      */
-    public static function toRfc1123DateTimeArray(?array $datetimes): ?array
+    public static function toRfc1123DateTimeArray($datetimes)
     {
         if (is_null($datetimes)) {
             return null;
@@ -157,7 +155,7 @@ class DateTimeHelper
      * @return DateTime|null The parsed DateTime object
      * @throws Exception
      */
-    public static function fromRfc1123DateTime(?string $datetime): ?DateTime
+    public static function fromRfc1123DateTime($datetime)
     {
         if (is_null($datetime)) {
             return null;
@@ -176,7 +174,7 @@ class DateTimeHelper
      *
      * @return array|null An array of parsed DateTime objects
      */
-    public static function fromRfc1123DateTimeArray(?array $datetimes): ?array
+    public static function fromRfc1123DateTimeArray($datetimes)
     {
         if (is_null($datetimes)) {
             return null;
@@ -191,7 +189,7 @@ class DateTimeHelper
      *
      * @return array|null An array of parsed DateTime objects
      */
-    public static function fromRfc1123DateTimeMap(?stdClass $datetimes): ?array
+    public static function fromRfc1123DateTimeMap($datetimes)
     {
         if (is_null($datetimes)) {
             return null;
@@ -208,7 +206,7 @@ class DateTimeHelper
      * @return string|null The datetime as a string in Rfc3339 format
      * @throws Exception
      */
-    public static function toRfc3339DateTime(?DateTime $datetime): ?string
+    public static function toRfc3339DateTime($datetime)
     {
         if (is_null($datetime)) {
             return null;
@@ -225,7 +223,7 @@ class DateTimeHelper
      *
      * @return array|null The array of datetime strings in Rfc3339 format
      */
-    public static function toRfc3339DateTimeArray(?array $datetimes): ?array
+    public static function toRfc3339DateTimeArray($datetimes)
     {
         if (is_null($datetimes)) {
             return null;
@@ -241,7 +239,7 @@ class DateTimeHelper
      * @return DateTime|null The parsed DateTime object
      * @throws Exception
      */
-    public static function fromRfc3339DateTime(?string $datetime): ?DateTime
+    public static function fromRfc3339DateTime($datetime)
     {
         if (is_null($datetime)) {
             return null;
@@ -273,7 +271,7 @@ class DateTimeHelper
      *
      * @return array|null An array of parsed DateTime objects
      */
-    public static function fromRfc3339DateTimeArray(?array $datetimes): ?array
+    public static function fromRfc3339DateTimeArray($datetimes)
     {
         if (is_null($datetimes)) {
             return null;
@@ -288,7 +286,7 @@ class DateTimeHelper
      *
      * @return array|null An array of parsed DateTime objects
      */
-    public static function fromRfc3339DateTimeMap(?stdClass $datetimes): ?array
+    public static function fromRfc3339DateTimeMap($datetimes)
     {
         if (is_null($datetimes)) {
             return null;
@@ -305,7 +303,7 @@ class DateTimeHelper
      * @return int|null The converted Unix Timestamp
      * @throws Exception
      */
-    public static function toUnixTimestamp(?DateTime $datetime): ?int
+    public static function toUnixTimestamp($datetime)
     {
         if (is_null($datetime)) {
             return null;
@@ -322,7 +320,7 @@ class DateTimeHelper
      *
      * @return array|null The array of integers representing date-time in Unix timestamp
      */
-    public static function toUnixTimestampArray(?array $datetimes): ?array
+    public static function toUnixTimestampArray($datetimes)
     {
         if (is_null($datetimes)) {
             return null;
@@ -338,7 +336,7 @@ class DateTimeHelper
      * @return DateTime|null The parsed DateTime object
      * @throws Exception
      */
-    public static function fromUnixTimestamp(?string $datetime): ?DateTime
+    public static function fromUnixTimestamp($datetime)
     {
         if (is_null($datetime)) {
             return null;
@@ -357,7 +355,7 @@ class DateTimeHelper
      *
      * @return array|null An array of parsed DateTime objects
      */
-    public static function fromUnixTimestampArray(?array $datetimes): ?array
+    public static function fromUnixTimestampArray($datetimes)
     {
         if (is_null($datetimes)) {
             return null;
@@ -372,7 +370,7 @@ class DateTimeHelper
      *
      * @return array|null An array of parsed DateTime objects
      */
-    public static function fromUnixTimestampMap(?stdClass $datetimes): ?array
+    public static function fromUnixTimestampMap($datetimes)
     {
         if (is_null($datetimes)) {
             return null;

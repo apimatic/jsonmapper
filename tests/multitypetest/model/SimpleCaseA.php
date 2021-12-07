@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace multitypetest\model;
 
 use stdClass;
@@ -41,7 +39,7 @@ class SimpleCaseA implements \JsonSerializable
      * @required
      * @maps value AnyOf("int[]","float[]","bool")
      */
-    public function setValue($value): void
+    public function setValue($value)
     {
         $this->value = $value;
     }
@@ -54,7 +52,7 @@ class SimpleCaseA implements \JsonSerializable
      *
      * @return array|stdClass
      */
-    public function jsonSerialize(bool $asArrayWhenEmpty = false)
+    public function jsonSerialize($asArrayWhenEmpty = false)
     {
         $json = [];
         $json['value'] = $this->value;

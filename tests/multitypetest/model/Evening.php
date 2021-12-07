@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace multitypetest\model;
 
 use stdClass;
@@ -33,7 +31,7 @@ class Evening implements \JsonSerializable
      * @param string $startsAt
      * @param string $endsAt
      */
-    public function __construct(string $startsAt, string $endsAt)
+    public function __construct($startsAt, $endsAt)
     {
         $this->startsAt = $startsAt;
         $this->endsAt = $endsAt;
@@ -44,7 +42,7 @@ class Evening implements \JsonSerializable
      *
      * Session start time
      */
-    public function getStartsAt(): string
+    public function getStartsAt()
     {
         return $this->startsAt;
     }
@@ -57,7 +55,7 @@ class Evening implements \JsonSerializable
      * @required
      * @maps startsAt
      */
-    public function setStartsAt(string $startsAt): void
+    public function setStartsAt($startsAt)
     {
         $this->startsAt = $startsAt;
     }
@@ -67,7 +65,7 @@ class Evening implements \JsonSerializable
      *
      * Session end time
      */
-    public function getEndsAt(): string
+    public function getEndsAt()
     {
         return $this->endsAt;
     }
@@ -80,7 +78,7 @@ class Evening implements \JsonSerializable
      * @required
      * @maps endsAt
      */
-    public function setEndsAt(string $endsAt): void
+    public function setEndsAt($endsAt)
     {
         $this->endsAt = $endsAt;
     }
@@ -88,7 +86,7 @@ class Evening implements \JsonSerializable
     /**
      * Returns Session Type.
      */
-    public function getSessionType(): ?string
+    public function getSessionType()
     {
         return $this->sessionType;
     }
@@ -98,7 +96,7 @@ class Evening implements \JsonSerializable
      *
      * @maps sessionType
      */
-    public function setSessionType(?string $sessionType): void
+    public function setSessionType($sessionType)
     {
         $this->sessionType = $sessionType;
     }
@@ -111,7 +109,7 @@ class Evening implements \JsonSerializable
      *
      * @return mixed
      */
-    public function jsonSerialize(bool $asArrayWhenEmpty = false)
+    public function jsonSerialize($asArrayWhenEmpty = false)
     {
         $json = [];
         $json['startsAt']    = $this->startsAt;
