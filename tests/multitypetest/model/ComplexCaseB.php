@@ -12,7 +12,7 @@ use stdClass;
 class ComplexCaseB implements \JsonSerializable
 {
     /**
-     * @var Evening[]|Morning[]|Employee|Person[]|Vehicle|Car
+     * @var Evening[]|Morning[]|Postman|Person[]|Vehicle|Car
      */
     private $value;
 
@@ -22,7 +22,7 @@ class ComplexCaseB implements \JsonSerializable
     private $optional;
 
     /**
-     * @param Evening[]|Morning[]|Employee|Person[]|Vehicle|Car $value
+     * @param Evening[]|Morning[]|Postman|Person[]|Vehicle|Car $value
      */
     public function __construct($value)
     {
@@ -31,7 +31,7 @@ class ComplexCaseB implements \JsonSerializable
 
     /**
      * Returns Value.
-     * @return Evening[]|Morning[]|Employee|Person[]|Vehicle|Car
+     * @return Evening[]|Morning[]|Postman|Person[]|Vehicle|Car
      */
     public function getValue()
     {
@@ -41,7 +41,7 @@ class ComplexCaseB implements \JsonSerializable
     /**
      * Sets Value.
      *
-     * @param Evening[]|Morning[]|Employee|Person[]|Vehicle|Car|string $value
+     * @param Evening[]|Morning[]|Postman|Person[]|Vehicle|Car|string $value
      * @required
      * @maps value AnyOf("Evening[]","Morning[]","Employee","Person[]",OneOf("Vehicle","Car"),"string")
      */

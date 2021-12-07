@@ -10,6 +10,7 @@ require_once __DIR__ . '/model/ComplexCaseB.php';
     // have field optional with AnyOf("ComplexCaseA","SimpleCaseB[]","array")
 require_once __DIR__ . '/model/Person.php';
 require_once __DIR__ . '/model/Employee.php';
+require_once __DIR__ . '/model/Postman.php';
 require_once __DIR__ . '/model/Morning.php';
 require_once __DIR__ . '/model/Evening.php';
 require_once __DIR__ . '/model/Vehicle.php';
@@ -279,20 +280,40 @@ class MultiTypeTest extends TestCase
     {
         $mapper = new JsonMapper();
         $mapper->arChildClasses['multitypetest\model\Person'] = [
+            'multitypetest\model\Postman',
             'multitypetest\model\Employee',
         ];
         $json = '{"value":[{"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321",' .
-            '"birthday":"1994-02-13","personType":"Empl"},{"name":"Shahid Khaliq","age":5147483645,' .
-            '"address":"H # 531, S # 20","uid":"123321","birthday":"1994-02-13","personType":"Per"}]}';
+            '"birthday":"1994-02-13","personType":"Post"},{"name":"Shahid Khaliq","age":5147483645,' .
+            '"address":"H # 531, S # 20","uid":"123321","birthday":"1994-02-13","personType":"Empl"},' .
+            '{"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321",' .
+            '"birthday":"1994-02-13","personType":"Per"}]}';
         $res = $mapper->mapFor(
             json_decode($json),
             'AnyOf("ComplexCaseA","ComplexCaseB")',
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\ComplexCaseB', $res);
-        $this->assertInstanceOf('\multitypetest\model\Employee', $res->getValue()[0]);
-        $this->assertInstanceOf('\multitypetest\model\Person', $res->getValue()[0]);
-        $this->assertInstanceOf('\multitypetest\model\Person', $res->getValue()[1]);
+        $this->assertInstanceOf('\multitypetest\model\Postman', $res->getValue()[0]);
+        $this->assertInstanceOf('\multitypetest\model\Employee', $res->getValue()[1]);
+        $this->assertInstanceOf('\multitypetest\model\Person', $res->getValue()[2]);
+
+        $json = '{"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321",' .
+            '"birthday":"1994-02-13","personType":"Empl"}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'AnyOf("Person","Employee")',
+            'multitypetest\model'
+        );
+        $this->assertInstanceOf('\multitypetest\model\Employee', $res);
+
+        $json = '{"startsAt":"15:00","endsAt":"21:00","sessionType":"Evening"}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'OneOf("Evening","Morning")',
+            'multitypetest\model'
+        );
+        $this->assertInstanceOf('\multitypetest\model\Evening', $res);
 
         $json = '{"value": [{"startsAt":"15:00","endsAt":"21:00","sessionType":"Evening"},' .
             '{"startsAt":"15:00","endsAt":"21:00","sessionType":"Evening"}]}';
@@ -315,5 +336,51 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\ComplexCaseB', $res);
         $this->assertInstanceOf('\multitypetest\model\Morning', $res->getValue()[0]);
         $this->assertInstanceOf('\multitypetest\model\Morning', $res->getValue()[1]);
+    }
+
+    public function testDescriminatorsFail()
+    {
+        $mapper = new JsonMapper();
+        $mapper->arChildClasses['multitypetest\model\Person'] = [
+            'multitypetest\model\Postman',
+            'multitypetest\model\Employee',
+        ];
+        $json = '{"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321",' .
+            '"birthday":"1994-02-13","personType":"Empl"}';
+        try {
+            $mapper->mapFor(
+                json_decode($json),
+                'OneOf("Employee","Person")',
+                'multitypetest\model'
+            );
+        } catch (\Exception $e) {
+            $res = $e->getMessage();
+        }
+        $this->assertStringContainsString('Cannot map more then OneOf', $res);
+
+        $json = '{"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321",' .
+            '"birthday":"1994-02-13","personType":"Per"}';
+        try {
+            $mapper->mapFor(
+                json_decode($json),
+                'AnyOf("Postman","Employee")',
+                'multitypetest\model'
+            );
+        } catch (\Exception $e) {
+            $res = $e->getMessage();
+        }
+        $this->assertStringContainsString('Unable to map AnyOf', $res);
+
+        $json = '{"startsAt":"15:00","endsAt":"21:00","sessionType":"Morning"}';
+        try {
+            $res = $mapper->mapFor(
+                json_decode($json),
+                'OneOf("Morning","Evening","array")',
+                'multitypetest\model'
+            );
+        } catch (\Exception $e) {
+            $res = $e->getMessage();
+        }
+        $this->assertStringContainsString('Cannot map more then OneOf', $res);
     }
 }
