@@ -581,18 +581,11 @@ class JsonMapper
         }
         if (substr($type, -2) == '[]') {
             // if type is array like string[] or int[]
-            if (is_array($value)) {
+            if (is_array($value) || is_object($value)) {
                 // if value is also of array type
                 $type = substr($type, 0, -2);
-                foreach ($value as $element) {
-                    if (!$this->_isValueOfType(
-                        $element,
-                        $type,
-                        null,
-                        $namespace,
-                        ''
-                    )[0]
-                    ) {
+                foreach ($value as $v) {
+                    if (!$this->_isValueOfType($v, $type, null, $namespace, '')[0]) {
                         // false if any element is not of same type
                         return array(false, null);
                     }
