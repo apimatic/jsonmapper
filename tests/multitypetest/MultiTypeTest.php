@@ -15,9 +15,10 @@ require_once __DIR__ . '/model/Morning.php';
 require_once __DIR__ . '/model/Evening.php';
 require_once __DIR__ . '/model/Vehicle.php';
 require_once __DIR__ . '/model/Car.php';
+require_once __DIR__ . '/model/Atom.php';
+require_once __DIR__ . '/model/Orbit.php';
 
 use apimatic\jsonmapper\JsonMapper;
-use multitypetest\model\SimpleCaseB;
 use PHPUnit\Framework\TestCase;
 
 class MultiTypeTest extends TestCase
@@ -47,7 +48,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Could not find required constructor arguments for') == 0);
+        $this->assertTrue(strpos($res, 'Could not find required constructor arguments for') === 0);
 
         $json = '{"value":[false,true]}';
         try {
@@ -55,7 +56,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Unable to map AnyOf') == 0);
+       $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
 
         $json = '{"value":"some string"}';
         try {
@@ -63,7 +64,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Unable to map AnyOf') == 0);
+       $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
     }
 
     public function testSimpleCaseB()
@@ -87,7 +88,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') == 0);
+       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
     }
 
     public function testStringOrStringList()
@@ -107,7 +108,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Unable to map AnyOf') == 0);
+       $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
     }
 
     public function testObjectOrBool()
@@ -132,7 +133,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Unable to map AnyOf') == 0);
+       $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
 
         $res = $mapper->mapFor(json_decode($json), 'OneOf("null","array","bool")');
         $this->assertEquals(null, $res);
@@ -155,7 +156,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') == 0);
+       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
     }
 
     public function testStringOrSimpleCaseA()
@@ -203,7 +204,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') == 0);
+       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
     }
 
     public function testAnyOfSimpleCases()
@@ -247,7 +248,65 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Unable to map AnyOf') == 0);
+       $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+    }
+
+    public function testMapOrObject()
+    {
+        $mapper = new JsonMapper();
+
+        $json = '{"numberOfElectrons":4}';
+        try {
+            // oneof map of int & Atom (having all int fields)
+            $mapper->mapFor(
+                json_decode($json),
+                'OneOf("Atom","int[]")',
+                'multitypetest\model'
+            );
+        } catch (\Exception $e) {
+            $res = $e->getMessage();
+        }
+        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+
+        $json = '[{"numberOfElectrons":4,"numberOfProtons":2}]';
+        $res = '';
+        try {
+            // oneof arrayOfmap of int & array of Atom (having all int fields)
+            $mapper->mapFor(
+                json_decode($json),
+                'OneOf("Atom[]","int[][]")',
+                'multitypetest\model'
+            );
+        } catch (\Exception $e) {
+            $res = $e->getMessage();
+        }
+        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'AnyOf("Atom[]","int[][]")',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertInstanceOf('\multitypetest\model\Atom', $res[0]);
+    }
+
+    public function testOrbitOrAtom()
+    {
+        $mapper = new JsonMapper();
+        $json = '{"numberOfProtons":4,"numberOfElectrons":4}';
+        try {
+            // oneof Orbit (did not have # of protons) & Atom (have # of protons optional)
+            $res = $mapper->mapFor(
+                json_decode($json),
+                'OneOf("Atom","Orbit")',
+                'multitypetest\model'
+            );
+        } catch (\Exception $e) {
+            $res = $e->getMessage();
+        }
+        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+
     }
 
     public function testComplexCases()
@@ -265,7 +324,7 @@ class MultiTypeTest extends TestCase
         $this->assertTrue(is_int($res->getOptional()->getValue()[0]));
 
         $json = '{"value": "1994-02-12", "optional": {"value": ["1994-02-13","1994-02-14"],
-            "optional": {"value": {"numberOfTyres":4}, "optional":[234,567]}}}';
+            "optional": {"value": {"numberOfTyres":"4"}, "optional":[234,567]}}}';
         $res = $mapper->mapClass(json_decode($json),'\multitypetest\model\ComplexCaseA');
         $this->assertInstanceOf('\multitypetest\model\ComplexCaseA', $res);
         $this->assertInstanceOf('\DateTime', $res->getValue());
@@ -356,7 +415,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') == 0);
+       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
 
         $json = '{"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321",' .
             '"birthday":"1994-02-13","personType":"Per"}';
@@ -369,7 +428,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Unable to map AnyOf') == 0);
+       $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
 
         $json = '{"startsAt":"15:00","endsAt":"21:00","sessionType":"Morning"}';
         try {
@@ -381,6 +440,6 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') == 0);
+       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
     }
 }

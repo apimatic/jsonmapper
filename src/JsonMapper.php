@@ -286,6 +286,9 @@ class JsonMapper
         } else if ($this->isSimpleType($type)) {
             settype($jvalue, $type);
             return $jvalue;
+        } else if (substr($type, -4) == '[][]') {
+            settype($jvalue, 'array');
+            return $jvalue;
         }
 
         $array = null;

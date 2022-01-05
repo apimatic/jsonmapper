@@ -7,40 +7,40 @@ use stdClass;
 /**
  * This class contains simple case of oneOf.
  */
-class Vehicle implements \JsonSerializable
+class Orbit implements \JsonSerializable
 {
     /**
-     * @var string
+     * @var int
      */
-    private $numberOfTyres;
+    private $numberOfElectrons;
 
     /**
-     * @param string $numberOfTyres
+     * @param int $numberOfElectrons
      */
-    public function __construct($numberOfTyres)
+    public function __construct($numberOfElectrons)
     {
-        $this->numberOfTyres = $numberOfTyres;
+        $this->numberOfElectrons = $numberOfElectrons;
     }
 
     /**
-     * Returns NumberOfTyres.
-     * @return string
+     * Returns NumberOfElectrons.
+     * @return int
      */
-    public function getNumberOfTyres()
+    public function getNumberOfElectrons()
     {
-        return $this->numberOfTyres;
+        return $this->numberOfElectrons;
     }
 
     /**
      * Sets Value.
-     * @param string
+     * @param int
      *
      * @required
-     * @maps numberOfTyres
+     * @maps $numberOfElectrons
      */
-    public function setNumberOfTyres($numberOfTyres)
+    public function setNumberOfElectrons($numberOfElectrons)
     {
-        $this->numberOfTyres = $numberOfTyres;
+        $this->numberOfElectrons = $numberOfElectrons;
     }
 
     /**
@@ -54,7 +54,7 @@ class Vehicle implements \JsonSerializable
     public function jsonSerialize($asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['numberOfTyres'] = $this->numberOfTyres;
+        $json['numberOfElectrons'] = $this->numberOfElectrons;
 
         return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
