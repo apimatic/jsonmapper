@@ -472,7 +472,6 @@ class MultiTypeTest extends TestCase
             'anyOf(bool,oneOf(int,Atom)[],string)[][]',
             'multitypetest\model'
         );
-        var_dump($res);
         $this->assertTrue(is_object($res));
         $this->assertTrue(is_array($res->{'key0'}));
         $this->assertTrue($res->{'key0'}[0] === 'alpha');
