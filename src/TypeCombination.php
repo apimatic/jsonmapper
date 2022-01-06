@@ -1,85 +1,111 @@
 <?php
-
+/**
+ * Part of JsonMapper
+ *
+ * PHP version 5
+ *
+ * @category Netresearch
+ * @package  JsonMapper
+ * @author   Asad Ali <asad.ali@apimatic.io>
+ * @license  OSL-3.0 http://opensource.org/licenses/osl-3.0
+ * @link     http://www.netresearch.de/
+ */
 namespace apimatic\jsonmapper;
 
 /**
- * Data class to hold the groups of multiple types
+ * Data class to hold the groups of multiple types.
+ *
+ * @category Netresearch
+ * @package  JsonMapper
+ * @author   Asad Ali <asad.ali@apimatic.io>
+ * @license  OSL-3.0 http://opensource.org/licenses/osl-3.0
+ * @link     http://www.netresearch.de/
  */
 class TypeCombination
 {
     /**
-     * @var string Name of this typeCombinator group i.e. oneOf/anyOf
+     * Name of this typeCombinator group i.e. oneOf/anyOf.
+     *
+     * @var string
      */
-    private $groupName;
+    private $_groupName;
 
     /**
-     * @var array Array of types or other type combination
+     * Array of types or other type combination
+     *
+     * @var array
      */
-    private $types;
+    private $_types;
 
     /**
-     * @var int Array/Map dimension of this group
+     * Array/Map dimension of this group
+     *
+     * @var int
      */
-    private $dimension;
+    private $_dimension;
 
     /**
-     * @param string $groupName
-     * @param array $types
-     * @param int $dimension
+     * Private constructor for TypeCombination class
+     *
+     * @param string $groupName group name value
+     * @param array  $types     types value
+     * @param int    $dimension dimension value
      */
     private function __construct($groupName, $types, $dimension)
     {
-        $this->groupName = $groupName;
-        $this->types = $types;
-        $this->dimension = $dimension;
+        $this->_groupName = $groupName;
+        $this->_types = $types;
+        $this->_dimension = $dimension;
     }
 
     /**
+     * Name of this typeCombinator group i.e. oneOf/anyOf.
+     *
      * @return string
      */
     public function getGroupName()
     {
-        return $this->groupName;
+        return $this->_groupName;
     }
 
     /**
+     * Array of types or other type combination
+     *
      * @return array
      */
     public function getTypes()
     {
-        return $this->types;
+        return $this->_types;
     }
 
     /**
+     * Array/Map dimension of this group
+     *
      * @return int
      */
     public function getDimension()
     {
-        return $this->dimension;
-    }
-
-    /**
-     * @param int $dimension
-     */
-    public function setDimension($dimension)
-    {
-        $this->dimension = $dimension;
+        return $this->_dimension;
     }
 
     /**
      * Decrease the dimension for the given group type by 1
+     *
+     * @return void
      */
     public function decreaseDimension()
     {
-        $this->dimension--;
+        $this->_dimension--;
     }
 
     /**
-     * Decrease the dimension for the given group type by 1
+     * Increase the dimension for the given group type by 1
+     *
+     * @return void
      */
     public function increaseDimension()
     {
-        $this->dimension++;
+        $this->_dimension++;
     }
 
     /**
@@ -87,7 +113,6 @@ class TypeCombination
      * i.e. getTypes() method will return all the grouped types, and
      * getDimension() will return the dimensions of the current group,
      * and group name can be obtained from getGroupName()
-     *
      *
      * @param string    $typesGroup Format of multiple types i.e. oneOf(int,bool)[]
      *                              or onyOf(int[],bool,anyOf(string,float)[],...),
@@ -99,7 +124,7 @@ class TypeCombination
      *
      * @return TypeCombination
      */
-    public static function GenerateTypeCombination(
+    public static function generateTypeCombination(
         $typesGroup,
         $start = false,
         $end = false
@@ -126,31 +151,36 @@ class TypeCombination
                 $groupCount--;
             }
             if ($c == ',' && $groupCount == 0) {
-                self::insertType($types, $type);
+                self::_insertType($types, $type);
                 $type = '';
                 continue;
             }
             $type .= $c;
         }
-        self::insertType($types, $type);
+        self::_insertType($types, $type);
         return new self($groupName, $types, $dimension);
     }
 
     /**
+     * Insert the type in the types array which is passed by reference,
+     * Also check if type is not empty
+     *
      * @param $types array
      * @param $type  string
+     *
+     * @return void
      */
-    private static function insertType(&$types, $type)
+    private static function _insertType(&$types, $type)
     {
         $start = strpos($type, '(');
         if ($start !== false) {
             $end = strrpos($type, ')');
             if ($end !== false) {
-                $type = self::GenerateTypeCombination($type, $start, $end);
+                $type = self::generateTypeCombination($type, $start, $end);
             }
         }
         if (!empty($type)) {
-            array_push($types , $type);
+            array_push($types, $type);
         }
     }
 

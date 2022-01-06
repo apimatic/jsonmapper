@@ -349,19 +349,20 @@ class JsonMapper
      * Checks mappings for all types with mappedObject, provided by
      * mappedObjectCallback.
      *
-     * @param TypeCombination $types             TypesCombination object or string format
-     *                                           for grouped types
-     * @param mixed           $json              Json value to check for mappings of each
-     *                                           of the types.
-     * @param string[]|null   $factoryMethods    Callable factory method for the property
+     * @param TypeCombination $types             TypesCombination object or string
+     *                                           format for grouped types
+     * @param mixed           $json              Json value to check for mappings of
+     *                                           each of the types.
+     * @param string[]|null   $factoryMethods    Callable factory method for the
+     *                                           property
      * @param string|null     $className         Name of the class
      * @param string          $namespace         Namespace of the class
-     * @param callable        $mappedObjCallback Callback function to be called with each
-     *                                           type in provided types, this function
-     *                                           must return the mappedObject, for which
-     *                                           the mapping will be checked, and to
-     *                                           ignore any type, it can throw
-     *                                           JsonMapperException
+     * @param callable        $mappedObjCallback Callback function to be called with
+     *                                           each type in provided types, this
+     *                                           function must return the mapped
+     *                                           Object, for which the mapping will
+     *                                           be checked, and to ignore any type,
+     *                                           it can throw JsonMapperException
      *
      * @return false|mixed|null     Returns the final mapped object after checking
      *                              for oneOf and anyOf cases
@@ -470,8 +471,8 @@ class JsonMapper
      *
      * @param mixed                  $json           Raw normalized data for
      *                                               the property
-     * @param string|TypeCombination $types          TypesCombination object or string
-     *                                               format for grouped types
+     * @param string|TypeCombination $types          TypesCombination object or
+     *                                               string format for grouped types
      * @param string                 $namespace      Namespace of the class
      * @param string[]|null          $factoryMethods Callable factory methods for
      *                                               the property
@@ -488,7 +489,7 @@ class JsonMapper
         $className = null
     ) {
         if (is_string($types)) {
-            $types = TypeCombination::GenerateTypeCombination($types);
+            $types = TypeCombination::generateTypeCombination($types);
         }
         if ($types->getDimension() > 0) {
             if (!is_array($json) && !is_object($json)) {
@@ -534,7 +535,13 @@ class JsonMapper
                         true
                     );
                 }
-                return $this->mapFor($json, $type, $nspace, $factoryMethods, $className);
+                return $this->mapFor(
+                    $json,
+                    $type,
+                    $nspace,
+                    $factoryMethods,
+                    $className
+                );
             }
         );
     }
