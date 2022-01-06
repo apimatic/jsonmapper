@@ -1,13 +1,13 @@
 <?php
 namespace multitypetest;
-require_once __DIR__ . '/model/SimpleCaseA.php'; // have field value with AnyOf("int[]","float[]","bool")
-require_once __DIR__ . '/model/SimpleCaseB.php'; // have field value with OneOf("bool","int[]","array")
+require_once __DIR__ . '/model/SimpleCaseA.php'; // have field value with anyOf("int[]","float[]","bool")
+require_once __DIR__ . '/model/SimpleCaseB.php'; // have field value with oneOf("bool","int[]","array")
 require_once __DIR__ . '/model/ComplexCaseA.php';
-    // have field value with OneOf("DateTime[]",AnyOf("DateTime","string"),"ComplexCaseA")
-    // have field optional with OneOf("ComplexCaseA","ComplexCaseB","SimpleCaseA")
+    // have field value with oneOf("DateTime[]",anyOf("DateTime","string"),"ComplexCaseA")
+    // have field optional with oneOf("ComplexCaseA","ComplexCaseB","SimpleCaseA")
 require_once __DIR__ . '/model/ComplexCaseB.php';
-    // have field value with AnyOf("Evening[]","Morning[]","Employee","Person[]",OneOf("Vehicle","Car"))
-    // have field optional with AnyOf("ComplexCaseA","SimpleCaseB[]","array")
+    // have field value with anyOf("Evening[]","Morning[]","Employee","Person[]",oneOf("Vehicle","Car"))
+    // have field optional with anyOf("ComplexCaseA","SimpleCaseB[]","array")
 require_once __DIR__ . '/model/Person.php';
 require_once __DIR__ . '/model/Employee.php';
 require_once __DIR__ . '/model/Postman.php';
@@ -17,6 +17,7 @@ require_once __DIR__ . '/model/Vehicle.php';
 require_once __DIR__ . '/model/Car.php';
 require_once __DIR__ . '/model/Atom.php';
 require_once __DIR__ . '/model/Orbit.php';
+require_once __DIR__ . '/model/OuterArrayCase.php';
 
 use apimatic\jsonmapper\JsonMapper;
 use PHPUnit\Framework\TestCase;
@@ -95,16 +96,16 @@ class MultiTypeTest extends TestCase
     {
         $mapper = new JsonMapper();
         $json = '"some value"';
-        $res = $mapper->mapFor(json_decode($json), 'AnyOf("string[]","string")');
+        $res = $mapper->mapFor(json_decode($json), 'anyOf(string[],string)');
         $this->assertEquals('some value', $res);
 
         $json = '["some","value"]';
-        $res = $mapper->mapFor(json_decode($json), 'AnyOf("string[]","string")');
+        $res = $mapper->mapFor(json_decode($json), 'anyOf(string[],string)');
         $this->assertEquals('value', $res[1]);
 
         $json = '[false,"value"]';
         try {
-            $mapper->mapFor(json_decode($json), 'AnyOf("string[]","string")');
+            $mapper->mapFor(json_decode($json), 'anyOf(string[],string)');
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
@@ -115,27 +116,27 @@ class MultiTypeTest extends TestCase
     {
         $mapper = new JsonMapper();
         $json = '["some","value"]';
-        $res = $mapper->mapFor(json_decode($json), 'OneOf("null","array","bool")');
+        $res = $mapper->mapFor(json_decode($json), 'oneOf(null,array,bool)');
         $this->assertEquals('value', $res[1]);
 
         $json = '{"key":false}';
-        $res = $mapper->mapFor(json_decode($json), 'OneOf("null","array","bool")');
+        $res = $mapper->mapFor(json_decode($json), 'oneOf(null,array,bool)');
         $this->assertEquals('key', array_keys($res)[0]);
         $this->assertEquals(false, array_values($res)[0]);
 
         $json = 'false';
-        $res = $mapper->mapFor(json_decode($json), 'OneOf("null","array","bool")');
+        $res = $mapper->mapFor(json_decode($json), 'oneOf(null,array,bool)');
         $this->assertEquals(false, $res);
 
         $json = null;
         try {
-            $mapper->mapFor(json_decode($json), 'OneOf("array","bool")');
+            $mapper->mapFor(json_decode($json), 'oneOf(array,bool)');
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
 
-        $res = $mapper->mapFor(json_decode($json), 'OneOf("null","array","bool")');
+        $res = $mapper->mapFor(json_decode($json), 'oneOf(null,array,bool)');
         $this->assertEquals(null, $res);
     }
 
@@ -143,16 +144,16 @@ class MultiTypeTest extends TestCase
     {
         $mapper = new JsonMapper();
         $json = '{"passed":false}';
-        $res = $mapper->mapFor(json_decode($json), 'OneOf("mixed","int")');
+        $res = $mapper->mapFor(json_decode($json), 'oneOf(mixed,int)');
         $this->assertEquals(false, $res->passed);
 
         $json = '"passed string"';
-        $res = $mapper->mapFor(json_decode($json), 'OneOf("mixed","int")');
+        $res = $mapper->mapFor(json_decode($json), 'oneOf(mixed,int)');
         $this->assertEquals('passed string', $res);
 
         $json = '502';
         try {
-            $mapper->mapFor(json_decode($json), 'OneOf("mixed","int")');
+            $mapper->mapFor(json_decode($json), 'oneOf(mixed,int)');
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
@@ -165,7 +166,7 @@ class MultiTypeTest extends TestCase
         $json = '{"value":[1.2]}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'OneOf("string","SimpleCaseA")',
+            'oneOf(string,SimpleCaseA)',
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseA', $res);
@@ -173,7 +174,7 @@ class MultiTypeTest extends TestCase
         $json = '"{\"value\":[1.2]}"';
         $res = $mapper->mapFor(
             json_decode($json),
-            'OneOf("string","SimpleCaseA")',
+            'oneOf(string,SimpleCaseA)',
             'multitypetest\model'
         );
         $this->assertEquals('{"value":[1.2]}', $res);
@@ -185,7 +186,7 @@ class MultiTypeTest extends TestCase
         $json = '{"value":["aplha","beta","gamma"]}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'OneOf("SimpleCaseA","SimpleCaseB")',
+            'oneOf(SimpleCaseA,SimpleCaseB)',
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
@@ -198,7 +199,7 @@ class MultiTypeTest extends TestCase
         try {
             $mapper->mapFor(
                 json_decode($json),
-                'OneOf("SimpleCaseA","SimpleCaseB")',
+                'oneOf(SimpleCaseA,SimpleCaseB)',
                 'multitypetest\model'
             );
         } catch (\Exception $e) {
@@ -213,7 +214,7 @@ class MultiTypeTest extends TestCase
         $json = '{"value":[2.2,3.3]}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'AnyOf("SimpleCaseA","SimpleCaseB")',
+            'anyOf(SimpleCaseA,SimpleCaseB)',
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseA', $res);
@@ -221,7 +222,7 @@ class MultiTypeTest extends TestCase
         $json = '{"value":[2.2,3.3]}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'AnyOf("SimpleCaseB","SimpleCaseA")',
+            'anyOf(SimpleCaseB,SimpleCaseA)',
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
@@ -229,7 +230,7 @@ class MultiTypeTest extends TestCase
         $json = '{"value":["string1","string2"]}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'AnyOf("SimpleCaseA","SimpleCaseB")',
+            'anyOf(SimpleCaseA,SimpleCaseB)',
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
@@ -242,7 +243,7 @@ class MultiTypeTest extends TestCase
         try {
             $mapper->mapFor(
                 json_decode($json),
-                'AnyOf("SimpleCaseA","SimpleCaseB")',
+                'anyOf(SimpleCaseA,SimpleCaseB)',
                 'multitypetest\model'
             );
         } catch (\Exception $e) {
@@ -260,7 +261,7 @@ class MultiTypeTest extends TestCase
             // oneof map of int & Atom (having all int fields)
             $mapper->mapFor(
                 json_decode($json),
-                'OneOf("Atom","int[]")',
+                'oneOf(Atom,int[])',
                 'multitypetest\model'
             );
         } catch (\Exception $e) {
@@ -274,7 +275,7 @@ class MultiTypeTest extends TestCase
             // oneof arrayOfmap of int & array of Atom (having all int fields)
             $mapper->mapFor(
                 json_decode($json),
-                'OneOf("Atom[]","int[][]")',
+                'oneOf(Atom[],int[][])',
                 'multitypetest\model'
             );
         } catch (\Exception $e) {
@@ -284,7 +285,7 @@ class MultiTypeTest extends TestCase
 
         $res = $mapper->mapFor(
             json_decode($json),
-            'AnyOf("Atom[]","int[][]")',
+            'anyOf(Atom[],int[][])',
             'multitypetest\model'
         );
         $this->assertTrue(is_array($res));
@@ -299,14 +300,13 @@ class MultiTypeTest extends TestCase
             // oneof Orbit (did not have # of protons) & Atom (have # of protons optional)
             $res = $mapper->mapFor(
                 json_decode($json),
-                'OneOf("Atom","Orbit")',
+                'oneOf(Atom,Orbit)',
                 'multitypetest\model'
             );
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
         $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
-
     }
 
     public function testComplexCases()
@@ -349,7 +349,7 @@ class MultiTypeTest extends TestCase
             '"birthday":"1994-02-13","personType":"Per"}]}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'AnyOf("ComplexCaseA","ComplexCaseB")',
+            'anyOf(ComplexCaseA,ComplexCaseB)',
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\ComplexCaseB', $res);
@@ -361,7 +361,7 @@ class MultiTypeTest extends TestCase
             '"birthday":"1994-02-13","personType":"Empl"}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'AnyOf("Person","Employee")',
+            'anyOf(Person,Employee)',
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\Employee', $res);
@@ -369,7 +369,7 @@ class MultiTypeTest extends TestCase
         $json = '{"startsAt":"15:00","endsAt":"21:00","sessionType":"Evening"}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'OneOf("Evening","Morning")',
+            'oneOf(Evening,Morning)',
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\Evening', $res);
@@ -378,7 +378,7 @@ class MultiTypeTest extends TestCase
             '{"startsAt":"15:00","endsAt":"21:00","sessionType":"Evening"}]}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'AnyOf("ComplexCaseA","ComplexCaseB")',
+            'anyOf(ComplexCaseA,ComplexCaseB)',
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\ComplexCaseB', $res);
@@ -389,7 +389,7 @@ class MultiTypeTest extends TestCase
             '{"startsAt":"15:00","endsAt":"21:00","sessionType":"Morning"}]}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'AnyOf("ComplexCaseA","ComplexCaseB")',
+            'anyOf(ComplexCaseA,ComplexCaseB)',
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\ComplexCaseB', $res);
@@ -409,7 +409,7 @@ class MultiTypeTest extends TestCase
         try {
             $mapper->mapFor(
                 json_decode($json),
-                'OneOf("Employee","Person")',
+                'oneOf(Employee,Person)',
                 'multitypetest\model'
             );
         } catch (\Exception $e) {
@@ -422,7 +422,7 @@ class MultiTypeTest extends TestCase
         try {
             $mapper->mapFor(
                 json_decode($json),
-                'AnyOf("Postman","Employee")',
+                'anyOf(Postman,Employee)',
                 'multitypetest\model'
             );
         } catch (\Exception $e) {
@@ -434,12 +434,54 @@ class MultiTypeTest extends TestCase
         try {
             $res = $mapper->mapFor(
                 json_decode($json),
-                'OneOf("Morning","Evening","array")',
+                'oneOf(Morning,Evening,array)',
                 'multitypetest\model'
             );
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+    }
+
+    public function testOuterArrayCases()
+    {
+        $mapper = new JsonMapper();
+
+        $json = '{"value":[true,[1,2],"abc"]}';
+        $res = $mapper->mapClass(
+            json_decode($json),
+            '\multitypetest\model\OuterArrayCase'
+        );
+        $this->assertInstanceOf('\multitypetest\model\OuterArrayCase', $res);
+
+        $json = '[true,{"numberOfElectrons":4,"numberOfProtons":2},false]';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf(bool,Atom)[]',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertTrue($res[0] === true);
+        $this->assertInstanceOf('\multitypetest\model\Atom', $res[1]);
+        $this->assertTrue($res[2] === false);
+
+        $json = '{"key0":["alpha",true],"key1":["beta",[12,{"numberOfElectrons":4}],[1,3]]' .
+            ',"key2":[false,true]}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'anyOf(bool,oneOf(int,Atom)[],string)[][]',
+            'multitypetest\model'
+        );
+        var_dump($res);
+        $this->assertTrue(is_object($res));
+        $this->assertTrue(is_array($res->{'key0'}));
+        $this->assertTrue($res->{'key0'}[0] === 'alpha');
+        $this->assertTrue(is_array($res->{'key1'}));
+        $this->assertTrue($res->{'key1'}[0] === 'beta');
+        $this->assertTrue(is_array($res->{'key1'}[1]));
+        $this->assertTrue($res->{'key1'}[1][0] === 12);
+        $this->assertInstanceOf('\multitypetest\model\Atom', $res->{'key1'}[1][1]);
+        $this->assertTrue(is_array($res->{'key2'}));
+        $this->assertTrue($res->{'key2'}[0] === false);
     }
 }

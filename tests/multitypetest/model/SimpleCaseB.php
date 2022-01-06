@@ -36,7 +36,7 @@ class SimpleCaseB implements \JsonSerializable
      *
      * @param bool|int[]|array $value
      * @required
-     * @maps value OneOf("bool","int[]","array")
+     * @maps value oneOf(bool,int[],array)
      */
     public function setValue($value)
     {

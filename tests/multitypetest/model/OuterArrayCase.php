@@ -5,17 +5,17 @@ namespace multitypetest\model;
 use stdClass;
 
 /**
- * This class contains simple case of oneOf.
+ * This class contains inner array case of oneOf.
  */
-class SimpleCaseA implements \JsonSerializable
+class OuterArrayCase implements \JsonSerializable
 {
     /**
-     * @var int[]|float[]|bool
+     * @var bool[]|int[][]|array
      */
     private $value;
 
     /**
-     * @param int[]|float[]|bool $value
+     * @param bool[]|int[][]|array $value
      */
     public function __construct($value)
     {
@@ -24,8 +24,7 @@ class SimpleCaseA implements \JsonSerializable
 
     /**
      * Returns Value.
-     *
-     * @return int[]|float[]|bool
+     * @return bool[]|int[][]|array
      */
     public function getValue()
     {
@@ -35,9 +34,9 @@ class SimpleCaseA implements \JsonSerializable
     /**
      * Sets Value.
      *
-     * @param int[]|float[]|bool $value
+     * @param bool[]|int[][]|array $value
      * @required
-     * @maps value anyOf(int[],float[],bool)
+     * @maps value anyOf(bool,int[],oneOf(int,string))[]
      */
     public function setValue($value)
     {
@@ -50,7 +49,7 @@ class SimpleCaseA implements \JsonSerializable
      * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
      *        are set. (default: false)
      *
-     * @return array|stdClass
+     * @return mixed
      */
     public function jsonSerialize($asArrayWhenEmpty = false)
     {
