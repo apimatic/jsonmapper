@@ -346,132 +346,11 @@ class JsonMapper
     }
 
     /**
-     * Checks mappings for all types with mappedObject, provided by
-     * mappedObjectCallback.
-     *
-     * @param TypeCombination $types             TypesCombination object or string
-     *                                           format for grouped types
-     * @param mixed           $json              Json value to check for mappings of
-     *                                           each of the types.
-     * @param string[]|null   $factoryMethods    Callable factory method for the
-     *                                           property
-     * @param string|null     $className         Name of the class
-     * @param string          $namespace         Namespace of the class
-     * @param callable        $mappedObjCallback Callback function to be called with
-     *                                           each type in provided types, this
-     *                                           function must return the mapped
-     *                                           Object, for which the mapping will
-     *                                           be checked, and to ignore any type,
-     *                                           it can throw JsonMapperException
-     *
-     * @return false|mixed|null     Returns the final mapped object after checking
-     *                              for oneOf and anyOf cases
-     * @throws JsonMapperException|ReflectionException
-     */
-    private function _checkMappingsFor(
-        $types,
-        $json,
-        $factoryMethods,
-        $className,
-        $namespace,
-        $mappedObjCallback
-    ) {
-        $mappedObject = null;
-        $mappedWith = '';
-        // check json value for each type in types array
-        foreach ($types->getTypes() as $type) {
-            try {
-                if (is_string($type)) {
-                    list($m, $meth) = $this->_isValueOfType(
-                        $json,
-                        $type,
-                        $factoryMethods,
-                        $namespace,
-                        $className
-                    );
-                    if (!$m) {
-                        // skip this type as it can't be mapped on the given value.
-                        continue;
-                    }
-                    $factoryMethods = isset($meth) ? [$meth] : null;
-                }
-                $mappedObject = call_user_func(
-                    $mappedObjCallback,
-                    $type,
-                    $json,
-                    $factoryMethods,
-                    $namespace,
-                    $className
-                );
-            } catch (Exception $e) {
-                if (strpos(
-                    $e->getMessage(),
-                    'Cannot map more then OneOf'
-                ) != false
-                ) {
-                    // throw exception if mapped by more than one types
-                    throw $e;
-                }
-                continue; // ignore the type if it can't be mapped for given value
-            }
-            $matchedType = $type;
-            if ($types->getGroupName() == 'oneOf' && $mappedWith) {
-                // if its oneOf and we have a value that is already mapped,
-                // then throw jsonMapperException
-                throw new JsonMapperException(
-                    'Cannot map more then OneOf { ' .
-                    $this->_flattenJoin($matchedType) . ' and ' .
-                    $this->_flattenJoin($mappedWith) . ' } on: ' . json_encode($json)
-                );
-            }
-            $mappedWith = $matchedType;
-            if ($types->getGroupName() == 'anyOf') {
-                break; // break if its anyOf, and we already have mapped its value
-            }
-        }
-        if (!$mappedWith) {
-            throw new JsonMapperException(
-                'Unable to map AnyOf ' . $this->_flattenJoin($types) .
-                ' on: ' . json_encode($json)
-            );
-        }
-        return $mappedObject;
-    }
-
-    /**
-     * Returns joined types in $subject array and its nested arrays with ','.
-     *
-     * @param TypeCombination|string $subject Array of types or a single type.
-     *
-     * @return string
-     */
-    private function _flattenJoin($subject)
-    {
-        if (is_string($subject)) {
-            return $subject;
-        }
-        $flatten = [];
-        array_map(
-            function ($a) use (&$flatten) {
-                $flatten[] = $this->_flattenJoin($a);
-            },
-            $subject->getTypes()
-        );
-        $dimension = $subject->getDimension();
-        $dimensionString = '';
-        while ($dimension > 0) {
-            $dimensionString .= '[]';
-            $dimension--;
-        }
-        return '(' . join(', ', $flatten) . ')' . $dimensionString;
-    }
-
-    /**
      * Map the data in $json into the specified $types.
      *
      * @param mixed                  $json           Raw normalized data for
      *                                               the property
-     * @param string|TypeCombination $types          TypesCombination object or
+     * @param string|TypeCombination $typeGroup      TypesCombination object or
      *                                               string format for grouped types
      * @param string                 $namespace      Namespace of the class
      * @param string[]|null          $factoryMethods Callable factory methods for
@@ -483,27 +362,33 @@ class JsonMapper
      */
     public function mapFor(
         $json,
-        $types,
+        $typeGroup,
         $namespace = '',
         $factoryMethods = null,
         $className = null
     ) {
-        if (is_string($types)) {
-            $types = TypeCombination::generateTypeCombination($types);
+        if (is_string($typeGroup)) {
+            // convert into TypeCombination object
+            $typeGroup = TypeCombination::generateTypeCombination($typeGroup);
         }
-        if ($types->getDimension() > 0) {
+        if ($typeGroup->getDimension() > 0) {
+            // if it's a multidimensional type group
             if (!is_array($json) && !is_object($json)) {
+                // throwing exception if json is not multidimensional
+                // i.e. neither array nor object/map
                 throw new JsonMapperException(
-                    'Unable to map ' . $this->_flattenJoin($types) .
+                    'Unable to map Array: ' .
+                    TypeCombination::generateTypeString($typeGroup) .
                     ' on: ' . json_encode($json)
                 );
             }
             $mappedObject = is_array($json) ? [] : new \stdClass();
-            $types->decreaseDimension();
+            // decreasing typeGroup dimension by 1 to check for inner values
+            $typeGroup->decreaseDimension();
             foreach ($json as $key => $value) {
                 $mapped = $this->mapFor(
                     $value,
-                    $types,
+                    $typeGroup,
                     $namespace,
                     $factoryMethods,
                     $className
@@ -514,11 +399,13 @@ class JsonMapper
                     $mappedObject->{$key} = $mapped;
                 }
             }
-            $types->increaseDimension();
+            // reseting typeGroup dimension to check for other values
+            // at the same dimension level
+            $typeGroup->increaseDimension();
             return $mappedObject;
         }
         return $this->_checkMappingsFor(
-            $types,
+            $typeGroup,
             $json,
             $factoryMethods,
             $className,
@@ -544,6 +431,101 @@ class JsonMapper
                 );
             }
         );
+    }
+
+    /**
+     * Checks mappings for all types with mappedObject, provided by
+     * mappedObjectCallback.
+     *
+     * @param TypeCombination $type              TypesCombination object or string
+     *                                           format for grouped types
+     * @param mixed           $json              Json value to check for mappings of
+     *                                           each of the types.
+     * @param string[]|null   $factoryMethods    Callable factory method for the
+     *                                           property
+     * @param string|null     $className         Name of the class
+     * @param string          $namespace         Namespace of the class
+     * @param callable        $mappedObjCallback Callback function to be called with
+     *                                           each type in provided types, this
+     *                                           function must return the mapped
+     *                                           Object, for which the mapping will
+     *                                           be checked, and to ignore any type,
+     *                                           it can throw JsonMapperException
+     *
+     * @return false|mixed|null     Returns the final mapped object after checking
+     *                              for oneOf and anyOf cases
+     * @throws JsonMapperException|ReflectionException
+     */
+    private function _checkMappingsFor(
+        $type,
+        $json,
+        $factoryMethods,
+        $className,
+        $namespace,
+        $mappedObjCallback
+    ) {
+        $mappedObject = null;
+        $mappedWith = '';
+        // check json value for each type in types array
+        foreach ($type->getTypes() as $typ) {
+            try {
+                if (is_string($typ)) {
+                    list($m, $meth) = $this->_isValueOfType(
+                        $json,
+                        $typ,
+                        $factoryMethods,
+                        $namespace,
+                        $className
+                    );
+                    if (!$m) {
+                        // skip this type as it can't be mapped on the given value.
+                        continue;
+                    }
+                    $factoryMethods = isset($meth) ? [$meth] : null;
+                }
+                $mappedObject = call_user_func(
+                    $mappedObjCallback,
+                    $typ,
+                    $json,
+                    $factoryMethods,
+                    $namespace,
+                    $className
+                );
+            } catch (Exception $e) {
+                if (strpos(
+                    $e->getMessage(),
+                    'Cannot map more then OneOf'
+                ) != false
+                ) {
+                    // throw exception if mapped by more than one types
+                    throw $e;
+                }
+                continue; // ignore the type if it can't be mapped for given value
+            }
+            $matchedType = $typ;
+            if ($type->getGroupName() == 'oneOf' && $mappedWith) {
+                // if its oneOf and we have a value that is already mapped,
+                // then throw jsonMapperException
+                throw new JsonMapperException(
+                    'Cannot map more then OneOf { ' .
+                    TypeCombination::generateTypeString($matchedType) . ' and ' .
+                    TypeCombination::generateTypeString($mappedWith) . ' } on: ' .
+                    json_encode($json)
+                );
+            }
+            $mappedWith = $matchedType;
+            if ($type->getGroupName() == 'anyOf') {
+                break; // break if its anyOf, and we already have mapped its value
+            }
+        }
+        if (!$mappedWith) {
+            throw new JsonMapperException(
+                'Unable to map AnyOf ' .
+                TypeCombination::generateTypeString($type) .
+                ' on: ' . json_encode($json)
+            );
+        }
+        return $mappedObject;
     }
 
     /**

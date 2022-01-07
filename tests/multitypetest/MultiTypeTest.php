@@ -465,8 +465,8 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res[1]);
         $this->assertTrue($res[2] === false);
 
-        $json = '{"key0":["alpha",true],"key1":["beta",[12,{"numberOfElectrons":4}],[1,3]]' .
-            ',"key2":[false,true]}';
+        $json = '{"key0":["alpha",true],"key2":[false,true]' .
+            ',"key1":["beta",[12,{"numberOfElectrons":4}],[1,3]]}';
         $res = $mapper->mapFor(
             json_decode($json),
             'anyOf(bool,oneOf(int,Atom)[],string)[][]',
@@ -482,5 +482,47 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res->{'key1'}[1][1]);
         $this->assertTrue(is_array($res->{'key2'}));
         $this->assertTrue($res->{'key2'}[0] === false);
+    }
+
+    public function testOuterArrayCaseFail()
+    {
+        $mapper = new JsonMapper();
+        $json = '{"key0":["alpha",true],"key2":[false,true],"key3":[1.1,3.3]]' .
+            ',"key1":["beta",[12,{"numberOfElectrons":4}],[1,3]}';
+        try {
+            $res = $mapper->mapFor(
+                json_decode($json),
+                'anyOf(float[],anyOf(bool,oneOf(int,Atom)[],string)[][])',
+                'multitypetest\model'
+            );
+        } catch (\Exception $e) {
+            $res = $e->getMessage();
+        }
+        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+
+        $json = '{"key":{"element":{"atom":1,"orbits":9},"compound":[4,8]}}';
+        try {
+            $res = $mapper->mapFor(
+                json_decode($json),
+                'oneOf(int[][][],anyOf(bool,oneOf(int,Atom)[],string)[][])',
+                'multitypetest\model'
+            );
+        } catch (\Exception $e) {
+            $res = $e->getMessage();
+        }
+        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+
+        $json = '{"key0":["beta",[12,{"numberOfElectrons":4}],[1,3]],"key1":"alpha"' .
+            ',"key2":[false,true]}';
+        try {
+            $res = $mapper->mapFor(
+                json_decode($json),
+                'anyOf(bool,oneOf(int,Atom)[],string)[][]',
+                'multitypetest\model'
+            );
+        } catch (\Exception $e) {
+            $res = $e->getMessage();
+        }
+        $this->assertTrue(strpos($res, 'Unable to map Array:') === 0);
     }
 }

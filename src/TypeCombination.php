@@ -31,7 +31,7 @@ class TypeCombination
     private $_groupName;
 
     /**
-     * Array of types or other type combination
+     * Array of string types or TypeCombination objects
      *
      * @var array
      */
@@ -69,7 +69,7 @@ class TypeCombination
     }
 
     /**
-     * Array of types or other type combination
+     * Array of string types or TypeCombination objects
      *
      * @return array
      */
@@ -109,41 +109,69 @@ class TypeCombination
     }
 
     /**
-     * Wrap the given typesGroup string in the TypeCombination class,
+     * Converts the given typeCombination into its string format.
+     *
+     * @param TypeCombination|string $typeCombination Combined types/Single type.
+     *
+     * @return string
+     */
+    public static function generateTypeString($typeCombination)
+    {
+        if (is_string($typeCombination)) {
+            return $typeCombination;
+        }
+        $flatten = [];
+        array_map(
+            function ($a) use (&$flatten) {
+                $flatten[] = self::generateTypeString($a);
+            },
+            $typeCombination->getTypes()
+        );
+        $dimension = $typeCombination->getDimension();
+        $dimensionString = '';
+        while ($dimension > 0) {
+            $dimensionString .= '[]';
+            $dimension--;
+        }
+        return '(' . join(',', $flatten) . ')' . $dimensionString;
+    }
+
+    /**
+     * Wrap the given typeGroup string in the TypeCombination class,
      * i.e. getTypes() method will return all the grouped types, and
      * getDimension() will return the dimensions of the current group,
      * and group name can be obtained from getGroupName()
      *
-     * @param string    $typesGroup Format of multiple types i.e. oneOf(int,bool)[]
-     *                              or onyOf(int[],bool,anyOf(string,float)[],...),
-     *                              here [] represents dimensions of each type, and
-     *                              oneOf/anyOf and group names, while default group
-     *                              name is anyOf.
-     * @param int|false $start      Starting index of types in group, default: false.
-     * @param int|false $end        Ending index of types in group, default: false.
+     * @param string    $typeGroup Format of multiple types i.e. oneOf(int,bool)[]
+     *                             or onyOf(int[],bool,anyOf(string,float)[],...),
+     *                             here [] represents dimensions of each type, and
+     *                             oneOf/anyOf and group names, while default group
+     *                             name is anyOf.
+     * @param int|false $start     Starting index of types in group, default: false.
+     * @param int|false $end       Ending index of types in group, default: false.
      *
      * @return TypeCombination
      */
     public static function generateTypeCombination(
-        $typesGroup,
+        $typeGroup,
         $start = false,
         $end = false
     ) {
         $groupName = 'anyOf';
         $dimension = 0;
 
-        $start = $start == false ? strpos($typesGroup, '(') : $start;
-        $end = $end == false ? strrpos($typesGroup, ')') : $end;
+        $start = $start == false ? strpos($typeGroup, '(') : $start;
+        $end = $end == false ? strrpos($typeGroup, ')') : $end;
         if ($start !== false && $end !== false) {
-            $name = substr($typesGroup, 0, $start);
+            $name = substr($typeGroup, 0, $start);
             $groupName = empty($name) ? $groupName : $name;
-            $dimension = substr_count($typesGroup, '[]', $end);
-            $typesGroup = substr($typesGroup, $start + 1, -2 * $dimension - 1);
+            $dimension = substr_count($typeGroup, '[]', $end);
+            $typeGroup = substr($typeGroup, $start + 1, -2 * $dimension - 1);
         }
         $types = [];
         $type = '';
         $groupCount = 0;
-        foreach (str_split($typesGroup) as $c) {
+        foreach (str_split($typeGroup) as $c) {
             if ($c == '(') {
                 $groupCount++;
             }
