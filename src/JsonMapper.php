@@ -382,22 +382,17 @@ class JsonMapper
                     ' on: ' . json_encode($json)
                 );
             }
-            $mappedObject = is_array($json) ? [] : new \stdClass();
+            $mappedObject = [];
             // decreasing typeGroup dimension by 1 to check for inner values
             $typeGroup->decreaseDimension();
             foreach ($json as $key => $value) {
-                $mapped = $this->mapFor(
+                $mappedObject[$key] = $this->mapFor(
                     $value,
                     $typeGroup,
                     $namespace,
                     $factoryMethods,
                     $className
                 );
-                if (is_array($json)) {
-                    array_push($mappedObject, $mapped);
-                } else {
-                    $mappedObject->{$key} = $mapped;
-                }
             }
             // reseting typeGroup dimension to check for other values
             // at the same dimension level

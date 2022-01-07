@@ -472,16 +472,16 @@ class MultiTypeTest extends TestCase
             'anyOf(bool,oneOf(int,Atom)[],string)[][]',
             'multitypetest\model'
         );
-        $this->assertTrue(is_object($res));
-        $this->assertTrue(is_array($res->{'key0'}));
-        $this->assertTrue($res->{'key0'}[0] === 'alpha');
-        $this->assertTrue(is_array($res->{'key1'}));
-        $this->assertTrue($res->{'key1'}[0] === 'beta');
-        $this->assertTrue(is_array($res->{'key1'}[1]));
-        $this->assertTrue($res->{'key1'}[1][0] === 12);
-        $this->assertInstanceOf('\multitypetest\model\Atom', $res->{'key1'}[1][1]);
-        $this->assertTrue(is_array($res->{'key2'}));
-        $this->assertTrue($res->{'key2'}[0] === false);
+        $this->assertTrue(is_array($res));
+        $this->assertTrue(is_array($res['key0']));
+        $this->assertTrue($res['key0'][0] === 'alpha');
+        $this->assertTrue(is_array($res['key1']));
+        $this->assertTrue($res['key1'][0] === 'beta');
+        $this->assertTrue(is_array($res['key1'][1]));
+        $this->assertTrue($res['key1'][1][0] === 12);
+        $this->assertInstanceOf('\multitypetest\model\Atom', $res['key1'][1][1]);
+        $this->assertTrue(is_array($res['key2']));
+        $this->assertTrue($res['key2'][0] === false);
     }
 
     public function testOuterArrayCaseFail()
