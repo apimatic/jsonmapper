@@ -443,6 +443,59 @@ class MultiTypeTest extends TestCase
        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
     }
 
+    public function testMultiDimensionalArray()
+    {
+        $mapper = new JsonMapper();
+
+        $json = '{"value":[true,false]}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf(bool[][],int[][])',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertTrue(is_array($res['value']));
+        $this->assertTrue(is_bool($res['value'][0]));
+
+        $json = '{"value":[{"numberOfElectrons":4},{"numberOfElectrons":9}]}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf(Atom[][],Car[][])',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertTrue(is_array($res['value']));
+        $this->assertInstanceOf('\multitypetest\model\Atom', $res['value'][0]);
+
+        $json = '{"value":[{"numberOfElectrons":4},{"haveTrunk":false,"numberOfTyres":6}]}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf(Atom,Car)[][]',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertTrue(is_array($res['value']));
+        $this->assertInstanceOf('\multitypetest\model\Atom', $res['value'][0]);
+        $this->assertInstanceOf('\multitypetest\model\Car', $res['value'][1]);
+
+        $json = '{"value":[[[{"numberOfElectrons":4}]],[[true,true],[false,true]]]}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf(Atom[][],bool[][])[][]',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertTrue(is_array($res['value']));
+        $this->assertTrue(is_array($res['value'][0]));
+        $this->assertTrue(is_array($res['value'][0][0]));
+        $this->assertInstanceOf('\multitypetest\model\Atom', $res['value'][0][0][0]);
+        $this->assertTrue(is_array($res['value'][1]));
+        $this->assertTrue(is_array($res['value'][1][0]));
+        $this->assertTrue(is_bool($res['value'][1][0][0]));
+        $this->assertTrue(is_array($res['value'][1][1]));
+        $this->assertTrue(is_bool($res['value'][1][1][0]));
+    }
+
     public function testOuterArrayCases()
     {
         $mapper = new JsonMapper();

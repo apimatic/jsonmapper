@@ -286,17 +286,15 @@ class JsonMapper
         } else if ($this->isSimpleType($type)) {
             settype($jvalue, $type);
             return $jvalue;
-        } else if (substr($type, -4) == '[][]') {
-            settype($jvalue, 'array');
-            return $jvalue;
         }
 
         $array = null;
         $subtype = null;
-        if (substr($type, -2) == '[]') {
-            //array
+        $dimension = substr_count($type, '[]');
+        if ($dimension > 0) {
+            // array with some dimensions
             $array = array();
-            $subtype = substr($type, 0, -2);
+            $subtype = substr($type, 0, -2 * $dimension);
         } else if (substr($type, -1) == ']') {
             list($proptype, $subtype) = explode('[', substr($type, 0, -1));
             if (!$this->isSimpleType($proptype)) {
@@ -319,12 +317,18 @@ class JsonMapper
                 $this->getFullNamespace($subtype, $namespace)
             )
             ) {
-                $child = $this->mapClassArray($jvalue, $subtype, $forMultipleTypes);
+                $child = $this->mapClassArray(
+                    $jvalue,
+                    $subtype,
+                    $dimension,
+                    $forMultipleTypes
+                );
             } else {
                 $child = $this->mapArray(
                     $jvalue,
                     $array,
                     $subtype,
+                    $dimension,
                     $forMultipleTypes
                 );
             }
@@ -833,7 +837,7 @@ class JsonMapper
     /**
      * Map an array
      *
-     * @param array         $json             JSON array structure from json_decode()
+     * @param array         $jsonArray        JSON array structure from json_decode()
      * @param mixed         $array            Array or ArrayObject that gets filled
      *                                        with data from $json.
      * @param string|object $class            Class name for children objects.
@@ -841,18 +845,33 @@ class JsonMapper
      *                                        onto this type. Supports class
      *                                        names and simple types like
      *                                        "string".
+     * @param int           $dimension        Dimension of array to map, i.e. 2 for
+     *                                        2D array, Default: 1
      * @param bool          $forMultipleTypes Should map for multiple types?
      *                                        Default: false
      *
      * @return mixed Mapped $array is returned
      */
-    public function mapArray($json, $array, $class = null, $forMultipleTypes = false)
-    {
-        foreach ($json as $key => $jvalue) {
+    public function mapArray(
+        $jsonArray,
+        $array,
+        $class = null,
+        $dimension = 1,
+        $forMultipleTypes = false
+    ) {
+        foreach ($jsonArray as $key => $jvalue) {
             if ($class === null) {
                 $array[$key] = $jvalue;
+            } else if ($dimension > 1) {
+                $array[$key] = $this->mapArray(
+                    $jvalue,
+                    array(),
+                    $class,
+                    $dimension - 1,
+                    $forMultipleTypes
+                );
             } else if ($this->isFlatType(gettype($jvalue))) {
-                //use constructor parameter if we have a class
+                // use constructor parameter if we have a class
                 // but only a flat type (i.e. string, int)
                 if ($jvalue === null) {
                     $array[$key] = null;
@@ -879,16 +898,18 @@ class JsonMapper
     /**
      * Map an array
      *
-     * @param array|null $jsonArray        JSON array structure from json_decode()
-     * @param string     $type             Class name
-     * @param bool       $forMultipleTypes True if looking to map for multiple types,
-     *                                     Default: false
+     * @param array|null $jsonArray JSON array structure from json_decode()
+     * @param string     $type      Class name
+     * @param int        $dimension Dimension of array to map, i.e. 2 for 2D array,
+     *                              Default: 1
+     * @param bool       $mTypes    True if looking to map for multiple types,
+     *                              Default: false
      *
      * @return array|null           A new array containing object of $type
      *                              which is mapped from $jsonArray
      * @throws ReflectionException|JsonMapperException
      */
-    public function mapClassArray($jsonArray, $type, $forMultipleTypes = false)
+    public function mapClassArray($jsonArray, $type, $dimension = 1, $mTypes = false)
     {
         if ($jsonArray === null) {
             return null;
@@ -896,7 +917,16 @@ class JsonMapper
 
         $array = array();
         foreach ($jsonArray as $key => $jvalue) {
-            $array[$key] = $this->mapClass($jvalue, $type, $forMultipleTypes);
+            if ($dimension > 1) {
+                $array[$key] = $this->mapClassArray(
+                    $jvalue,
+                    $type,
+                    $dimension - 1,
+                    $mTypes
+                );
+            } else {
+                $array[$key] = $this->mapClass($jvalue, $type, $mTypes);
+            }
         }
 
         return $array;
