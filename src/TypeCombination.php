@@ -45,17 +45,27 @@ class TypeCombination
     private $_dimension;
 
     /**
+     * A list of factory methods to deserialize the given object,
+     * for one of the wrapped types in this group
+     *
+     * @var string[]
+     */
+    private $_deserializers;
+
+    /**
      * Private constructor for TypeCombination class
      *
-     * @param string $groupName group name value
-     * @param array  $types     types value
-     * @param int    $dimension dimension value
+     * @param string   $groupName     group name value
+     * @param array    $types         types value
+     * @param int      $dimension     dimension value
+     * @param string[] $deserializers deserializers value
      */
-    private function __construct($groupName, $types, $dimension)
+    private function __construct($groupName, $types, $dimension, $deserializers)
     {
         $this->_groupName = $groupName;
         $this->_types = $types;
         $this->_dimension = $dimension;
+        $this->_deserializers = $deserializers;
     }
 
     /**
@@ -76,6 +86,17 @@ class TypeCombination
     public function getTypes()
     {
         return $this->_types;
+    }
+
+    /**
+     * A list of factory methods to deserialize the given object,
+     * for one of the wrapped types in this group
+     *
+     * @return string[]
+     */
+    public function getDeserializers()
+    {
+        return $this->_deserializers;
     }
 
     /**
@@ -140,20 +161,23 @@ class TypeCombination
      * Wrap the given typeGroup string in the TypeCombination class,
      * i.e. getTypes() method will return all the grouped types, and
      * getDimension() will return the dimensions of the current group,
-     * and group name can be obtained from getGroupName()
+     * while deserializing factory methods can be obtained by
+     * getDeserializers() and group name can be obtained from getGroupName()
      *
-     * @param string    $typeGroup Format of multiple types i.e. oneOf(int,bool)[]
-     *                             or onyOf(int[],bool,anyOf(string,float)[],...),
-     *                             here [] represents dimensions of each type, and
-     *                             oneOf/anyOf and group names, while default group
-     *                             name is anyOf.
-     * @param int|false $start     Starting index of types in group, default: false.
-     * @param int|false $end       Ending index of types in group, default: false.
+     * @param string    $typeGroup    Format of multiple types i.e. oneOf(int,bool)[]
+     *                                or onyOf(int[],bool,anyOf(string,float)[],...),
+     *                                here [] represents dimensions of each type, and
+     *                                oneOf/anyOf are group names, while default
+     *                                group name is anyOf.
+     * @param string[]  $deserializer Callable factory methods for the property
+     * @param int|false $start        Start index of types in group, default: false.
+     * @param int|false $end          Ending index of types in group, default: false.
      *
      * @return TypeCombination
      */
     public static function generateTypeCombination(
         $typeGroup,
+        $deserializer,
         $start = false,
         $end = false
     ) {
@@ -179,32 +203,38 @@ class TypeCombination
                 $groupCount--;
             }
             if ($c == ',' && $groupCount == 0) {
-                self::_insertType($types, $type);
+                self::_insertType($types, $type, $deserializer);
                 $type = '';
                 continue;
             }
             $type .= $c;
         }
-        self::_insertType($types, $type);
-        return new self($groupName, $types, $dimension);
+        self::_insertType($types, $type, $deserializer);
+        return new self($groupName, $types, $dimension, $deserializer);
     }
 
     /**
      * Insert the type in the types array which is passed by reference,
      * Also check if type is not empty
      *
-     * @param $types array
-     * @param $type  string
+     * @param array    $types         types array reference
+     * @param string   $type          type to be inserted
+     * @param string[] $deserializers deserializer for the type group
      *
      * @return void
      */
-    private static function _insertType(&$types, $type)
+    private static function _insertType(&$types, $type, $deserializers)
     {
         $start = strpos($type, '(');
         if ($start !== false) {
             $end = strrpos($type, ')');
             if ($end !== false) {
-                $type = self::generateTypeCombination($type, $start, $end);
+                $type = self::generateTypeCombination(
+                    $type,
+                    $deserializers,
+                    $start,
+                    $end
+                );
             }
         }
         if (!empty($type)) {

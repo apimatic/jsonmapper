@@ -373,7 +373,11 @@ class JsonMapper
     ) {
         if (is_string($typeGroup)) {
             // convert into TypeCombination object
-            $typeGroup = TypeCombination::generateTypeCombination($typeGroup);
+            $deserializers = isset($factoryMethods) ? $factoryMethods : [];
+            $typeGroup = TypeCombination::generateTypeCombination(
+                $typeGroup,
+                $deserializers
+            );
         }
         if ($typeGroup->getDimension() > 0) {
             // if it's a multidimensional type group
@@ -394,7 +398,7 @@ class JsonMapper
                     $value,
                     $typeGroup,
                     $namespace,
-                    $factoryMethods,
+                    null,
                     $className
                 );
             }
@@ -406,7 +410,6 @@ class JsonMapper
         return $this->_checkMappingsFor(
             $typeGroup,
             $json,
-            $factoryMethods,
             $className,
             $namespace,
             function ($type, $json, $factoryMethods, $nspace, $className) {
@@ -425,7 +428,7 @@ class JsonMapper
                     $json,
                     $type,
                     $nspace,
-                    $factoryMethods,
+                    null,
                     $className
                 );
             }
@@ -440,8 +443,6 @@ class JsonMapper
      *                                           format for grouped types
      * @param mixed           $json              Json value to check for mappings of
      *                                           each of the types.
-     * @param string[]|null   $factoryMethods    Callable factory method for the
-     *                                           property
      * @param string|null     $className         Name of the class
      * @param string          $namespace         Namespace of the class
      * @param callable        $mappedObjCallback Callback function to be called with
@@ -458,13 +459,14 @@ class JsonMapper
     private function _checkMappingsFor(
         $type,
         $json,
-        $factoryMethods,
         $className,
         $namespace,
         $mappedObjCallback
     ) {
         $mappedObject = null;
         $mappedWith = '';
+        $allDeserializers = $type->getDeserializers();
+        $selectedDeserializer = null;
         // check json value for each type in types array
         foreach ($type->getTypes() as $typ) {
             try {
@@ -472,7 +474,7 @@ class JsonMapper
                     list($m, $meth) = $this->_isValueOfType(
                         $json,
                         $typ,
-                        $factoryMethods,
+                        $allDeserializers,
                         $namespace,
                         $className
                     );
@@ -480,13 +482,13 @@ class JsonMapper
                         // skip this type as it can't be mapped on the given value.
                         continue;
                     }
-                    $factoryMethods = isset($meth) ? [$meth] : null;
+                    $selectedDeserializer = isset($meth) ? [$meth] : null;
                 }
                 $mappedObject = call_user_func(
                     $mappedObjCallback,
                     $typ,
                     $json,
-                    $factoryMethods,
+                    $selectedDeserializer,
                     $namespace,
                     $className
                 );
