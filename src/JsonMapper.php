@@ -606,10 +606,11 @@ class JsonMapper
         ) {
             $matched = true;
             $rc = new ReflectionClass($this->getFullNamespace($type, $namespace));
-            if ($this->getDiscriminator($rc)) {
-                // if there is a discriminator?
-                if (!$this->getDiscriminatorMatch($value, $rc)) {
-                    // check if discriminator didn't match
+            $discriminator = $this->getDiscriminator($rc);
+            if ($discriminator) {
+                list($key, $val) = $discriminator;
+                if (!isset($value->{$key}) || $value->{$key} !== $val) {
+                    // check if discriminator didn't match in its key, or value
                     $matched = false;
                 }
             } // keep ($matched: true) if there is no discriminator

@@ -343,8 +343,8 @@ class MultiTypeTest extends TestCase
             'multitypetest\model\Employee',
         ];
         $json = '{"value":[{"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321",' .
-            '"birthday":"1994-02-13","personType":"Post"},{"name":"Shahid Khaliq","age":5147483645,' .
-            '"address":"H # 531, S # 20","uid":"123321","birthday":"1994-02-13","personType":"Empl"},' .
+            '"birthday":"1994-02-13","personType":"Per"},{"name":"Shahid Khaliq","age":5147483645,' .
+            '"address":"H # 531, S # 20","uid":"123321","birthday":"1994-02-13","personType":"Per"},' .
             '{"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321",' .
             '"birthday":"1994-02-13","personType":"Per"}]}';
         $res = $mapper->mapFor(
@@ -353,9 +353,18 @@ class MultiTypeTest extends TestCase
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\ComplexCaseB', $res);
-        $this->assertInstanceOf('\multitypetest\model\Postman', $res->getValue()[0]);
-        $this->assertInstanceOf('\multitypetest\model\Employee', $res->getValue()[1]);
+        $this->assertInstanceOf('\multitypetest\model\Person', $res->getValue()[0]);
+        $this->assertInstanceOf('\multitypetest\model\Person', $res->getValue()[1]);
         $this->assertInstanceOf('\multitypetest\model\Person', $res->getValue()[2]);
+
+        $json = '{"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321",' .
+            '"birthday":"1994-02-13","personType":"Empl"}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf(Employee,Person)',
+            'multitypetest\model'
+        );
+        $this->assertInstanceOf('\multitypetest\model\Employee', $res);
 
         $json = '{"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321",' .
             '"birthday":"1994-02-13","personType":"Empl"}';
@@ -404,18 +413,6 @@ class MultiTypeTest extends TestCase
             'multitypetest\model\Postman',
             'multitypetest\model\Employee',
         ];
-        $json = '{"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321",' .
-            '"birthday":"1994-02-13","personType":"Empl"}';
-        try {
-            $mapper->mapFor(
-                json_decode($json),
-                'oneOf(Employee,Person)',
-                'multitypetest\model'
-            );
-        } catch (\Exception $e) {
-            $res = $e->getMessage();
-        }
-       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
 
         $json = '{"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321",' .
             '"birthday":"1994-02-13","personType":"Per"}';

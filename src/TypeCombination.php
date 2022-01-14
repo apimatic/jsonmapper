@@ -226,16 +226,14 @@ class TypeCombination
     private static function _insertType(&$types, $type, $deserializers)
     {
         $start = strpos($type, '(');
-        if ($start !== false) {
-            $end = strrpos($type, ')');
-            if ($end !== false) {
-                $type = self::generateTypeCombination(
-                    $type,
-                    $deserializers,
-                    $start,
-                    $end
-                );
-            }
+        $end = strrpos($type, ')');
+        if ($start !== false && $end !== false) {
+            $type = self::generateTypeCombination(
+                $type,
+                $deserializers,
+                $start,
+                $end
+            );
         }
         if (!empty($type)) {
             array_push($types, $type);
