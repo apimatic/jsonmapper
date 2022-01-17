@@ -57,7 +57,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
 
         $json = '{"value":"some string"}';
         try {
@@ -65,7 +65,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
     }
 
     public function testSimpleCaseB()
@@ -89,7 +89,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
     }
 
     public function testStringOrStringList()
@@ -109,7 +109,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
     }
 
     public function testObjectOrBool()
@@ -134,7 +134,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
 
         $res = $mapper->mapFor(json_decode($json), 'oneOf(null,array,bool)');
         $this->assertEquals(null, $res);
@@ -157,7 +157,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
     }
 
     public function testStringOrSimpleCaseA()
@@ -205,7 +205,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
     }
 
     public function testAnyOfSimpleCases()
@@ -249,7 +249,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
     }
 
     public function testMapOrObject()
@@ -425,7 +425,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
 
         $json = '{"startsAt":"15:00","endsAt":"21:00","sessionType":"Morning"}';
         try {
@@ -437,7 +437,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-       $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
     }
 
     public function testMultiDimensionalArray()
@@ -537,8 +537,8 @@ class MultiTypeTest extends TestCase
     public function testOuterArrayCaseFail()
     {
         $mapper = new JsonMapper();
-        $json = '{"key0":["alpha",true],"key2":[false,true],"key3":[1.1,3.3]]' .
-            ',"key1":["beta",[12,{"numberOfElectrons":4}],[1,3]}';
+        $json = '{"key0":["alpha",true],"key2":[false,true],"key3":[1.1,3.3]' .
+            ',"key1":["beta",[12,{"numberOfElectrons":4}],[1,3]]}';
         try {
             $res = $mapper->mapFor(
                 json_decode($json),
