@@ -36,7 +36,8 @@ class OuterArrayCase implements \JsonSerializable
      *
      * @param bool[]|int[][]|array $value
      * @required
-     * @maps value anyOf(bool,int[],oneOf(int,string))[]
+     * @maps value
+     * @mapsBy anyOf(bool,int[],oneOf(int,string))[]
      */
     public function setValue($value)
     {

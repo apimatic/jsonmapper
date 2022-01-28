@@ -957,7 +957,7 @@ class JsonMapper
             $annotations = $this->parseAnnotations($method->getDocComment());
             if ($name === $this->getMapAnnotationFromParsed($annotations)) {
                 $rmeth = $method;
-                $typeOfs = $this->getMapAnnotationFromParsed($annotations, 1);
+                $typeOfs = $this->getMapByAnnotationFromParsed($annotations);
                 break;
             }
         }
@@ -999,7 +999,7 @@ class JsonMapper
         foreach ($rc->getProperties(\ReflectionProperty::IS_PUBLIC) as $p) {
             $mappedName = $this->getMapAnnotation($p);
             if ($mappedName !== null && $name == $mappedName) {
-                $typeOfs = $this->getMapAnnotation($p, 1);
+                $typeOfs = $this->getMapByAnnotation($p);
                 $rprop = $p;
                 break;
             }
@@ -1102,31 +1102,54 @@ class JsonMapper
      * Get map annotation value for a property
      *
      * @param object $property Property of a class
-     * @param int    $index    Position of value to be fetched
      *
      * @return string|null     Map annotation value
      */
-    protected function getMapAnnotation($property, $index = 0)
+    protected function getMapAnnotation($property)
     {
         $annotations = $this->parseAnnotations($property->getDocComment());
-        return $this->getMapAnnotationFromParsed($annotations, $index);
+        return $this->getMapAnnotationFromParsed($annotations);
     }
 
     /**
      * Get map annotation value from a parsed annotation list
      *
      * @param array $annotations Parsed annotation list
-     * @param int   $index       Position of value to be fetched
      *
      * @return string|null       Map annotation value
      */
-    protected function getMapAnnotationFromParsed($annotations, $index = 0)
+    protected function getMapAnnotationFromParsed($annotations)
     {
         if (isset($annotations['maps'][0])) {
-            $mapsName = explode(' ', $annotations['maps'][0]);
-            if (isset($mapsName[$index])) {
-                return $mapsName[$index];
-            }
+            return $annotations['maps'][0];
+        }
+        return null;
+    }
+
+    /**
+     * Get mapBy annotation value for a property
+     *
+     * @param object $property Property of a class
+     *
+     * @return string|null     MapBy annotation value
+     */
+    protected function getMapByAnnotation($property)
+    {
+        $annotations = $this->parseAnnotations($property->getDocComment());
+        return $this->getMapByAnnotationFromParsed($annotations);
+    }
+
+    /**
+     * Get mapsBy annotation value from a parsed annotation list
+     *
+     * @param array $annotations Parsed annotation list
+     *
+     * @return string|null       MapsBy annotation value
+     */
+    protected function getMapByAnnotationFromParsed($annotations)
+    {
+        if (isset($annotations['mapsBy'][0])) {
+            return $annotations['mapsBy'][0];
         }
         return null;
     }

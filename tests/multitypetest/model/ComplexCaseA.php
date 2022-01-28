@@ -43,7 +43,8 @@ class ComplexCaseA implements \JsonSerializable
      *
      * @param \DateTime[]|\DateTime|string|ComplexCaseA $value
      * @required
-     * @maps value oneOf(DateTime[],anyOf(DateTime,string),ComplexCaseA)
+     * @maps value
+     * @mapsBy oneOf(DateTime[],anyOf(DateTime,string),ComplexCaseA)
      * @factory multitypetest\model\DateTimeHelper::fromSimpleDate DateTime
      * @factory multitypetest\model\DateTimeHelper::fromSimpleDateArray DateTime[]
      */
@@ -67,7 +68,8 @@ class ComplexCaseA implements \JsonSerializable
      *
      * @param ComplexCaseA|ComplexCaseB|SimpleCaseA $optional
      * @required
-     * @maps optional oneOf(ComplexCaseA,ComplexCaseB,SimpleCaseA)
+     * @maps optional
+     * @mapsBy oneOf(ComplexCaseA,ComplexCaseB,SimpleCaseA)
      */
     public function setOptional($optional)
     {

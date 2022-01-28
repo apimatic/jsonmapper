@@ -37,7 +37,8 @@ class SimpleCaseA implements \JsonSerializable
      *
      * @param int[]|float[]|bool $value
      * @required
-     * @maps value anyOf(int[],float[],bool)
+     * @maps value
+     * @mapsBy anyOf(int[],float[],bool)
      */
     public function setValue($value)
     {

@@ -41,7 +41,8 @@ class ComplexCaseB implements \JsonSerializable
      *
      * @param Evening[]|Morning[]|Postman|Person[]|Vehicle|Car|string $value
      * @required
-     * @maps value anyOf(Evening[],Morning[],Employee,Person[],oneOf(Vehicle,Car),string)
+     * @maps value
+     * @mapsBy anyOf(Evening[],Morning[],Employee,Person[],oneOf(Vehicle,Car),string)
      */
     public function setValue($value)
     {
@@ -63,7 +64,8 @@ class ComplexCaseB implements \JsonSerializable
      *
      * @param ComplexCaseA|SimpleCaseB[]|array $optional
      * @required
-     * @maps optional anyOf(ComplexCaseA,SimpleCaseB[],array)
+     * @maps optional
+     * @mapsBy anyOf(ComplexCaseA,SimpleCaseB[],array)
      */
     public function setOptional($optional)
     {
