@@ -10,7 +10,7 @@ use stdClass;
 class ComplexCaseB implements \JsonSerializable
 {
     /**
-     * @var Evening[]|Morning[]|Postman|Person[]|Vehicle|Car
+     * @var array<string,int>
      */
     private $value;
 
@@ -20,7 +20,7 @@ class ComplexCaseB implements \JsonSerializable
     private $optional;
 
     /**
-     * @param Evening[]|Morning[]|Postman|Person[]|Vehicle|Car $value
+     * @param Evening[] $value
      */
     public function __construct($value)
     {
@@ -29,7 +29,7 @@ class ComplexCaseB implements \JsonSerializable
 
     /**
      * Returns Value.
-     * @return Evening[]|Morning[]|Postman|Person[]|Vehicle|Car
+     * @return array
      */
     public function getValue()
     {

@@ -22,7 +22,7 @@ namespace apimatic\jsonmapper;
  * @link     http://www.netresearch.de/
  */
 class TypeCombination
-{
+{ // make it private
     /**
      * Name of this typeCombinator group i.e. oneOf/anyOf.
      *

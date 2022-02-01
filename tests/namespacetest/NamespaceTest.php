@@ -7,9 +7,15 @@ require_once __DIR__ . '/model/UserList.php';
 require_once __DIR__ . '/../othernamespace/Foo.php';
 
 use apimatic\jsonmapper\JsonMapper;
+use apimatic\jsonmapper\JsonMapperException;
 
 class NamespaceTest extends \PHPUnit\Framework\TestCase
 {
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testMapArrayNamespace()
     {
         $mapper = new JsonMapper();
@@ -19,6 +25,11 @@ class NamespaceTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf('\namespacetest\Unit', $res->data[0]);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testMapSimpleArrayNamespace()
     {
         $mapper = new JsonMapper();
@@ -28,6 +39,11 @@ class NamespaceTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf('\namespacetest\Unit', $res->units[0]);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testMapSimpleStringArrayNamespace()
     {
         $mapper = new JsonMapper();
@@ -38,6 +54,11 @@ class NamespaceTest extends \PHPUnit\Framework\TestCase
         $this->assertCount(2, $res->messages);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testMapChildClassNamespace()
     {
         $mapper = new JsonMapper();
@@ -47,6 +68,11 @@ class NamespaceTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf('\namespacetest\model\User', $res->user);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testMapChildClassConstructorNamespace()
     {
         $mapper = new JsonMapper();
@@ -56,6 +82,11 @@ class NamespaceTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf('\namespacetest\model\User', $res->user);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testMapChildObjectArrayNamespace()
     {
         $mapper = new JsonMapper();
@@ -67,17 +98,25 @@ class NamespaceTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @expectedException apimatic\jsonmapper\JsonMapperException
-     * @expectedExceptionMessage Empty type at property "namespacetest\UnitData::$empty"
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapEmpty()
     {
+        $this->expectException(JsonMapperException::class);
+        $this->expectExceptionMessage('Empty type at property "namespacetest\UnitData::$empty"');
         $mapper = new JsonMapper();
         $json = '{"empty":{}}';
         /* @var \namespacetest\UnitData $res */
         $res = $mapper->map(json_decode($json), new UnitData());
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testMapCustomArraObjectWithChildType()
     {
         $mapper = new JsonMapper();
@@ -91,6 +130,10 @@ class NamespaceTest extends \PHPUnit\Framework\TestCase
     /**
      * Test a setter method with a namespaced type hint that
      * is within another namespace than the object itself.
+     *
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testSetterNamespacedTypeHint()
     {

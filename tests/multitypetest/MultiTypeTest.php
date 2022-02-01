@@ -24,23 +24,49 @@ use PHPUnit\Framework\TestCase;
 
 class MultiTypeTest extends TestCase
 {
-    public function testSimpleCaseA()
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testSimpleCaseAWithFieldFloatArray()
     {
         $mapper = new JsonMapper();
         $json = '{"value":[1.2,3.4]}';
         $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseA', $res);
-
+    }
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testSimpleCaseAWithFieldIntArray()
+    {
+        $mapper = new JsonMapper();
         $json = '{"value":[1,2]}';
         $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseA', $res);
-
+    }
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testSimpleCaseAWithFieldBoolean()
+    {
+        $mapper = new JsonMapper();
         $json = '{"value":true}';
         $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseA', $res);
     }
 
-    public function testSimpleCaseAFail()
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testSimpleCaseAFailWithConstructorArgumentMissing()
     {
         $mapper = new JsonMapper();
         $json = '{"key":true}';
@@ -49,38 +75,75 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Could not find required constructor arguments for') === 0);
+        $this->assertEquals('Could not find required constructor arguments for multitypetest\model\SimpleCaseA: value', $res);
+    }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testSimpleCaseAFailWithFieldBoolArray()
+    {
+        $mapper = new JsonMapper();
         $json = '{"value":[false,true]}';
         try {
             $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+        $this->assertEquals('Unable to map AnyOf (int[],float[],bool) on: [false,true]', $res);
+    }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testSimpleCaseAFailWithFieldString()
+    {
+        $mapper = new JsonMapper();
         $json = '{"value":"some string"}';
         try {
             $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+        $this->assertEquals('Unable to map AnyOf (int[],float[],bool) on: "some string"', $res);
     }
 
-    public function testSimpleCaseB()
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testSimpleCaseBWithFieldBoolean()
     {
         $mapper = new JsonMapper();
         $json = '{"value":true}';
         $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseB');
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
+    }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testSimpleCaseBWithFieldArray()
+    {
+        $mapper = new JsonMapper();
         $json = '{"value":["some","value"]}';
         $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseB');
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
     }
 
-    public function testSimpleCaseBFail()
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testSimpleCaseBFailWithFieldIntArray()
     {
         $mapper = new JsonMapper();
         $json = '{"value":[2,3]}';
@@ -89,9 +152,14 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+        $this->assertEquals('Cannot map more than OneOf { array and int[] } on: [2,3]', $res);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testStringOrStringList()
     {
         $mapper = new JsonMapper();
@@ -102,16 +170,35 @@ class MultiTypeTest extends TestCase
         $json = '["some","value"]';
         $res = $mapper->mapFor(json_decode($json), 'anyOf(string[],string)');
         $this->assertEquals('value', $res[1]);
+    }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testNeitherStringNorStringList()
+    {
+        $mapper = new JsonMapper();
         $json = '[false,"value"]';
         try {
             $mapper->mapFor(json_decode($json), 'anyOf(string[],string)');
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+        $this->assertEquals('Unable to map AnyOf (string[],string) on: [false,"value"]', $res);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testObjectOrBool()
     {
         $mapper = new JsonMapper();
@@ -134,12 +221,17 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+        $this->assertEquals('Unable to map AnyOf (array,bool) on: null', $res);
 
         $res = $mapper->mapFor(json_decode($json), 'oneOf(null,array,bool)');
         $this->assertEquals(null, $res);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testMixedAndInt()
     {
         $mapper = new JsonMapper();
@@ -157,9 +249,14 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+        $this->assertEquals('Cannot map more than OneOf { int and mixed } on: 502', $res);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testStringOrSimpleCaseA()
     {
         $mapper = new JsonMapper();
@@ -180,6 +277,11 @@ class MultiTypeTest extends TestCase
         $this->assertEquals('{"value":[1.2]}', $res);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testOneOfSimpleCases()
     {
         $mapper = new JsonMapper();
@@ -192,6 +294,11 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testOneOfSimpleCasesFail()
     {
         $mapper = new JsonMapper();
@@ -205,9 +312,14 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+        $this->assertEquals('Cannot map more than OneOf { SimpleCaseB and SimpleCaseA } on: {"value":[2.2,3.3]}', $res);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testAnyOfSimpleCases()
     {
         $mapper = new JsonMapper();
@@ -236,6 +348,11 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testAnyOfSimpleCasesFail()
     {
         $mapper = new JsonMapper();
@@ -249,9 +366,14 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+        $this->assertEquals('Unable to map AnyOf (SimpleCaseA,SimpleCaseB) on: {"value":"some value"}', $res);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testMapOrObject()
     {
         $mapper = new JsonMapper();
@@ -267,7 +389,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+        $this->assertEquals('Cannot map more than OneOf { int[] and Atom } on: {"numberOfElectrons":4}', $res);
 
         $json = '[{"numberOfElectrons":4,"numberOfProtons":2}]';
         $res = '';
@@ -281,7 +403,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+        $this->assertEquals('Cannot map more than OneOf { int[][] and Atom[] } on: [{"numberOfElectrons":4,"numberOfProtons":2}]', $res);
 
         $res = $mapper->mapFor(
             json_decode($json),
@@ -292,6 +414,11 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res[0]);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testOrbitOrAtom()
     {
         $mapper = new JsonMapper();
@@ -306,9 +433,14 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+        $this->assertEquals('Cannot map more than OneOf { Orbit and Atom } on: {"numberOfProtons":4,"numberOfElectrons":4}', $res);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testComplexCases()
     {
         $mapper = new JsonMapper();
@@ -335,6 +467,11 @@ class MultiTypeTest extends TestCase
         $this->assertTrue(is_int($res->getOptional()->getOptional()->getOptional()[0]));
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testComplexCasesWithDescriminators()
     {
         $mapper = new JsonMapper();
@@ -406,6 +543,11 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Morning', $res->getValue()[1]);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testDescriminatorsFail()
     {
         $mapper = new JsonMapper();
@@ -425,7 +567,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+        $this->assertEquals('Unable to map AnyOf (Postman,Employee) on: {"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321","birthday":"1994-02-13","personType":"Per"}', $res);
 
         $json = '{"startsAt":"15:00","endsAt":"21:00","sessionType":"Morning"}';
         try {
@@ -437,9 +579,14 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+        $this->assertEquals('Cannot map more than OneOf { array and Morning } on: {"startsAt":"15:00","endsAt":"21:00","sessionType":"Morning"}', $res);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testMultiDimensionalArray()
     {
         $mapper = new JsonMapper();
@@ -493,6 +640,11 @@ class MultiTypeTest extends TestCase
         $this->assertTrue(is_bool($res['value'][1][1][0]));
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testOuterArrayCases()
     {
         $mapper = new JsonMapper();
@@ -534,6 +686,11 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($res['key2'][0] === false);
     }
 
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testOuterArrayCaseFail()
     {
         $mapper = new JsonMapper();
@@ -548,7 +705,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Unable to map AnyOf') === 0);
+        $this->assertEquals('Unable to map AnyOf (float[],(bool,(int,Atom)[],string)) on: {"key0":["alpha",true],"key2":[false,true],"key3":[1.1,3.3],"key1":["beta",[12,{"numberOfElectrons":4}],[1,3]]}', $res);
 
         $json = '{"key":{"element":{"atom":1,"orbits":9},"compound":[4,8]}}';
         try {
@@ -560,7 +717,7 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Cannot map more then OneOf') === 0);
+        $this->assertEquals('Cannot map more than OneOf { (bool,(int,Atom)[],string)[][] and int[][][] } on: {"key":{"element":{"atom":1,"orbits":9},"compound":[4,8]}}', $res);
 
         $json = '{"key0":["beta",[12,{"numberOfElectrons":4}],[1,3]],"key1":"alpha"' .
             ',"key2":[false,true]}';
@@ -573,6 +730,6 @@ class MultiTypeTest extends TestCase
         } catch (\Exception $e) {
             $res = $e->getMessage();
         }
-        $this->assertTrue(strpos($res, 'Unable to map Array:') === 0);
+        $this->assertEquals('Unable to map Array: (bool,(int,Atom)[],string)[] on: "alpha"', $res);
     }
 }

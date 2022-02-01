@@ -24,3 +24,6 @@
 
 # Build data
 /build/
+
+# Coverage
+/CodeCoverage/

@@ -495,7 +495,7 @@ class JsonMapper
             } catch (Exception $e) {
                 if (strpos(
                     $e->getMessage(),
-                    'Cannot map more then OneOf'
+                    'Cannot map more than OneOf'
                 ) != false
                 ) {
                     // throw exception if mapped by more than one types
@@ -508,7 +508,7 @@ class JsonMapper
                 // if its oneOf and we have a value that is already mapped,
                 // then throw jsonMapperException
                 throw new JsonMapperException(
-                    'Cannot map more then OneOf { ' .
+                    'Cannot map more than OneOf { ' .
                     TypeCombination::generateTypeString($matchedType) . ' and ' .
                     TypeCombination::generateTypeString($mappedWith) . ' } on: ' .
                     json_encode($json)
