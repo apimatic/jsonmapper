@@ -4,25 +4,25 @@
  *
  * PHP version 5
  *
- * @category Netresearch
+ * @category Apimatic
  * @package  JsonMapper
  * @author   Asad Ali <asad.ali@apimatic.io>
  * @license  OSL-3.0 http://opensource.org/licenses/osl-3.0
- * @link     http://www.netresearch.de/
+ * @link     https://www.apimatic.io/
  */
 namespace apimatic\jsonmapper;
 
 /**
  * Data class to hold the groups of multiple types.
  *
- * @category Netresearch
+ * @category Apimatic
  * @package  JsonMapper
  * @author   Asad Ali <asad.ali@apimatic.io>
  * @license  OSL-3.0 http://opensource.org/licenses/osl-3.0
- * @link     http://www.netresearch.de/
+ * @link     https://www.apimatic.io/
  */
 class TypeCombination
-{ // make it private
+{
     /**
      * Name of this typeCombinator group i.e. oneOf/anyOf.
      *
