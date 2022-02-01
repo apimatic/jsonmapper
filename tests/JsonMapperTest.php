@@ -63,7 +63,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"str":"stringvalue"}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsString($sn->str);
+        $this->assertTrue(is_string($sn->str));
         $this->assertEquals('stringvalue', $sn->str);
     }
     
@@ -81,7 +81,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"str":"stringvalue"}'),
             'JsonMapperTest_Simple'
         );
-        $this->assertIsString($sn->str);
+        $this->assertTrue(is_string($sn->str));
         $this->assertEquals('stringvalue', $sn->str);
     }
 
@@ -99,7 +99,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"fl":"1.2"}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsFloat($sn->fl);
+        $this->assertTrue(is_float($sn->fl));
         $this->assertEquals(1.2, $sn->fl);
     }
 
@@ -117,7 +117,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"db":"1.2"}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsFloat($sn->db);
+        $this->assertTrue(is_float($sn->db));
         $this->assertEquals(1.2, $sn->db);
     }
 
@@ -135,7 +135,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"pbool":"1"}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsBool($sn->pbool);
+        $this->assertTrue(is_bool($sn->pbool));
         $this->assertEquals(true, $sn->pbool);
     }
 
@@ -153,7 +153,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"pboolean":"0"}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsBool($sn->pboolean);
+        $this->assertTrue(is_bool($sn->pboolean));
         $this->assertEquals(false, $sn->pboolean);
     }
 
@@ -171,7 +171,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"pint":"123"}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsInt($sn->pint);
+        $this->assertTrue(is_int($sn->pint));
         $this->assertEquals(123, $sn->pint);
     }
 
@@ -189,7 +189,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"pinteger":"12345"}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsInt($sn->pinteger);
+        $this->assertTrue(is_int($sn->pinteger));
         $this->assertEquals(12345, $sn->pinteger);
     }
 
@@ -207,14 +207,14 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"mixed":12345}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsInt($sn->mixed);
+        $this->assertTrue(is_int($sn->mixed));
         $this->assertEquals('12345', $sn->mixed);
 
         $sn = $jm->map(
             json_decode('{"mixed":"12345"}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsString($sn->mixed);
+        $this->assertTrue(is_string($sn->mixed));
         $this->assertEquals(12345, $sn->mixed);
     }
 
@@ -232,7 +232,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"pnullable":0}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsInt($sn->pnullable);
+        $this->assertTrue(is_int($sn->pnullable));
         $this->assertEquals(0, $sn->pnullable);
     }
 
@@ -268,7 +268,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"pnullable":"12345"}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsInt($sn->pnullable);
+        $this->assertTrue(is_int($sn->pnullable));
         $this->assertEquals(12345, $sn->pnullable);
     }
 
@@ -286,7 +286,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"notype":{"k":"v"}}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsObject($sn->notype);
+        $this->assertTrue(is_object($sn->notype));
         $this->assertEquals((object) array('k' => 'v'), $sn->notype);
     }
 
@@ -304,7 +304,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"under_score":"f"}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsString($sn->under_score);
+        $this->assertTrue(is_string($sn->under_score));
         $this->assertEquals('f', $sn->under_score);
     }
 
@@ -322,7 +322,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"under_score_setter":"blubb"}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsString($sn->internalData['under_score_setter']);
+        $this->assertTrue(is_string($sn->internalData['under_score_setter']));
         $this->assertEquals(
             'blubb', $sn->internalData['under_score_setter']
         );
@@ -342,7 +342,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"simple":{"str":"stringvalue"}}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsObject($sn->simple);
+        $this->assertTrue(is_object($sn->simple));
         $this->assertInstanceOf('JsonMapperTest_Simple', $sn->simple);
         $this->assertEquals('stringvalue', $sn->simple->str);
     }
@@ -361,7 +361,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"typedArray":[{"str":"stringvalue"},{"fl":"1.2"}]}'),
             new JsonMapperTest_Array()
         );
-        $this->assertIsArray($sn->typedArray);
+        $this->assertTrue(is_array($sn->typedArray));
         $this->assertEquals(2, count($sn->typedArray));
         $this->assertInstanceOf('JsonMapperTest_Simple', $sn->typedArray[0]);
         $this->assertInstanceOf('JsonMapperTest_Simple', $sn->typedArray[1]);
@@ -396,7 +396,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"typedSimpleArray":["2014-01-02",null,"2014-05-07"]}'),
             new JsonMapperTest_Array()
         );
-        $this->assertIsArray($sn->typedSimpleArray);
+        $this->assertTrue(is_array($sn->typedSimpleArray));
         $this->assertEquals(3, count($sn->typedSimpleArray));
         $this->assertInstanceOf('DateTime', $sn->typedSimpleArray[0]);
         $this->assertNull($sn->typedSimpleArray[1]);
@@ -421,7 +421,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"str":"stringvalue"}'),
             'JsonMapperTest_Simple'
         );
-        $this->assertIsString($sn->str);
+        $this->assertTrue(is_string($sn->str));
         $this->assertEquals('stringvalue', $sn->str);
     }
 
@@ -503,7 +503,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"flArray":[1.23,3.14,2.048]}'),
             new JsonMapperTest_Array()
         );
-        $this->assertIsArray($sn->flArray);
+        $this->assertTrue(is_array($sn->flArray));
         $this->assertEquals(3, count($sn->flArray));
         $this->assertTrue(is_float($sn->flArray[0]));
         $this->assertTrue(is_float($sn->flArray[1]));
@@ -524,11 +524,11 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"strArray":["str",false,2.048]}'),
             new JsonMapperTest_Array()
         );
-        $this->assertIsArray($sn->strArray);
+        $this->assertTrue(is_array($sn->strArray));
         $this->assertEquals(3, count($sn->strArray));
-        $this->assertIsString($sn->strArray[0]);
-        $this->assertIsString($sn->strArray[1]);
-        $this->assertIsString($sn->strArray[2]);
+        $this->assertTrue(is_string($sn->strArray[0]));
+        $this->assertTrue(is_string($sn->strArray[1]));
+        $this->assertTrue(is_string($sn->strArray[2]));
     }
 
     /**
@@ -595,8 +595,8 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         );
         $this->assertInstanceOf('ArrayObject', $sn->pSimpleArrayObject);
         $this->assertEquals(2, count($sn->pSimpleArrayObject));
-        $this->assertIsInt($sn->pSimpleArrayObject['eins']);
-        $this->assertIsInt($sn->pSimpleArrayObject['zwei']);
+        $this->assertTrue(is_int($sn->pSimpleArrayObject['eins']));
+        $this->assertTrue(is_int($sn->pSimpleArrayObject['zwei']));
         $this->assertEquals(1, $sn->pSimpleArrayObject['eins']);
         $this->assertEquals(1, $sn->pSimpleArrayObject['zwei']);
     }
@@ -690,7 +690,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             new JsonMapperTest_Simple()
         );
 
-        $this->assertIsObject($sn->internalData['typehint']);
+        $this->assertTrue(is_object($sn->internalData['typehint']));
         $this->assertInstanceOf(
             'JsonMapperTest_Simple', $sn->internalData['typehint']
         );
@@ -714,7 +714,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"simpleSetterOnlyDocblock":{"str":"stringvalue"}}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsObject($sn->internalData['docblock']);
+        $this->assertTrue(is_object($sn->internalData['docblock']));
         $this->assertInstanceOf(
             'JsonMapperTest_Simple', $sn->internalData['docblock']
         );
@@ -737,7 +737,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"simpleSetterOnlyNoType":{"str":"stringvalue"}}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsObject($sn->internalData['notype']);
+        $this->assertTrue(is_object($sn->internalData['notype']));
         $this->assertInstanceOf(
             'stdClass', $sn->internalData['notype']
         );
@@ -934,7 +934,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"setterPreferredOverProperty":"foo"}'),
             new JsonMapperTest_Simple()
         );
-        $this->assertIsString($sn->setterPreferredOverProperty);
+        $this->assertTrue(is_string($sn->setterPreferredOverProperty));
         $this->assertEquals(
             'set via setter: foo', $sn->setterPreferredOverProperty
         );
@@ -1185,7 +1185,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             'JsonMapperTest_SimpleBase'
         );
 
-        $this->assertIsArray($sn);
+        $this->assertTrue(is_array($sn));
         $this->assertInstanceOf('JsonMapperTest_SimpleBase', $sn[0]);
         $this->assertInstanceOf('JsonMapperTest_DerivedClass', $sn[1]);
         $this->assertInstanceOf('JsonMapperTest_DerivedClass2', $sn[2]);
@@ -1260,7 +1260,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals("hello world", $fm->simple);
         $this->assertEquals("value is 123", $fm->value);
         $this->assertEquals(false, $fm->bool);
-        $this->assertIsBool($fm->bool);
+        $this->assertTrue(is_bool($fm->bool));
         $this->assertInstanceOf('DateTime', $fm->datetime);
         $this->assertInstanceOf('JsonMapperTest_ValueObject', $fm->object);
         $this->assertInstanceOf('JsonMapperTest_ValueObject', $fm->objObj);
