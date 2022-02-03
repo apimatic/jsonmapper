@@ -217,7 +217,7 @@ class JsonMapper
      * @return mixed|false
      * @throws JsonMapperException
      */
-    private function _callFactoryMethod($factoryMethod, $value, $className)
+    protected function callFactoryMethod($factoryMethod, $value, $className)
     {
         $factoryMethod = explode(' ', $factoryMethod)[0];
         if (!is_callable($factoryMethod)) {
@@ -264,7 +264,7 @@ class JsonMapper
         }
         //use factory method generated value if factory provided
         if ($factoryMethods !== null && isset($factoryMethods[0])) {
-            return $this->_callFactoryMethod(
+            return $this->callFactoryMethod(
                 $factoryMethods[0],
                 $jvalue,
                 $className
@@ -350,22 +350,30 @@ class JsonMapper
     }
 
     /**
-     * Map the data in $json into the specified $types.
+     * Map the data in $value into the specified $typeGroup i.e. oneOf(A,B)
+     * will try to map value with only one of A or B, that matched. While
+     * anyOf(A,B) will try to map it with any of A or B and sets its type to
+     * the first one that matched.
      *
-     * @param mixed                  $json           Raw normalized data for
-     *                                               the property
+     * @param mixed                  $value          Raw normalized value to be
+     *                                               mapped with any typeGroup
      * @param string|TypeCombination $typeGroup      TypesCombination object or
      *                                               string format for grouped types
-     * @param string                 $namespace      Namespace of the class
+     * @param string                 $namespace      Namespace of any customType
+     *                                               class that's present in the
+     *                                               provided typeGroup.
      * @param string[]|null          $factoryMethods Callable factory methods for
-     *                                               the property
-     * @param string|null            $className      Name of the class
+     *                                               the value, that are required
+     *                                               to deserialize it into any of
+     *                                               the provided types in typeGroup
+     * @param string|null            $className      Name of the parent class that's
+     *                                               holding this property (if any)
      *
      * @return array|mixed|object
      * @throws JsonMapperException|ReflectionException
      */
     public function mapFor(
-        $json,
+        $value,
         $typeGroup,
         $namespace = '',
         $factoryMethods = null,
@@ -381,21 +389,21 @@ class JsonMapper
         }
         if ($typeGroup->getDimension() > 0) {
             // if it's a multidimensional type group
-            if (!is_array($json) && !is_object($json)) {
+            if (!is_array($value) && !is_object($value)) {
                 // throwing exception if json is not multidimensional
                 // i.e. neither array nor object/map
                 throw new JsonMapperException(
                     'Unable to map Array: ' .
                     TypeCombination::generateTypeString($typeGroup) .
-                    ' on: ' . json_encode($json)
+                    ' on: ' . json_encode($value)
                 );
             }
             $mappedObject = [];
             // decreasing typeGroup dimension by 1 to check for inner values
             $typeGroup->decreaseDimension();
-            foreach ($json as $key => $value) {
-                $mappedObject[$key] = $this->mapFor(
-                    $value,
+            foreach ($value as $k => $v) {
+                $mappedObject[$k] = $this->mapFor(
+                    $v,
                     $typeGroup,
                     $namespace,
                     null,
@@ -407,15 +415,15 @@ class JsonMapper
             $typeGroup->increaseDimension();
             return $mappedObject;
         }
-        return $this->_checkMappingsFor(
+        return $this->checkMappingsFor(
             $typeGroup,
-            $json,
+            $value,
             $className,
             $namespace,
-            function ($type, $json, $factoryMethods, $nspace, $className) {
+            function ($type, $value, $factoryMethods, $nspace, $className) {
                 if (is_string($type)) {
                     return $this->getMappedValue(
-                        $json,
+                        $value,
                         $type,
                         null,
                         $factoryMethods,
@@ -425,7 +433,7 @@ class JsonMapper
                     );
                 }
                 return $this->mapFor(
-                    $json,
+                    $value,
                     $type,
                     $nspace,
                     null,
@@ -456,7 +464,7 @@ class JsonMapper
      *                              for oneOf and anyOf cases
      * @throws JsonMapperException|ReflectionException
      */
-    private function _checkMappingsFor(
+    protected function checkMappingsFor(
         $type,
         $json,
         $className,
@@ -471,7 +479,7 @@ class JsonMapper
         foreach ($type->getTypes() as $typ) {
             try {
                 if (is_string($typ)) {
-                    list($m, $meth) = $this->_isValueOfType(
+                    list($m, $meth) = $this->isValueOfType(
                         $json,
                         $typ,
                         $allDeserializers,
@@ -544,7 +552,7 @@ class JsonMapper
      * @throws ReflectionException
      * @throws JsonMapperException
      */
-    private function _isValueOfType(
+    protected function isValueOfType(
         $value,
         $type,
         $factoryMethods,
@@ -558,10 +566,10 @@ class JsonMapper
                     $methodFound = true;
                     if (version_compare(phpversion(), '7.0', '<')) {
                         // if php version is less than 7.0
-                        $this->_callFactoryMethod($method, $value, $className);
+                        $this->callFactoryMethod($method, $value, $className);
                     } else {
                         try {
-                            $this->_callFactoryMethod($method, $value, $className);
+                            $this->callFactoryMethod($method, $value, $className);
                         } catch (\Throwable $e){
                             continue; // continue if method not accessible
                         }
@@ -581,7 +589,7 @@ class JsonMapper
                 // if value is also of array type
                 $type = substr($type, 0, -2);
                 foreach ($value as $v) {
-                    if (!$this->_isValueOfType($v, $type, null, $namespace, '')[0]) {
+                    if (!$this->isValueOfType($v, $type, null, $namespace, '')[0]) {
                         // false if any element is not of same type
                         return array(false, null);
                     }
