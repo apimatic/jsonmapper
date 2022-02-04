@@ -180,12 +180,28 @@ class MultiTypeTest extends TestCase
      * @covers \apimatic\jsonmapper\TypeCombination
      * @covers \apimatic\jsonmapper\JsonMapperException
      */
+    public function testAssociativeArray()
+    {
+        $mapper = new JsonMapper();
+        $json = ["key0" => "myString","key1" => "otherString"]; // should be mapped only by array<string,string>
+        $res = $mapper->mapFor($json, 'oneOf(string[],array<string,string>)');
+        self::assertTrue(is_array($res));
+        self::assertTrue(is_string($res['key0']));
+        self::assertTrue(is_string($res['key1']));
+    }
+
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testEmptyArrayAndMap()
     {
         $mapper = new JsonMapper();
         $json = '[]'; // should be mapped only by string[]
         $res = $mapper->mapFor(json_decode($json), 'oneOf(string[],array<string,string>,array<string,int>)');
         self::assertTrue(is_array($res));
+
         $json = '{}'; // should be mapped only by array<string,string>
         $res = $mapper->mapFor(json_decode($json), 'oneOf(string[],int[],array<string,string>)');
         self::assertTrue(is_array($res));
