@@ -38,13 +38,6 @@ class TypeCombination
     private $_types;
 
     /**
-     * Array/Map dimension of this group
-     *
-     * @var int
-     */
-    private $_dimension;
-
-    /**
      * A list of factory methods to deserialize the given object,
      * for one of the wrapped types in this group
      *
@@ -57,19 +50,17 @@ class TypeCombination
      *
      * @param string   $groupName     group name value
      * @param array    $types         types value
-     * @param int      $dimension     dimension value
      * @param string[] $deserializers deserializers value
      */
-    private function __construct($groupName, $types, $dimension, $deserializers)
+    private function __construct($groupName, $types, $deserializers)
     {
         $this->_groupName = $groupName;
         $this->_types = $types;
-        $this->_dimension = $dimension;
         $this->_deserializers = $deserializers;
     }
 
     /**
-     * Name of this typeCombinator group i.e. oneOf/anyOf.
+     * Name of this typeCombinator group i.e. oneOf/anyOf/array/map.
      *
      * @return string
      */
@@ -100,75 +91,55 @@ class TypeCombination
     }
 
     /**
-     * Array/Map dimension of this group
-     *
-     * @return int
-     */
-    public function getDimension()
-    {
-        return $this->_dimension;
-    }
-
-    /**
-     * Decrease the dimension for the given group type by 1
-     *
-     * @return void
-     */
-    public function decreaseDimension()
-    {
-        $this->_dimension--;
-    }
-
-    /**
-     * Increase the dimension for the given group type by 1
-     *
-     * @return void
-     */
-    public function increaseDimension()
-    {
-        $this->_dimension++;
-    }
-
-    /**
      * Converts the given typeCombination into its string format.
      *
-     * @param TypeCombination|string $typeCombination Combined types/Single type.
+     * @param TypeCombination|string $type  Combined type/Single type.
+     * @param string                 $start string to be appended in the start
+     * @param string                 $end   string to be appended in the end
      *
      * @return string
      */
-    public static function generateTypeString($typeCombination)
+    public static function generateTypeString($type, $start = '', $end = '')
     {
-        if (is_string($typeCombination)) {
-            return $typeCombination;
+        if (is_string($type)) {
+            return $type;
+        }
+        if ($type->getGroupName() == 'array') {
+            return self::generateTypeString(
+                $type->getTypes()[0],
+                $start,
+                '[]' . $end
+            );
+        }
+        if ($type->getGroupName() == 'map') {
+            return self::generateTypeString(
+                $type->getTypes()[0],
+                $start . 'array<string,',
+                '>' . $end
+            );
         }
         $flatten = [];
         array_map(
             function ($a) use (&$flatten) {
                 $flatten[] = self::generateTypeString($a);
             },
-            $typeCombination->getTypes()
+            $type->getTypes()
         );
-        $dimension = $typeCombination->getDimension();
-        $dimensionString = '';
-        while ($dimension > 0) {
-            $dimensionString .= '[]';
-            $dimension--;
-        }
-        return '(' . join(',', $flatten) . ')' . $dimensionString;
+        return "$start(" . join(',', $flatten) . ")$end";
     }
 
     /**
      * Wrap the given typeGroup string in the TypeCombination class,
-     * i.e. getTypes() method will return all the grouped types, and
-     * getDimension() will return the dimensions of the current group,
+     * i.e. getTypes() method will return all the grouped types,
      * while deserializing factory methods can be obtained by
      * getDeserializers() and group name can be obtained from getGroupName()
      *
      * @param string    $typeGroup    Format of multiple types i.e. oneOf(int,bool)[]
-     *                                or onyOf(int[],bool,anyOf(string,float)[],...),
-     *                                here [] represents dimensions of each type, and
-     *                                oneOf/anyOf are group names, while default
-     *                                group name is anyOf.
+     *                                onyOf(int[],bool,anyOf(string,float)[],...),
+     *                                array<string,oneOf(int,float)[]>, here []
+     *                                represents array types, and array<string,T>
+     *                                represents map types, oneOf/anyOf are group
+     *                                names, while default group name is anyOf.
      * @param string[]  $deserializer Callable factory methods for the property
      * @param int|false $start        Start index of types in group, default: false.
      * @param int|false $end          Ending index of types in group, default: false.
@@ -182,24 +153,38 @@ class TypeCombination
         $end = false
     ) {
         $groupName = 'anyOf';
-        $dimension = 0;
-
         $start = $start == false ? strpos($typeGroup, '(') : $start;
         $end = $end == false ? strrpos($typeGroup, ')') : $end;
         if ($start !== false && $end !== false) {
+            if (substr($typeGroup, -2) == '[]') {
+                return self::createTypeGroup(
+                    'array',
+                    substr($typeGroup, 0, -2),
+                    $deserializer
+                );
+            }
+            if (
+                substr($typeGroup, -1) == '>' &&
+                strpos($typeGroup, 'array<string,') === 0
+            ) {
+                return self::createTypeGroup(
+                    'map',
+                    substr($typeGroup, strlen('array<string,'), -1),
+                    $deserializer
+                );
+            }
             $name = substr($typeGroup, 0, $start);
             $groupName = empty($name) ? $groupName : $name;
-            $dimension = substr_count($typeGroup, '[]', $end);
-            $typeGroup = substr($typeGroup, $start + 1, -2 * $dimension - 1);
+            $typeGroup = substr($typeGroup, $start + 1, -1);
         }
         $types = [];
         $type = '';
         $groupCount = 0;
         foreach (str_split($typeGroup) as $c) {
-            if ($c == '(') {
+            if ($c == '(' || $c == '<') {
                 $groupCount++;
             }
-            if ($c == ')') {
+            if ($c == ')' || $c == '>') {
                 $groupCount--;
             }
             if ($c == ',' && $groupCount == 0) {
@@ -210,7 +195,27 @@ class TypeCombination
             $type .= $c;
         }
         self::_insertType($types, $type, $deserializer);
-        return new self($groupName, $types, $dimension, $deserializer);
+        return new self($groupName, $types, $deserializer);
+    }
+
+    /**
+     * Creates a TypeCombination object with the given name and inner
+     * types group that must be another typeCombination object
+     *
+     * @param string    $name          Group name for the outer typeCombination
+     *                                 object.
+     * @param string   $innerTypeGroup typeGroup to be created and inserted
+     * @param string[] $deserializers  deserializer for the type group
+     *
+     * @return TypeCombination
+     */
+    private static function createTypeGroup($name, $innerTypeGroup, $deserializers)
+    {
+        return new self(
+            $name,
+            [self::generateTypeCombination($innerTypeGroup, $deserializers)],
+            $deserializers
+        );
     }
 
     /**
@@ -239,5 +244,4 @@ class TypeCombination
             array_push($types, $type);
         }
     }
-
 }

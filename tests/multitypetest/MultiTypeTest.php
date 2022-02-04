@@ -180,6 +180,50 @@ class MultiTypeTest extends TestCase
      * @covers \apimatic\jsonmapper\TypeCombination
      * @covers \apimatic\jsonmapper\JsonMapperException
      */
+    public function testEmptyArrayAndMap()
+    {
+        $mapper = new JsonMapper();
+        $json = '[]'; // should be mapped only by string[]
+        $res = $mapper->mapFor(json_decode($json), 'oneOf(string[],array<string,string>,array<string,int>)');
+        self::assertTrue(is_array($res));
+        $json = '{}'; // should be mapped only by array<string,string>
+        $res = $mapper->mapFor(json_decode($json), 'oneOf(string[],int[],array<string,string>)');
+        self::assertTrue(is_array($res));
+    }
+
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testEmptyArrayFail()
+    {
+        $this->expectException(JsonMapperException::class);
+        $this->expectExceptionMessage('Cannot map more than OneOf { int[] and string[] } on: []');
+        $mapper = new JsonMapper();
+        $json = '[]';
+        $mapper->mapFor(json_decode($json), 'oneOf(string[],int[],array<string,int>)');
+    }
+
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testEmptyMapFail()
+    {
+        $this->expectException(JsonMapperException::class);
+        $this->expectExceptionMessage('Cannot map more than OneOf { array<string,string> and array<string,int> } on: {}');
+        $mapper = new JsonMapper();
+        $json = '{}';
+        $mapper->mapFor(json_decode($json), 'oneOf(array<string,int>,array<string,string>,string[])');
+    }
+
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testNullableObjectOrBool()
     {
         $mapper = new JsonMapper();
@@ -358,16 +402,34 @@ class MultiTypeTest extends TestCase
      * @covers \apimatic\jsonmapper\TypeCombination
      * @covers \apimatic\jsonmapper\JsonMapperException
      */
+    public function testArrayAndObject()
+    {
+        $mapper = new JsonMapper();
+        $json = '{"numberOfElectrons":4}';
+        // oneof array of int & Atom (having all int fields)
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf(Atom,int[])',
+            'multitypetest\model'
+        );
+        $this->assertInstanceOf('\multitypetest\model\Atom', $res);
+    }
+
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
     public function testMapAndObject()
     {
         $mapper = new JsonMapper();
         $this->expectException(JsonMapperException::class);
-        $this->expectExceptionMessage('Cannot map more than OneOf { int[] and Atom } on: {"numberOfElectrons":4}');
+        $this->expectExceptionMessage('Cannot map more than OneOf { array<string,int> and Atom } on: {"numberOfElectrons":4}');
         $json = '{"numberOfElectrons":4}';
         // oneof map of int & Atom (having all int fields)
         $mapper->mapFor(
             json_decode($json),
-            'oneOf(Atom,int[])',
+            'oneOf(Atom,array<string,int>)',
             'multitypetest\model'
         );
     }
@@ -381,12 +443,12 @@ class MultiTypeTest extends TestCase
     {
         $mapper = new JsonMapper();
         $this->expectException(JsonMapperException::class);
-        $this->expectExceptionMessage('Cannot map more than OneOf { int[][] and Atom[] } on: [{"numberOfElectrons":4,"numberOfProtons":2}]');
+        $this->expectExceptionMessage('Cannot map more than OneOf { array<string,int>[] and Atom[] } on: [{"numberOfElectrons":4,"numberOfProtons":2}]');
         $json = '[{"numberOfElectrons":4,"numberOfProtons":2}]';
         // oneof arrayOfmap of int & array of Atom (having all int fields)
         $mapper->mapFor(
             json_decode($json),
-            'oneOf(Atom[],int[][])',
+            'oneOf(Atom[],array<string,int>[])',
             'multitypetest\model'
         );
     }
@@ -600,7 +662,7 @@ class MultiTypeTest extends TestCase
     {
         $mapper = new JsonMapper();
         $json = '{"value1":31,"value2":32}';
-        $res = $mapper->mapFor(json_decode($json),'oneOf(bool[],int[])');
+        $res = $mapper->mapFor(json_decode($json),'oneOf(array<string,bool>,array<string,int>)');
         $this->assertTrue(is_array($res));
         $this->assertTrue(is_int($res['value1']));
         $this->assertTrue(is_int($res['value2']));
@@ -615,7 +677,7 @@ class MultiTypeTest extends TestCase
     {
         $mapper = new JsonMapper();
         $json = '{"value":[true,false]}';
-        $res = $mapper->mapFor(json_decode($json),'oneOf(bool[][],int[][])');
+        $res = $mapper->mapFor(json_decode($json),'oneOf(array<string,bool[]>,array<string,int[]>)');
         $this->assertTrue(is_array($res));
         $this->assertTrue(is_array($res['value']));
         $this->assertTrue(is_bool($res['value'][0]));
@@ -623,7 +685,7 @@ class MultiTypeTest extends TestCase
         $json = '{"value":[{"numberOfElectrons":4},{"numberOfElectrons":9}]}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'oneOf(Atom[][],Car[][])',
+            'oneOf(array<string,Atom[]>,array<string,Car[]>)',
             'multitypetest\model'
         );
         $this->assertTrue(is_array($res));
@@ -642,7 +704,7 @@ class MultiTypeTest extends TestCase
         $json = '[{"value":true,"value2":false},{"someBool":false}]';
         $res = $mapper->mapFor(
             json_decode($json),
-            'oneOf(bool[][],int[][])',
+            'oneOf(array<string,bool>[],array<string,int>[])',
             'multitypetest\model'
         );
         $this->assertTrue(is_array($res));
@@ -655,13 +717,46 @@ class MultiTypeTest extends TestCase
         $json = '[{"atom1":{"numberOfElectrons":4},"atom2":{"numberOfElectrons":9}}]';
         $res = $mapper->mapFor(
             json_decode($json),
-            'oneOf(Atom[][],Car[][])',
+            'oneOf(array<string,Atom>[],array<string,Car>[])',
             'multitypetest\model'
         );
         $this->assertTrue(is_array($res));
         $this->assertTrue(is_array($res[0]));
         $this->assertInstanceOf('\multitypetest\model\Atom', $res[0]['atom1']);
         $this->assertInstanceOf('\multitypetest\model\Atom', $res[0]['atom2']);
+    }
+
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testMultiDimensionalMaps()
+    {
+        $mapper = new JsonMapper();
+        $json = '{"key0":{"value":true,"value2":false},"key1":{"someBool":false}}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf(array<string,array<string,bool>>,array<string,array<string,int>>)',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertTrue(is_array($res['key0']));
+        $this->assertTrue(is_array($res['key1']));
+        $this->assertTrue(is_bool($res['key0']['value']));
+        $this->assertTrue(is_bool($res['key0']['value2']));
+        $this->assertTrue(is_bool($res['key1']['someBool']));
+
+        $json = '{"key":{"atom1":{"numberOfElectrons":4},"atom2":{"numberOfElectrons":9}}}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf(array<string,array<string,Atom>>,array<string,array<string,Car>>)',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertTrue(is_array($res['key']));
+        $this->assertInstanceOf('\multitypetest\model\Atom', $res['key']['atom1']);
+        $this->assertInstanceOf('\multitypetest\model\Atom', $res['key']['atom2']);
     }
 
     /**
@@ -744,7 +839,7 @@ class MultiTypeTest extends TestCase
         $json = '{"key1":true,"key2":{"numberOfElectrons":4,"numberOfProtons":2},"key3":false}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'oneOf(bool,Atom)[]',
+            'array<string,oneOf(bool,Atom)>',
             'multitypetest\model'
         );
         $this->assertTrue(is_array($res));
@@ -764,7 +859,7 @@ class MultiTypeTest extends TestCase
         $json = '{"value":[{"numberOfElectrons":4},{"haveTrunk":false,"numberOfTyres":6}]}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'oneOf(Atom,Car)[][]',
+            'array<string,oneOf(Atom,Car)[]>',
             'multitypetest\model'
         );
         $this->assertTrue(is_array($res));
@@ -775,7 +870,7 @@ class MultiTypeTest extends TestCase
         $json = '{"value":[[[{"numberOfElectrons":4}]],[[true,true],[false,true]]]}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'oneOf(Atom[][],bool[][])[][]',
+            'array<string,oneOf(Atom[][],bool[][])[]>',
             'multitypetest\model'
         );
         $this->assertTrue(is_array($res));
@@ -792,7 +887,7 @@ class MultiTypeTest extends TestCase
         $json = '{"key0":["alpha",true],"key1":["beta",[12,{"numberOfElectrons":4}],[1,3]],"key2":[false,true]}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'anyOf(bool,oneOf(int,Atom)[],string)[][]',
+            'array<string,anyOf(bool,oneOf(int,Atom)[],string)[]>',
             'multitypetest\model'
         );
         $this->assertTrue(is_array($res));
@@ -818,7 +913,7 @@ class MultiTypeTest extends TestCase
         $json = '[{"key0":{"numberOfElectrons":4},"key1":{"haveTrunk":false,"numberOfTyres":6}}]';
         $res = $mapper->mapFor(
             json_decode($json),
-            'oneOf(Atom,Car)[][]',
+            'array<string,oneOf(Atom,Car)>[]',
             'multitypetest\model'
         );
         $this->assertTrue(is_array($res));
@@ -829,7 +924,7 @@ class MultiTypeTest extends TestCase
         $json = '[{"key0":[[{"numberOfElectrons":4}]],"key1":[[true,true],[false,true]]}]';
         $res = $mapper->mapFor(
             json_decode($json),
-            'oneOf(Atom[][],bool[][])[][]',
+            'array<string,oneOf(Atom[][],bool[][])>[]',
             'multitypetest\model'
         );
         $this->assertTrue(is_array($res));
@@ -846,7 +941,7 @@ class MultiTypeTest extends TestCase
         $json = '[{"key0":"alpha","key1":true},{"key0":"beta","key1":[12,{"numberOfElectrons":4}],"key2":[1,3]},{"key0":false,"key1":true}]';
         $res = $mapper->mapFor(
             json_decode($json),
-            'anyOf(bool,oneOf(int,Atom)[],string)[][]',
+            'array<string,anyOf(bool,oneOf(int,Atom)[],string)>[]',
             'multitypetest\model'
         );
         $this->assertTrue(is_array($res));
@@ -863,6 +958,64 @@ class MultiTypeTest extends TestCase
         $this->assertTrue(is_array($res[2]));
         $this->assertTrue($res[2]['key0'] === false);
         $this->assertTrue($res[2]['key1'] === true);
+    }
+
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testOuterMultiDimensionalMaps()
+    {
+        $mapper = new JsonMapper();
+        $json = '{"item":{"key0":{"numberOfElectrons":4},"key1":{"haveTrunk":false,"numberOfTyres":6}}}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'array<string,array<string,oneOf(Atom,Car)>>',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertTrue(is_array($res['item']));
+        $this->assertInstanceOf('\multitypetest\model\Atom', $res['item']['key0']);
+        $this->assertInstanceOf('\multitypetest\model\Car', $res['item']['key1']);
+
+        $json = '{"item":{"key0":[[{"numberOfElectrons":4}]],"key1":[[true,true],[false,true]]}}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'array<string,array<string,oneOf(Atom[][],bool[][])>>',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertTrue(is_array($res['item']));
+        $this->assertTrue(is_array($res['item']['key0']));
+        $this->assertTrue(is_array($res['item']['key0'][0]));
+        $this->assertInstanceOf('\multitypetest\model\Atom', $res['item']['key0'][0][0]);
+        $this->assertTrue(is_array($res['item']['key1']));
+        $this->assertTrue(is_array($res['item']['key1'][0]));
+        $this->assertTrue(is_bool($res['item']['key1'][0][0]));
+        $this->assertTrue(is_array($res['item']['key1'][1]));
+        $this->assertTrue(is_bool($res['item']['key1'][1][0]));
+
+        $json = '{"item0":{"key0":"alpha","key1":true},"item1":{"key0":"beta","key1":[12,{"numberOfElectrons":4}],"key2":[1,3]},"item2":{"key0":false,"key1":true}}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'array<string,array<string,anyOf(bool,oneOf(int,Atom)[],string)>>',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertTrue(is_array($res['item0']));
+        $this->assertTrue($res['item0']['key0'] === 'alpha');
+        $this->assertTrue(is_bool($res['item0']['key1']));
+        $this->assertTrue(is_array($res['item1']));
+        $this->assertTrue($res['item1']['key0'] === 'beta');
+        $this->assertTrue(is_array($res['item1']['key1']));
+        $this->assertTrue($res['item1']['key1'][0] === 12);
+        $this->assertInstanceOf('\multitypetest\model\Atom', $res['item1']['key1'][1]);
+        $this->assertTrue(is_array($res['item1']['key2']));
+        $this->assertTrue($res['item1']['key2'][0] === 1);
+        $this->assertTrue(is_array($res['item2']));
+        $this->assertTrue($res['item2']['key0'] === false);
+        $this->assertTrue($res['item2']['key1'] === true);
     }
 
     /**
@@ -924,11 +1077,11 @@ class MultiTypeTest extends TestCase
      * @covers \apimatic\jsonmapper\TypeCombination
      * @covers \apimatic\jsonmapper\JsonMapperException
      */
-    public function testOuterArrayCaseFailWithAnyOf()
+    public function testOuterArrayFailWithAnyOf()
     {
         $mapper = new JsonMapper();
         $this->expectException(JsonMapperException::class);
-        $this->expectExceptionMessage('Unable to map AnyOf (float[],(bool,(int,Atom)[],string)) on: {"key0":["alpha",true],"key2":[false,true],"key3":[1.1,3.3],"key1":["beta",[12,{"numberOfElectrons":4}],[1,3]]}');
+        $this->expectExceptionMessage('Unable to map AnyOf (float[],(bool,(int,Atom)[],string)[][]) on: {"key0":["alpha",true],"key2":[false,true],"key3":[1.1,3.3],"key1":["beta",[12,{"numberOfElectrons":4}],[1,3]]}');
         $json = '{"key0":["alpha",true],"key2":[false,true],"key3":[1.1,3.3]' .
             ',"key1":["beta",[12,{"numberOfElectrons":4}],[1,3]]}';
         $mapper->mapFor(
@@ -943,15 +1096,15 @@ class MultiTypeTest extends TestCase
      * @covers \apimatic\jsonmapper\TypeCombination
      * @covers \apimatic\jsonmapper\JsonMapperException
      */
-    public function testOuterArrayCaseFailWith2DMapOfAtomAnd2DMapOfIntArray()
+    public function testOuterArrayFailWith2DMapOfAtomAnd2DMapOfIntArray()
     {
         $mapper = new JsonMapper();
         $this->expectException(JsonMapperException::class);
-        $this->expectExceptionMessage('Cannot map more than OneOf { (bool,(int,Atom)[],string)[][] and int[][][] } on: {"key":{"element":{"atom":1,"orbits":9},"compound":[4,8]}}');
-        $json = '{"key":{"element":{"atom":1,"orbits":9},"compound":[4,8]}}';
+        $this->expectExceptionMessage('Cannot map more than OneOf { array<string,array<string,(bool,array<string,(int,Atom)>,string)>> and array<string,array<string,array<string,int>>> } on: {"key":{"element":{"atom":1,"orbits":9},"compound":{"num1":4,"num2":8}}}');
+        $json = '{"key":{"element":{"atom":1,"orbits":9},"compound":{"num1":4,"num2":8}}}';
         $mapper->mapFor(
             json_decode($json),
-            'oneOf(int[][][],anyOf(bool,oneOf(int,Atom)[],string)[][])',
+            'oneOf(array<string,array<string,array<string,int>>>,array<string,array<string,anyOf(bool,array<string,oneOf(int,Atom)>,string)>>)',
             'multitypetest\model'
         );
     }
@@ -961,7 +1114,7 @@ class MultiTypeTest extends TestCase
      * @covers \apimatic\jsonmapper\TypeCombination
      * @covers \apimatic\jsonmapper\JsonMapperException
      */
-    public function testOuterArrayFailWithMapOfStringInsteadOfMapOfArrayOfString()
+    public function testOuterArrayFailWithStringInsteadOfArrayOfString()
     {
         $mapper = new JsonMapper();
         $this->expectException(JsonMapperException::class);
@@ -970,7 +1123,64 @@ class MultiTypeTest extends TestCase
             ',"key2":[false,true]}';
         $mapper->mapFor(
             json_decode($json),
-            'anyOf(bool,oneOf(int,Atom)[],string)[][]',
+            'array<string,anyOf(bool,oneOf(int,Atom)[],string)[]>',
+            'multitypetest\model'
+        );
+    }
+
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testOuterArrayFailWithMapOfStringInsteadOfArrayOfString()
+    {
+        $mapper = new JsonMapper();
+        $this->expectException(JsonMapperException::class);
+        $this->expectExceptionMessage('Unable to map Array: (bool,(int,Atom)[],string)[] on: {"item":"alpha"}');
+        $json = '{"key0":["beta",[12,{"numberOfElectrons":4}],[1,3]],"key1":{"item":"alpha"}' .
+            ',"key2":[false,true]}';
+        $mapper->mapFor(
+            json_decode($json),
+            'array<string,anyOf(bool,oneOf(int,Atom)[],string)[]>',
+            'multitypetest\model'
+        );
+    }
+
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testOuterMapFailWithStringInsteadOfMapOfString()
+    {
+        $mapper = new JsonMapper();
+        $this->expectException(JsonMapperException::class);
+        $this->expectExceptionMessage('Unable to map Associative Array: array<string,(bool,(int,Atom)[],string)> on: "alpha"');
+        $json = '{"key0":{"item0":"beta","item1":[12,{"numberOfElectrons":4}],"item2":[1,3]},"key1":"alpha"' .
+            ',"key2":{"item0":false,"item1":true}}';
+        $mapper->mapFor(
+            json_decode($json),
+            'array<string,array<string,anyOf(bool,oneOf(int,Atom)[],string)>>',
+            'multitypetest\model'
+        );
+    }
+
+    /**
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testOuterMapFailWithArrayOfStringInsteadOfMapOfString()
+    {
+        $mapper = new JsonMapper();
+        $this->expectException(JsonMapperException::class);
+        $this->expectExceptionMessage('Unable to map Associative Array: array<string,(bool,(int,Atom)[],string)> on: ["alpha"]');
+        $json = '{"key0":{"item0":"beta","item1":[12,{"numberOfElectrons":4}],"item2":[1,3]},"key1":["alpha"]' .
+            ',"key2":{"item0":false,"item1":true}}';
+        $mapper->mapFor(
+            json_decode($json),
+            'array<string,array<string,anyOf(bool,oneOf(int,Atom)[],string)>>',
             'multitypetest\model'
         );
     }

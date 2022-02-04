@@ -207,6 +207,34 @@ class JsonMapper
     }
 
     /**
+     * Checks if type is an array, and extracts its dimensions and inner type.
+     *
+     * @param $type       string Type to be checked for array.
+     * @param $dimensions int    Dimensions passed in recursions, initial: 0.
+     *
+     * @return array
+     */
+    public function getArrayTypeAndDimensions($type, $dimensions = 0)
+    {
+        $typeEnd = strrpos($type, '>');
+        $typeEnd = $typeEnd == false ? 0 : $typeEnd;
+        $arrayDepth = substr_count($type, '[]', $typeEnd);
+        if ($arrayDepth > 0) {
+            // if its array of some type
+            // excluding subtype from type: TYPE[]
+            $subtype = substr($type, 0, -2 * $arrayDepth);
+            $dimensions += $arrayDepth;
+            return $this->getArrayTypeAndDimensions($subtype, $dimensions);
+        } else if (strpos($type, 'array<string,') === 0 && $typeEnd > 0) {
+            // if its map of some type
+            // excluding subtype from type: array<string,TYPE>
+            $subtype = substr($type, strlen('array<string,'), -1);
+            return $this->getArrayTypeAndDimensions($subtype, ++$dimensions);
+        }
+        return array($type, $dimensions);
+    }
+
+    /**
      * Try calling the factory method if exists, otherwise throw JsonMapperException
      *
      * @param $factoryMethod string factory method in the format "type method()"
@@ -289,12 +317,10 @@ class JsonMapper
         }
 
         $array = null;
-        $subtype = null;
-        $dimension = substr_count($type, '[]');
+        list($subtype, $dimension) = $this->getArrayTypeAndDimensions($type);
         if ($dimension > 0) {
             // array with some dimensions
             $array = array();
-            $subtype = substr($type, 0, -2 * $dimension);
         } else if (substr($type, -1) == ']') {
             list($proptype, $subtype) = explode('[', substr($type, 0, -1));
             if (!$this->isSimpleType($proptype)) {
@@ -304,6 +330,7 @@ class JsonMapper
         } else if ($type == 'ArrayObject'
             || is_subclass_of($type, 'ArrayObject')
         ) {
+            $subtype = null;
             $array = $this->createInstance($type);
         }
 
@@ -350,7 +377,24 @@ class JsonMapper
     }
 
     /**
-     * Map the data in $value into the specified $typeGroup i.e. oneOf(A,B)
+     * Check if an array isAssociative (has string keys)
+     *
+     * @param  array $array A valid array
+     *
+     * @return bool  True if the array have a string key, false otherwise
+     */
+    protected function isAssociative($array)
+    {
+        foreach ($array as $key => $value) {
+            if (is_string($key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Map the data in $value by the provided $typeGroup i.e. oneOf(A,B)
      * will try to map value with only one of A or B, that matched. While
      * anyOf(A,B) will try to map it with any of A or B and sets its type to
      * the first one that matched.
@@ -387,32 +431,39 @@ class JsonMapper
                 $deserializers
             );
         }
-        if ($typeGroup->getDimension() > 0) {
-            // if it's a multidimensional type group
-            if (!is_array($value) && !is_object($value)) {
-                // throwing exception if json is not multidimensional
-                // i.e. neither array nor object/map
+        $isArrayGroup = $typeGroup->getGroupName() == 'array';
+        $isMapGroup = $typeGroup->getGroupName() == 'map';
+        if ($isArrayGroup || $isMapGroup) {
+            $isIndexedArray = is_array($value) && !$this->isAssociative($value);
+            if ($isArrayGroup && !$isIndexedArray) {
+                // throwing exception if its arrayGroup but value is not
+                // an indexed array
                 throw new JsonMapperException(
                     'Unable to map Array: ' .
                     TypeCombination::generateTypeString($typeGroup) .
                     ' on: ' . json_encode($value)
                 );
             }
+            $isAssociativeArray = is_array($value) && $this->isAssociative($value);
+            if ($isMapGroup && !is_object($value) && !$isAssociativeArray ) {
+                // throwing exception if its mapGroup but value is not
+                // an associative array
+                throw new JsonMapperException(
+                    'Unable to map Associative Array: ' .
+                    TypeCombination::generateTypeString($typeGroup) .
+                    ' on: ' . json_encode($value)
+                );
+            }
             $mappedObject = [];
-            // decreasing typeGroup dimension by 1 to check for inner values
-            $typeGroup->decreaseDimension();
             foreach ($value as $k => $v) {
                 $mappedObject[$k] = $this->mapFor(
                     $v,
-                    $typeGroup,
+                    $typeGroup->getTypes()[0],
                     $namespace,
                     null,
                     $className
                 );
             }
-            // reseting typeGroup dimension to check for other values
-            // at the same dimension level
-            $typeGroup->increaseDimension();
             return $mappedObject;
         }
         return $this->checkMappingsFor(
@@ -544,7 +595,7 @@ class JsonMapper
      * @param string        $type           type defined in param's typehint
      * @param string[]|null $factoryMethods Callable factory methods for property
      * @param string        $namespace      Namespace of the class
-     * @param string        $className      Class refrencing the factory methods
+     * @param string        $className      Class referencing the factory methods
      *
      * @return array array(bool $matched, ?string $method) $matched represents if
      *               Type matched with value, $method represents the selected
@@ -574,7 +625,7 @@ class JsonMapper
                             continue; // continue if method not accessible
                         }
                     }
-                    // return true immediatly if method found, is accessible.
+                    // return true immediately if method found, is accessible.
                     return array(true, $method);
                 }
             }
@@ -583,21 +634,36 @@ class JsonMapper
                 return array(false, null);
             }
         }
-        if (substr($type, -2) == '[]') {
-            // if type is array like string[] or int[]
-            if (is_array($value) || is_object($value)) {
-                // if value is also of array type
-                $type = substr($type, 0, -2);
+        $mapStart = 'array<string,';
+        $isMapType = substr($type, -1) == '>' && strpos($type, $mapStart) === 0;
+        $isArrayType = substr($type, -2) == '[]';
+        if ($isArrayType) {
+            // extracting subtype of array
+            $type = substr($type, 0, -2);
+        } else if ($isMapType) {
+            // extracting subtype of map
+            $type = substr($type, strlen($mapStart), -1);
+        }
+        if ($isArrayType || $isMapType) {
+            // if type is array like string[] or int[] or map like array<string,int>
+            $isIndexedArray = is_array($value) && !$this->isAssociative($value);
+            $isAssociativeArray = is_array($value) && $this->isAssociative($value);
+            if (
+                ($isArrayType && $isIndexedArray) ||
+                ($isMapType && (is_object($value) || $isAssociativeArray))
+            ) {
+                // Value must be indexed array for ArrayType
+                // Or it must be associativeArray/object for MapType
                 foreach ($value as $v) {
                     if (!$this->isValueOfType($v, $type, null, $namespace, '')[0]) {
                         // false if any element is not of same type
                         return array(false, null);
                     }
                 }
-                // true only if all elements in the array are of same type
+                // true only if all elements in the array/map are of same type
                 return array(true, null);
             }
-            return array(false, null); // false if type was array but value is not
+            return array(false, null); // false if type was array/map but value is not
         }
         // Check for simple types
         $matched = $type == 'mixed'

@@ -370,6 +370,28 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * Test for a map of classes "@var array<string,Classname>"
+     *
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testMapTypedMap()
+    {
+        $jm = new JsonMapper();
+        $sn = $jm->map(
+            json_decode('{"typedMap":{"key0":{"str":"stringvalue"},"key1":{"fl":"1.2"}}}'),
+            new JsonMapperTest_Array()
+        );
+        $this->assertTrue(is_array($sn->typedMap));
+        $this->assertEquals(2, count($sn->typedMap));
+        $this->assertInstanceOf('JsonMapperTest_Simple', $sn->typedMap['key0']);
+        $this->assertInstanceOf('JsonMapperTest_Simple', $sn->typedMap['key1']);
+        $this->assertEquals('stringvalue', $sn->typedMap['key0']->str);
+        $this->assertEquals(1.2, $sn->typedMap['key1']->fl);
+    }
+
+    /**
      * @covers \apimatic\jsonmapper\JsonMapper
      * @covers \apimatic\jsonmapper\TypeCombination
      * @covers \apimatic\jsonmapper\JsonMapperException
@@ -529,6 +551,87 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue(is_string($sn->strArray[0]));
         $this->assertTrue(is_string($sn->strArray[1]));
         $this->assertTrue(is_string($sn->strArray[2]));
+    }
+
+    /**
+     * Test for a map of strings - "@var array<string,string>"
+     *
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testStrMap()
+    {
+        $jm = new JsonMapper();
+        $sn = $jm->map(
+            json_decode('{"strMap":{"key0":"str","key1":false,"key2":2.048}}'),
+            new JsonMapperTest_Array()
+        );
+        $this->assertTrue(is_array($sn->strMap));
+        $this->assertEquals(3, count($sn->strMap));
+        $this->assertTrue(is_string($sn->strMap['key0']));
+        $this->assertTrue(is_string($sn->strMap['key1']));
+        $this->assertTrue(is_string($sn->strMap['key2']));
+    }
+
+    /**
+     * Test for a map of array of strings - "@var array<string,string[]>"
+     *
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testStrMapOfArray()
+    {
+        $jm = new JsonMapper();
+        $sn = $jm->map(
+            json_decode('{"strMapOfArray":{"key0":["str","other"],"key1":[false,3],"key2":[2.048,"asad"]}}'),
+            new JsonMapperTest_Array()
+        );
+        $this->assertTrue(is_array($sn->strMapOfArray));
+        $this->assertEquals(3, count($sn->strMapOfArray));
+        $this->assertTrue(is_array($sn->strMapOfArray['key0']));
+        $this->assertEquals(2, count($sn->strMapOfArray['key0']));
+        $this->assertTrue(is_string($sn->strMapOfArray['key0'][0]));
+        $this->assertTrue(is_string($sn->strMapOfArray['key0'][1]));
+        $this->assertTrue(is_array($sn->strMapOfArray['key1']));
+        $this->assertEquals(2, count($sn->strMapOfArray['key1']));
+        $this->assertTrue(is_string($sn->strMapOfArray['key1'][0]));
+        $this->assertTrue(is_string($sn->strMapOfArray['key1'][1]));
+        $this->assertTrue(is_array($sn->strMapOfArray['key2']));
+        $this->assertEquals(2, count($sn->strMapOfArray['key2']));
+        $this->assertTrue(is_string($sn->strMapOfArray['key2'][0]));
+        $this->assertTrue(is_string($sn->strMapOfArray['key2'][1]));
+    }
+
+    /**
+     * Test for an array of map of strings - "@var array<string,string>[]"
+     *
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testStrArrayOfMap()
+    {
+        $jm = new JsonMapper();
+        $sn = $jm->map(
+            json_decode('{"strArrayOfMap":[{"key0":"str","key1":"other"},{"key0":false,"key1":3},{"key0":2.048,"key1":"asad"}]}'),
+            new JsonMapperTest_Array()
+        );
+        $this->assertTrue(is_array($sn->strArrayOfMap));
+        $this->assertEquals(3, count($sn->strArrayOfMap));
+        $this->assertTrue(is_array($sn->strArrayOfMap[0]));
+        $this->assertEquals(2, count($sn->strArrayOfMap[0]));
+        $this->assertTrue(is_string($sn->strArrayOfMap[0]['key0']));
+        $this->assertTrue(is_string($sn->strArrayOfMap[0]['key1']));
+        $this->assertTrue(is_array($sn->strArrayOfMap[1]));
+        $this->assertEquals(2, count($sn->strArrayOfMap[1]));
+        $this->assertTrue(is_string($sn->strArrayOfMap[1]['key0']));
+        $this->assertTrue(is_string($sn->strArrayOfMap[1]['key1']));
+        $this->assertTrue(is_array($sn->strArrayOfMap[2]));
+        $this->assertEquals(2, count($sn->strArrayOfMap[2]));
+        $this->assertTrue(is_string($sn->strArrayOfMap[2]['key0']));
+        $this->assertTrue(is_string($sn->strArrayOfMap[2]['key1']));
     }
 
     /**
