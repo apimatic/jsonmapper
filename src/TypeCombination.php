@@ -163,9 +163,8 @@ class TypeCombination
                     $deserializer
                 );
             }
-            if (
-                substr($typeGroup, -1) == '>' &&
-                strpos($typeGroup, 'array<string,') === 0
+            if (substr($typeGroup, -1) == '>' 
+                && strpos($typeGroup, 'array<string,') === 0
             ) {
                 return self::createTypeGroup(
                     'map',
@@ -202,14 +201,14 @@ class TypeCombination
      * Creates a TypeCombination object with the given name and inner
      * types group that must be another typeCombination object
      *
-     * @param string    $name          Group name for the outer typeCombination
+     * @param string   $name           Group name for the outer typeCombination
      *                                 object.
      * @param string   $innerTypeGroup typeGroup to be created and inserted
      * @param string[] $deserializers  deserializer for the type group
      *
      * @return TypeCombination
      */
-    private static function createTypeGroup($name, $innerTypeGroup, $deserializers)
+    private static function _createTypeGroup($name, $innerTypeGroup, $deserializers)
     {
         return new self(
             $name,

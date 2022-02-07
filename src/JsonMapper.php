@@ -379,7 +379,7 @@ class JsonMapper
     /**
      * Check if an array isAssociative (has string keys)
      *
-     * @param  array $array A valid array
+     * @param array $array A valid array
      *
      * @return bool  True if the array have a string key, false otherwise
      */
@@ -648,9 +648,8 @@ class JsonMapper
             // if type is array like string[] or int[] or map like array<string,int>
             $isIndexedArray = is_array($value) && !$this->isAssociative($value);
             $isAssociativeArray = is_array($value) && $this->isAssociative($value);
-            if (
-                ($isArrayType && $isIndexedArray) ||
-                ($isMapType && (is_object($value) || $isAssociativeArray))
+            if (($isArrayType && $isIndexedArray) 
+                || ($isMapType && (is_object($value) || $isAssociativeArray))
             ) {
                 // Value must be indexed array for ArrayType
                 // Or it must be associativeArray/object for MapType
@@ -663,7 +662,7 @@ class JsonMapper
                 // true only if all elements in the array/map are of same type
                 return array(true, null);
             }
-            return array(false, null); // false if type was array/map but value is not
+            return array(false, null); // false if type is array/map but value is not
         }
         // Check for simple types
         $matched = $type == 'mixed'
