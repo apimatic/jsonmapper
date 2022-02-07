@@ -637,15 +637,8 @@ class JsonMapper
         $mapStart = 'array<string,';
         $isMapType = substr($type, -1) == '>' && strpos($type, $mapStart) === 0;
         $isArrayType = substr($type, -2) == '[]';
-        if ($isArrayType) {
-            // extracting subtype of array
-            $type = substr($type, 0, -2);
-        } else if ($isMapType) {
-            // extracting subtype of map
-            $type = substr($type, strlen($mapStart), -1);
-        }
         if ($isArrayType || $isMapType) {
-            // if type is array like string[] or int[] or map like array<string,int>
+            // if type is array like int[] or map like array<string,int>
             $isIndexedArray = is_array($value) && !$this->isAssociative($value);
             $isAssociativeArray = is_array($value) && $this->isAssociative($value);
             if (($isArrayType && $isIndexedArray) 
@@ -653,6 +646,9 @@ class JsonMapper
             ) {
                 // Value must be indexed array for ArrayType
                 // Or it must be associativeArray/object for MapType
+                // Extracting inner type for arrays/maps
+                $type = $isMapType ? substr($type, strlen($mapStart), -1)
+                    : ($isArrayType ? substr($type, 0, -2) : $type);
                 foreach ($value as $v) {
                     if (!$this->isValueOfType($v, $type, null, $namespace, '')[0]) {
                         // false if any element is not of same type
