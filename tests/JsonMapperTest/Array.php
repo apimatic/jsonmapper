@@ -61,6 +61,12 @@ class JsonMapperTest_Array
     public $typedMap;
 
     /**
+     * @var array<string,JsonMapperTest_Simple>[]
+     * @see http://phpdoc.org/docs/latest/references/phpdoc/types.html#arrays
+     */
+    public $typedArrayOfMap;
+
+    /**
      * @var DateTime[]
      */
     public $typedSimpleArray;

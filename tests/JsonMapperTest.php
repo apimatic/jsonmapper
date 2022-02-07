@@ -357,6 +357,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     public function testMapTypedArray()
     {
         $jm = new JsonMapper();
+        $jm->arChildClasses['JsonMapperTest_Simple'] = array();
         $sn = $jm->map(
             json_decode('{"typedArray":[{"str":"stringvalue"},{"fl":"1.2"}]}'),
             new JsonMapperTest_Array()
@@ -379,6 +380,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     public function testMapTypedMap()
     {
         $jm = new JsonMapper();
+        $jm->arChildClasses['JsonMapperTest_Simple'] = array();
         $sn = $jm->map(
             json_decode('{"typedMap":{"key0":{"str":"stringvalue"},"key1":{"fl":"1.2"}}}'),
             new JsonMapperTest_Array()
@@ -389,6 +391,35 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf('JsonMapperTest_Simple', $sn->typedMap['key1']);
         $this->assertEquals('stringvalue', $sn->typedMap['key0']->str);
         $this->assertEquals(1.2, $sn->typedMap['key1']->fl);
+    }
+
+    /**
+     * Test for an array of map of classes "@var array<string,Classname>[]"
+     *
+     * @covers \apimatic\jsonmapper\JsonMapper
+     * @covers \apimatic\jsonmapper\TypeCombination
+     * @covers \apimatic\jsonmapper\JsonMapperException
+     */
+    public function testMapTypedArrayOfMap()
+    {
+        $jm = new JsonMapper();
+        $jm->arChildClasses['JsonMapperTest_Simple'] = array();
+        $sn = $jm->map(
+            json_decode('{"typedArrayOfMap":[{"class1":{"str":"stringvalue"},"class2":{"fl":"1.2"}},{"class3":{"pbool":true}}]}'),
+            new JsonMapperTest_Array()
+        );
+        $this->assertTrue(is_array($sn->typedArrayOfMap));
+        $this->assertEquals(2, count($sn->typedArrayOfMap));
+        $this->assertTrue(is_array($sn->typedArrayOfMap[0]));
+        $this->assertTrue(is_array($sn->typedArrayOfMap[1]));
+        $this->assertEquals(2, count($sn->typedArrayOfMap[0]));
+        $this->assertInstanceOf('JsonMapperTest_Simple', $sn->typedArrayOfMap[0]['class1']);
+        $this->assertInstanceOf('JsonMapperTest_Simple', $sn->typedArrayOfMap[0]['class2']);
+        $this->assertEquals(1, count($sn->typedArrayOfMap[1]));
+        $this->assertInstanceOf('JsonMapperTest_Simple', $sn->typedArrayOfMap[1]['class3']);
+        $this->assertEquals('stringvalue', $sn->typedArrayOfMap[0]['class1']->str);
+        $this->assertEquals(1.2, $sn->typedArrayOfMap[0]['class2']->fl);
+        $this->assertEquals(true, $sn->typedArrayOfMap[1]['class3']->pbool);
     }
 
     /**

@@ -552,14 +552,6 @@ class JsonMapper
                     $className
                 );
             } catch (Exception $e) {
-                if (strpos(
-                    $e->getMessage(),
-                    'Cannot map more than OneOf'
-                ) != false
-                ) {
-                    // throw exception if mapped by more than one types
-                    throw $e;
-                }
                 continue; // ignore the type if it can't be mapped for given value
             }
             $matchedType = $typ;
@@ -1153,8 +1145,6 @@ class JsonMapper
      * @param \ReflectionType $type Reflection type instance
      *
      * @return string
-     *
-     * @codeCoverageIgnore
      */
     protected static function reflectionTypeToString($type)
     {
