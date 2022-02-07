@@ -157,7 +157,7 @@ class TypeCombination
         $end = $end == false ? strrpos($typeGroup, ')') : $end;
         if ($start !== false && $end !== false) {
             if (substr($typeGroup, -2) == '[]') {
-                return self::createTypeGroup(
+                return self::_createTypeGroup(
                     'array',
                     substr($typeGroup, 0, -2),
                     $deserializer
@@ -166,7 +166,7 @@ class TypeCombination
             if (substr($typeGroup, -1) == '>' 
                 && strpos($typeGroup, 'array<string,') === 0
             ) {
-                return self::createTypeGroup(
+                return self::_createTypeGroup(
                     'map',
                     substr($typeGroup, strlen('array<string,'), -1),
                     $deserializer
