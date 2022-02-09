@@ -258,6 +258,39 @@ class JsonMapper
     }
 
     /**
+     * Try calling deserializer function with value, return true if call successful.
+     *
+     * @param $value        mixed  value to be checked if deserializable.
+     * @param $deserializer string deserializer function string in the format
+     *                      "pathToCallableFunction typeOfValue".
+     *
+     * @return bool Return true if is value Deserializable, false otherwise.
+     */
+    protected function isValueDeserializable($value, $deserializer)
+    {
+        if (version_compare(phpversion(), '7.0', '<')) {
+            try {
+                $this->callFactoryMethod($deserializer, $value, '');
+            } catch (Exception $e) {
+                // In Php versions < 7.0 catching only exceptions but not typeErrors
+                // since strict types were not available for php < 7.0
+                // also we can't use throwable since its only available after php 7.0
+                return false;
+            }
+        } else {
+            try {
+                $this->callFactoryMethod($deserializer, $value, '');
+            } catch (\Throwable $e) {
+                // In Php versions >= 7.0 catching exceptions including typeErrors
+                // using Throwable since its base interface for Exceptions & Errors
+                // since types can be strict for php >= 7.0
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Get mapped value for a property in an object.
      *
      * @param $jvalue           mixed          Raw normalized data for the property
@@ -377,20 +410,27 @@ class JsonMapper
     }
 
     /**
-     * Check if an array isAssociative (has string keys)
+     * Check if an array is Associative (has string keys) or
+     * its Indexed (empty or non-string keys), returns [isAssociative, isIndexed]
      *
-     * @param array $array A valid array
+     * @param mixed $value A value that could be isAssociative or isIndexed array
      *
-     * @return bool  True if the array have a string key, false otherwise
+     * @return array Returns Array of result i.e [isAssociative, isIndexed]
      */
-    protected function isAssociative($array)
+    protected function isAssociativeOrIndexed($value)
     {
-        foreach ($array as $key => $value) {
+        if (is_object($value)) {
+            return [true, false];
+        }
+        if (!is_array($value)) {
+            return [false, false];
+        }
+        foreach ($value as $key => $v) {
             if (is_string($key)) {
-                return true;
+                return [true, false];
             }
         }
-        return false;
+        return [false, true];
     }
 
     /**
@@ -425,31 +465,22 @@ class JsonMapper
     ) {
         if (is_string($typeGroup)) {
             // convert into TypeCombination object
-            $deserializers = isset($factoryMethods) ? $factoryMethods : [];
             $typeGroup = TypeCombination::generateTypeCombination(
                 $typeGroup,
-                $deserializers
+                isset($factoryMethods) ? $factoryMethods : []
             );
         }
         $isArrayGroup = $typeGroup->getGroupName() == 'array';
         $isMapGroup = $typeGroup->getGroupName() == 'map';
         if ($isArrayGroup || $isMapGroup) {
-            $isIndexedArray = is_array($value) && !$this->isAssociative($value);
-            if ($isArrayGroup && !$isIndexedArray) {
-                // throwing exception if its arrayGroup but value is not
-                // an indexed array
+            list($isAssociative, $isIndexed) = $this->isAssociativeOrIndexed($value);
+            if (($isMapGroup && !$isAssociative) || ($isArrayGroup && !$isIndexed)) {
+                // Throw exception:
+                // IF value is not associative array with groupType == map
+                // Or value is not indexed array with groupType == array
+                $typeName = $isMapGroup ? 'Associative Array' : 'Array';
                 throw new JsonMapperException(
-                    'Unable to map Array: ' .
-                    TypeCombination::generateTypeString($typeGroup) .
-                    ' on: ' . json_encode($value)
-                );
-            }
-            $isAssociativeArray = is_array($value) && $this->isAssociative($value);
-            if ($isMapGroup && !is_object($value) && !$isAssociativeArray ) {
-                // throwing exception if its mapGroup but value is not
-                // an associative array
-                throw new JsonMapperException(
-                    'Unable to map Associative Array: ' .
+                    "Unable to map $typeName: " .
                     TypeCombination::generateTypeString($typeGroup) .
                     ' on: ' . json_encode($value)
                 );
@@ -524,7 +555,7 @@ class JsonMapper
     ) {
         $mappedObject = null;
         $mappedWith = '';
-        $allDeserializers = $type->getDeserializers();
+        $deserializers = $type->getDeserializers();
         $selectedDeserializer = null;
         // check json value for each type in types array
         foreach ($type->getTypes() as $typ) {
@@ -533,9 +564,8 @@ class JsonMapper
                     list($m, $meth) = $this->isValueOfType(
                         $json,
                         $typ,
-                        $allDeserializers,
-                        $namespace,
-                        $className
+                        $deserializers,
+                        $namespace
                     );
                     if (!$m) {
                         // skip this type as it can't be mapped on the given value.
@@ -583,11 +613,11 @@ class JsonMapper
     /**
      * Checks types against the value.
      *
-     * @param mixed         $value          param's value
-     * @param string        $type           type defined in param's typehint
-     * @param string[]|null $factoryMethods Callable factory methods for property
-     * @param string        $namespace      Namespace of the class
-     * @param string        $className      Class referencing the factory methods
+     * @param mixed    $value         param's value
+     * @param string   $type          type defined in param's typehint
+     * @param string[] $deserializers deserializer functions array in the format
+     *                                ["pathToCallableFunction typeOfValue", ...]
+     * @param string   $namespace     Namespace of the class
      *
      * @return array array(bool $matched, ?string $method) $matched represents if
      *               Type matched with value, $method represents the selected
@@ -598,31 +628,21 @@ class JsonMapper
     protected function isValueOfType(
         $value,
         $type,
-        $factoryMethods,
-        $namespace,
-        $className
+        $deserializers,
+        $namespace
     ) {
-        if (isset($factoryMethods)) {
+        if (!empty($deserializers)) {
             $methodFound = false;
-            foreach ($factoryMethods as $method) {
+            foreach ($deserializers as $method) {
                 if (isset($method) && explode(' ', $method)[1] == $type) {
                     $methodFound = true;
-                    if (version_compare(phpversion(), '7.0', '<')) {
-                        // if php version is less than 7.0
-                        $this->callFactoryMethod($method, $value, $className);
-                    } else {
-                        try {
-                            $this->callFactoryMethod($method, $value, $className);
-                        } catch (\Throwable $e){
-                            continue; // continue if method not accessible
-                        }
+                    if ($this->isValueDeserializable($value, $method)) {
+                        return array(true, $method);
                     }
-                    // return true immediately if method found, is accessible.
-                    return array(true, $method);
                 }
             }
             if ($methodFound) {
-                // if method with type found but not accessible
+                // if method was found but couldn't deserialize value
                 return array(false, null);
             }
         }
@@ -631,18 +651,15 @@ class JsonMapper
         $isArrayType = substr($type, -2) == '[]';
         if ($isArrayType || $isMapType) {
             // if type is array like int[] or map like array<string,int>
-            $isIndexedArray = is_array($value) && !$this->isAssociative($value);
-            $isAssociativeArray = is_array($value) && $this->isAssociative($value);
-            if (($isArrayType && $isIndexedArray) 
-                || ($isMapType && (is_object($value) || $isAssociativeArray))
-            ) {
-                // Value must be indexed array for ArrayType
-                // Or it must be associativeArray/object for MapType
+            list($isAssociative, $isIndexed) = $this->isAssociativeOrIndexed($value);
+            if (($isMapType && $isAssociative) || ($isArrayType && $isIndexed)) {
+                // Value must be associativeArray/object for MapType
+                // Or it must be indexed array for ArrayType
                 // Extracting inner type for arrays/maps
                 $type = $isMapType ? substr($type, strlen($mapStart), -1)
                     : ($isArrayType ? substr($type, 0, -2) : $type);
                 foreach ($value as $v) {
-                    if (!$this->isValueOfType($v, $type, null, $namespace, '')[0]) {
+                    if (!$this->isValueOfType($v, $type, [], $namespace)[0]) {
                         // false if any element is not of same type
                         return array(false, null);
                     }
