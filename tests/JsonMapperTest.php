@@ -46,15 +46,14 @@ use apimatic\jsonmapper\JsonMapperException;
  * @author   Christian Weiske <christian.weiske@netresearch.de>
  * @license  OSL-3.0 http://opensource.org/licenses/osl-3.0
  * @link     http://www.netresearch.de/
+ * @covers \apimatic\jsonmapper\JsonMapper
+ * @covers \apimatic\jsonmapper\TypeCombination
+ * @covers \apimatic\jsonmapper\JsonMapperException
  */
 class JsonMapperTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * Test for "@var string"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleString()
     {
@@ -69,10 +68,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     
     /**
      * Test for "@var string"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleStringWithMapClass()
     {
@@ -87,10 +82,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for "@var float"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleFloat()
     {
@@ -105,10 +96,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for "@var double"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleDouble()
     {
@@ -123,10 +110,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for "@var bool"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleBool()
     {
@@ -141,10 +124,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for "@var boolean"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleBoolean()
     {
@@ -159,10 +138,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for "@var int"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleInt()
     {
@@ -177,10 +152,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for "@var integer"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleInteger()
     {
@@ -195,10 +166,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for "@var mixed"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleMixed()
     {
@@ -220,10 +187,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for "@var int|null" with int value
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleNullableInt()
     {
@@ -238,10 +201,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for "@var int|null" with null value
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleNullableNull()
     {
@@ -256,10 +215,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for "@var int|null" with string value
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleNullableWrong()
     {
@@ -274,10 +229,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for variable with no @var annotation
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleNoType()
     {
@@ -292,10 +243,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Variable with an underscore
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleUnderscore()
     {
@@ -310,10 +257,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Variable with an underscore and a setter method
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleUnderscoreSetter()
     {
@@ -330,10 +273,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for a class name "@var Classname"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapObject()
     {
@@ -349,10 +288,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for an array of classes "@var Classname[]"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapTypedArray()
     {
@@ -372,10 +307,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for a map of classes "@var array<string,Classname>"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapTypedMap()
     {
@@ -395,10 +326,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for an array of map of classes "@var array<string,Classname>[]"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapTypedArrayOfMap()
     {
@@ -422,11 +349,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(true, $sn->typedArrayOfMap[1]['class3']->pbool);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testMapTypedWithNullValue(Type $var = null)
     {
         $jm = new JsonMapper();
@@ -437,10 +359,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     /**
      * Test for an array of classes "@var ClassName[]" with
      * flat/simple json values (string, float)
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapTypedSimpleArray()
     {
@@ -462,11 +380,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         );
     }
     
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testMapClassSimple()
     {
         $jm = new JsonMapper();
@@ -478,11 +391,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('stringvalue', $sn->str);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testMapClassNullJson()
     {
         $jm = new JsonMapper();
@@ -490,11 +398,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(null, $sn);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testMapClassWithNonObject()
     {
         $this->expectException(InvalidArgumentException::class);
@@ -503,11 +406,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $sn = $jm->mapClass(123, 'JsonMapperTest_Simple');
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testMapNullJson()
     {
         $this->expectException(InvalidArgumentException::class);
@@ -516,11 +414,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $sn = $jm->map(null, new JsonMapperTest_Simple());
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testMapNullObject()
     {
         $this->expectException(InvalidArgumentException::class);
@@ -529,11 +422,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $sn = $jm->map(new stdClass(), null);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testMapArrayJsonNoTypeEnforcement()
     {
         $jm = new JsonMapper();
@@ -544,10 +432,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for an array of float "@var float[]"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testFlArray()
     {
@@ -565,10 +449,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for an array of strings - "@var string[]"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testStrArray()
     {
@@ -586,10 +466,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for a map of strings - "@var array<string,string>"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testStrMap()
     {
@@ -607,10 +483,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for a map of array of strings - "@var array<string,string[]>"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testStrMapOfArray()
     {
@@ -637,10 +509,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for an array of map of strings - "@var array<string,string>[]"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testStrArrayOfMap()
     {
@@ -667,10 +535,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for "@var ArrayObject"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapArrayObject()
     {
@@ -689,10 +553,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for "@var ArrayObject[Classname]"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapTypedArrayObject()
     {
@@ -713,10 +573,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for "@var ArrayObject[int]"
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapSimpleArrayObject()
     {
@@ -737,10 +593,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for "@var "
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapEmpty()
     {
@@ -760,10 +612,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
      * in its name.
      *
      * @runInSeparateProcess
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapTypedArrayObjectDoesNotExist()
     {
@@ -786,11 +634,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function mapTypedArrayObjectDoesNotExistAutoloader($class)
     {
         $this->assertFalse(
@@ -811,10 +654,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     /**
      * There is no property, but a setter method.
      * The parameter has a type hint.
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapOnlySetterTypeHint()
     {
@@ -836,10 +675,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     /**
      * There is no property, but a setter method.
      * It indicates the type in the docblock's @param annotation
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapOnlySetterDocblock()
     {
@@ -859,10 +694,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * There is no property, but a setter method, but it indicates no type
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapOnlySetterNoType()
     {
@@ -882,10 +713,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * Test for protected properties that have no setter method
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMapProtectedWithoutSetterMethod()
     {
@@ -912,11 +739,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testMapDateTime()
     {
         $jm = new JsonMapper();
@@ -931,11 +753,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testMapDateTimeNull()
     {
         $jm = new JsonMapper();
@@ -946,11 +763,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertNull($sn->datetime);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testMissingDataException()
     {
         $this->expectException(JsonMapperException::class);
@@ -965,10 +777,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     /**
      * We check that checkMissingData exits cleanly; needed for 100% coverage.
-     *
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
      */
     public function testMissingDataNoException()
     {
@@ -981,11 +789,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue(true);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testUndefinedPropertyException()
     {
         $this->expectException(JsonMapperException::class);
@@ -998,11 +801,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testPrivatePropertyWithPublicSetter()
     {
         $jm = new JsonMapper();
@@ -1017,11 +815,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue(empty($logger->log));
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testPrivatePropertyWithNoSetter()
     {
         $this->expectException(JsonMapperException::class);
@@ -1038,11 +831,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue(empty($logger->log));
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testPrivatePropertyWithPrivateSetter()
     {
         $this->expectException(JsonMapperException::class);
@@ -1056,11 +844,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $result = $jm->map(json_decode($json), new PrivateWithSetter());
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testSetterIsPreferredOverProperty()
     {
         $jm = new JsonMapper();
@@ -1074,11 +857,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testSettingValueObjects()
     {
         $valueObject = new JsonMapperTest_ValueObject('test');
@@ -1091,11 +869,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($valueObject, $sn->getValueObject());
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testCaseInsensitivePropertyMatching()
     {
         $jm = new JsonMapper();
@@ -1107,11 +880,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertSame(2, $sn->pint);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testDependencyInjection()
     {
         $jm = new JsonMapperTest_DependencyInjector();
@@ -1133,11 +901,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('database', $sn->simple->db);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testDependencyInjectionWithMissingCtorArgs()
     {
         $this->expectException(JsonMapperException::class);
@@ -1146,11 +909,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $jm->createInstance('ClassWithCtor');
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testDiscriminatorWithBaseTypeWithMissingDiscriminatorType()
     {
         $jm = new JsonMapper();
@@ -1169,11 +927,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('base', $sn->type);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testDiscriminatorWithBaseType()
     {
         $jm = new JsonMapper();
@@ -1193,11 +946,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testDiscriminatorWithIncorrectDiscriminatorValue()
     {
         $jm = new JsonMapper();
@@ -1217,11 +965,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testDiscriminatorWithUnregisteredClass()
     {
         $jm = new JsonMapper();
@@ -1237,11 +980,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('incorrect!', $sn->type);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testDiscriminatorWithInvalidClassName()
     {
         $this->expectException(InvalidArgumentException::class);
@@ -1254,11 +992,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testDiscriminatorWithDerivedType()
     {
         $jm = new JsonMapper();
@@ -1276,11 +1009,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('derived1 field', $sn->derived1Field);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testDiscriminatorWithTwoLevelDerivedType()
     {
         $jm = new JsonMapper();
@@ -1298,11 +1026,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('derived2 Field', $sn->derived2Field);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testDiscriminatorWithArrayOfObjects()
     {
         $jm = new JsonMapper();
@@ -1325,11 +1048,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf('JsonMapperTest_DerivedClass2', $sn[2]);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testDiscriminatorWithEmbeddedObject()
     {
         $jm = new JsonMapper();
@@ -1349,11 +1067,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('derived2 Field', $sn->embedded->derived2Field);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testDiscriminatorWithEmbeddedObjectArray()
     {
         $jm = new JsonMapper();
@@ -1379,11 +1092,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf('JsonMapperTest_DerivedClass2', $sn->embeddedArray[1]);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testFactoryMethods()
     {
         $jm = new JsonMapper();
@@ -1403,11 +1111,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals("value is 4242", $fm->getPrivateValue());
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testFactoryMethodException()
     {
         $this->expectException(JsonMapperException::class);
@@ -1419,11 +1122,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testMapsAnnotationOnSetter()
     {
         $jm = new JsonMapper();
@@ -1437,11 +1135,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals("yes", $fm->publicProp);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testAdditionalProperties()
     {
         $jm = new JsonMapper();
@@ -1455,11 +1148,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(2, count($fm->additional));
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testAdditionalPropertiesWithPrivateMethod()
     {
         $this->expectException(InvalidArgumentException::class);
@@ -1469,11 +1157,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $fm = $jm->map(new stdClass, new JsonMapperTest_Simple());
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testAdditionalPropertiesWithBrokenMethod()
     {
         $this->expectException(InvalidArgumentException::class);
@@ -1483,11 +1166,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $fm = $jm->map(new stdClass, new JsonMapperTest_Simple());
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testAdditionalPropertiesWithMissingMethod()
     {
         $this->expectException(InvalidArgumentException::class);
@@ -1497,11 +1175,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $fm = $jm->map(new stdClass, new JsonMapperTest_Simple());
     }
     
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testMapTypeWithCtor()
     {
         $jm = new JsonMapper();
@@ -1516,11 +1189,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(123123, $fm->getAttr2()->getValue());
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testMapTypeWithCtorMissingArgument()
     {
         $this->expectException(JsonMapperException::class);
@@ -1532,11 +1200,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         );
     }
         
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testMapTypeWithCtorComplex()
     {
         $jm = new JsonMapper();
@@ -1554,11 +1217,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals("something new", $fm->getAnotherSetter());
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testPhp7BasicTypeHints()
     {
         if (PHP_VERSION_ID >= 70000) {
@@ -1575,11 +1233,6 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testPhp7_1BasicTypeHints()
     {
         if (PHP_VERSION_ID >= 70100) {

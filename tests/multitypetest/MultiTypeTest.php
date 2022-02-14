@@ -23,13 +23,13 @@ use apimatic\jsonmapper\JsonMapper;
 use apimatic\jsonmapper\JsonMapperException;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @covers \apimatic\jsonmapper\JsonMapper
+ * @covers \apimatic\jsonmapper\TypeCombination
+ * @covers \apimatic\jsonmapper\JsonMapperException
+ */
 class MultiTypeTest extends TestCase
 {
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
     public function testSimpleCaseAWithFieldFloatArray()
     {
         $mapper = new JsonMapper();
@@ -37,11 +37,7 @@ class MultiTypeTest extends TestCase
         $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseA', $res);
     }
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testSimpleCaseAWithFieldIntArray()
     {
         $mapper = new JsonMapper();
@@ -49,11 +45,7 @@ class MultiTypeTest extends TestCase
         $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseA', $res);
     }
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testSimpleCaseAWithFieldBoolean()
     {
         $mapper = new JsonMapper();
@@ -62,11 +54,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseA', $res);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testSimpleCaseAFailWithConstructorArgumentMissing()
     {
         $this->expectException(JsonMapperException::class);
@@ -76,11 +64,7 @@ class MultiTypeTest extends TestCase
         $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testSimpleCaseAFailWithFieldBoolArray()
     {
         $this->expectException(JsonMapperException::class);
@@ -90,11 +74,7 @@ class MultiTypeTest extends TestCase
         $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testSimpleCaseAFailWithFieldString()
     {
         $this->expectException(JsonMapperException::class);
@@ -104,11 +84,7 @@ class MultiTypeTest extends TestCase
         $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testSimpleCaseBWithFieldBoolean()
     {
         $mapper = new JsonMapper();
@@ -117,11 +93,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testSimpleCaseBWithFieldArray()
     {
         $mapper = new JsonMapper();
@@ -130,11 +102,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testSimpleCaseBFailWithFieldIntArray()
     {
         $this->expectException(JsonMapperException::class);
@@ -144,11 +112,7 @@ class MultiTypeTest extends TestCase
         $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseB');
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testStringOrStringList()
     {
         $mapper = new JsonMapper();
@@ -161,11 +125,7 @@ class MultiTypeTest extends TestCase
         $this->assertEquals('value', $res[1]);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testNeitherStringNorStringList()
     {
         $this->expectException(JsonMapperException::class);
@@ -175,11 +135,7 @@ class MultiTypeTest extends TestCase
         $mapper->mapFor(json_decode($json), 'anyOf(string[],string)');
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testAssociativeArray()
     {
         $mapper = new JsonMapper();
@@ -190,11 +146,7 @@ class MultiTypeTest extends TestCase
         self::assertTrue(is_string($res['key1']));
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testEmptyArrayAndMap()
     {
         $mapper = new JsonMapper();
@@ -207,11 +159,7 @@ class MultiTypeTest extends TestCase
         self::assertTrue(is_array($res));
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testEmptyArrayFail()
     {
         $this->expectException(JsonMapperException::class);
@@ -221,11 +169,7 @@ class MultiTypeTest extends TestCase
         $mapper->mapFor(json_decode($json), 'oneOf(string[],int[],array<string,int>)');
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testEmptyMapFail()
     {
         $this->expectException(JsonMapperException::class);
@@ -235,11 +179,7 @@ class MultiTypeTest extends TestCase
         $mapper->mapFor(json_decode($json), 'oneOf(array<string,int>,array<string,string>,string[])');
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testNullableObjectOrBool()
     {
         $mapper = new JsonMapper();
@@ -259,11 +199,7 @@ class MultiTypeTest extends TestCase
         $this->assertEquals(null, $res);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testNullableOnNonNullable()
     {
         $mapper = new JsonMapper();
@@ -272,11 +208,7 @@ class MultiTypeTest extends TestCase
         $mapper->mapFor(null, 'oneOf(array,bool)');
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testMixedOrInt()
     {
         $mapper = new JsonMapper();
@@ -289,11 +221,7 @@ class MultiTypeTest extends TestCase
         $this->assertEquals('passed string', $res);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testMixedAndIntFail()
     {
         $mapper = new JsonMapper();
@@ -302,11 +230,7 @@ class MultiTypeTest extends TestCase
         $mapper->mapFor(502, 'oneOf(mixed,int)');
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testStringOrSimpleCaseA()
     {
         $mapper = new JsonMapper();
@@ -327,11 +251,7 @@ class MultiTypeTest extends TestCase
         $this->assertEquals('{"value":[1.2]}', $res);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOneOfSimpleCases()
     {
         $mapper = new JsonMapper();
@@ -344,11 +264,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOneOfSimpleCasesWithFieldArrayAndFloatArrayFail()
     {
         $this->expectException(JsonMapperException::class);
@@ -362,11 +278,7 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testAnyOfSimpleCases()
     {
         $mapper = new JsonMapper();
@@ -395,11 +307,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testAnyOfSimpleCasesFailWithFieldString()
     {
         $this->expectException(JsonMapperException::class);
@@ -413,11 +321,7 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testArrayAndObject()
     {
         $mapper = new JsonMapper();
@@ -431,11 +335,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testMapAndObject()
     {
         $mapper = new JsonMapper();
@@ -450,11 +350,7 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testArrayOfMapAndArrayOfObject()
     {
         $mapper = new JsonMapper();
@@ -469,11 +365,7 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testArrayOfMapOrArrayOfObject()
     {
         $mapper = new JsonMapper();
@@ -487,11 +379,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res[0]);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOneOfObjectsFailWithSameRequiredFields()
     {
         $this->expectException(JsonMapperException::class);
@@ -506,11 +394,7 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testComplexCases()
     {
         $mapper = new JsonMapper();
@@ -537,11 +421,7 @@ class MultiTypeTest extends TestCase
         $this->assertTrue(is_int($res->getOptional()->getOptional()->getOptional()[0]));
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testComplexCasesWithDiscriminators()
     {
         $mapper = new JsonMapper();
@@ -613,11 +493,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Morning', $res->getValue()[1]);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testDiscriminatorsFailWithDiscriminatorMatchesParent()
     {
         $mapper = new JsonMapper();
@@ -636,11 +512,7 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testDiscriminatorsMatchedButFailedWithOneOf()
     {
         $mapper = new JsonMapper();
@@ -654,11 +526,7 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testArrays()
     {
         $mapper = new JsonMapper();
@@ -669,11 +537,7 @@ class MultiTypeTest extends TestCase
         $this->assertTrue(is_bool($res[1]));
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testMaps()
     {
         $mapper = new JsonMapper();
@@ -684,11 +548,7 @@ class MultiTypeTest extends TestCase
         $this->assertTrue(is_int($res['value2']));
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testMapOfArrays()
     {
         $mapper = new JsonMapper();
@@ -709,11 +569,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res['value'][0]);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testArrayOfMaps()
     {
         $mapper = new JsonMapper();
@@ -742,11 +598,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res[0]['atom2']);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testMultiDimensionalMaps()
     {
         $mapper = new JsonMapper();
@@ -775,11 +627,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res['key']['atom2']);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testMultiDimensionalArrays()
     {
         $mapper = new JsonMapper();
@@ -808,11 +656,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res[1][0]);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOuterArrayInModelField()
     {
         $mapper = new JsonMapper();
@@ -824,11 +668,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\OuterArrayCase', $res);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOuterArray()
     {
         $mapper = new JsonMapper();
@@ -844,11 +684,7 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($res[2] === false);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOuterMap()
     {
         $mapper = new JsonMapper();
@@ -864,11 +700,7 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($res['key3'] === false);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOuterMapOfArrays()
     {
         $mapper = new JsonMapper();
@@ -918,11 +750,7 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($res['key2'][0] === false);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOuterArrayOfMaps()
     {
         $mapper = new JsonMapper();
@@ -976,11 +804,7 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($res[2]['key1'] === true);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOuterMultiDimensionalMaps()
     {
         $mapper = new JsonMapper();
@@ -1034,11 +858,7 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($res['item2']['key1'] === true);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOuterMultiDimensionalArray()
     {
         $mapper = new JsonMapper();
@@ -1088,11 +908,7 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($res[2][0] === false);
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOuterArrayFailWithAnyOf()
     {
         $mapper = new JsonMapper();
@@ -1107,11 +923,7 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOuterArrayFailWith2DMapOfAtomAnd2DMapOfIntArray()
     {
         $mapper = new JsonMapper();
@@ -1125,11 +937,7 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOuterArrayFailWithStringInsteadOfArrayOfString()
     {
         $mapper = new JsonMapper();
@@ -1144,11 +952,7 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOuterArrayFailWithMapOfStringInsteadOfArrayOfString()
     {
         $mapper = new JsonMapper();
@@ -1163,11 +967,7 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOuterMapFailWithStringInsteadOfMapOfString()
     {
         $mapper = new JsonMapper();
@@ -1182,11 +982,7 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    /**
-     * @covers \apimatic\jsonmapper\JsonMapper
-     * @covers \apimatic\jsonmapper\TypeCombination
-     * @covers \apimatic\jsonmapper\JsonMapperException
-     */
+    
     public function testOuterMapFailWithArrayOfStringInsteadOfMapOfString()
     {
         $mapper = new JsonMapper();
