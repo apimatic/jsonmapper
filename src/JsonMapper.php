@@ -93,6 +93,22 @@ class JsonMapper
      */
     protected $arInspectedClasses = array();
 
+    function __construct()
+    {
+        $config = parse_ini_file(php_ini_loaded_file());
+        $zendOptimizerPlusDiscardCommentKey = "zend_optimizerplus.save_comments";
+        $opCacheDiscardCommentKey = "opcache.save_comments";
+
+        if (
+            ini_get($zendOptimizerPlusDiscardCommentKey) === "0" ||
+            ini_get($opCacheDiscardCommentKey) === "0" ||
+            (array_key_exists($zendOptimizerPlusDiscardCommentKey, $config) && $config[$zendOptimizerPlusDiscardCommentKey] === "0") ||
+            (array_key_exists($opCacheDiscardCommentKey, $config) && $config[$opCacheDiscardCommentKey] === "0")
+        ) {
+            throw JsonMapperException::CommentsDisabledInConfigurationException(array($zendOptimizerPlusDiscardCommentKey, $opCacheDiscardCommentKey));
+        }
+    }
+
     /**
      * Map data all data in $json into the given $object instance.
      *
