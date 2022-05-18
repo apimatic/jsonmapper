@@ -24,12 +24,23 @@ namespace apimatic\jsonmapper;
  */
 class JsonMapperException extends \Exception
 {
-    static function CommentsDisabledInConfigurationException($concernedKeys)
+    /**
+     * Exception for discarded comments setting in configuration.
+     * 
+     * @param array $concernedKeys Keys (PHP direcitves) with issues
+     * 
+     * @return JsonMapperException
+     */
+    static function commentsDisabledInConfigurationException($concernedKeys)
     {
         $concernedKeys = implode(", ", $concernedKeys);
 
         return new self(
-            "Comments cannot be discarded in the configuration file i.e. the php.ini file; doc comments are a requirement for JsonMapper. Following configuration keys must have a value set to \"1\": {$concernedKeys}\n"
+            "Comments cannot be discarded in the configuration file 
+            i.e. the php.ini file; 
+            doc comments are a requirement for JsonMapper. 
+            Following configuration keys must have a value set to \"1\":
+             {$concernedKeys}\n"
         );
     }
 }

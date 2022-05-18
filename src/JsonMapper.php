@@ -93,20 +93,34 @@ class JsonMapper
      */
     protected $arInspectedClasses = array();
 
+    /**
+     * Constructor for JsonMapper.
+     */
     function __construct()
     {
         $config = parse_ini_file(php_ini_loaded_file());
         $zendOptimizerPlusDiscardCommentKey = "zend_optimizerplus.save_comments";
         $opCacheDiscardCommentKey = "opcache.save_comments";
 
-        if (
-            ini_get($zendOptimizerPlusDiscardCommentKey) === "0" ||
-            ini_get($opCacheDiscardCommentKey) === "0" ||
-            (array_key_exists($zendOptimizerPlusDiscardCommentKey, $config) && $config[$zendOptimizerPlusDiscardCommentKey] === "0") ||
-            (array_key_exists($opCacheDiscardCommentKey, $config) && $config[$opCacheDiscardCommentKey] === "0")
+        $zendOptimizerCommentsDiscarded 
+            = ini_get($zendOptimizerPlusDiscardCommentKey) !== "1" 
+            && (ini_get($zendOptimizerPlusDiscardCommentKey) === "0" 
+            || (array_key_exists($zendOptimizerPlusDiscardCommentKey, $config) 
+            && $config[$zendOptimizerPlusDiscardCommentKey] === "0"));
+        
+        $opCacheCommentsDiscarded 
+            = ini_get($opCacheDiscardCommentKey) !== "1"
+            && (ini_get($opCacheDiscardCommentKey) === "0"
+            || (array_key_exists($opCacheDiscardCommentKey, $config) 
+            && $config[$opCacheDiscardCommentKey] === "0"));
+        
+        if ($zendOptimizerCommentsDiscarded === true 
+            || $opCacheCommentsDiscarded === true
         ) {
-            throw JsonMapperException::CommentsDisabledInConfigurationException(array($zendOptimizerPlusDiscardCommentKey, $opCacheDiscardCommentKey));
-        }
+            throw JsonMapperException::commentsDisabledInConfigurationException(
+                array($zendOptimizerPlusDiscardCommentKey, $opCacheDiscardCommentKey)
+            );
+        }        
     }
 
     /**
