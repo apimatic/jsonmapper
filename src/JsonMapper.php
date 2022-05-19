@@ -94,33 +94,49 @@ class JsonMapper
     protected $arInspectedClasses = array();
 
     /**
+     * An array of directives from php defined configuration files.
+     * 
+     * @var array|null Array of values from the configuration files.
+     */
+    protected $config = null;
+
+    /**
      * Constructor for JsonMapper.
+     * 
+     * @throws JsonMapperException
      */
     function __construct()
     {
-        $config = parse_ini_file(php_ini_loaded_file());
+        if (!isset($this->config)) {
+            $this->config = parse_ini_file(php_ini_loaded_file());
+        }
+
+        $zendOptimizerPlus = "Zend Optimizer+";
         $zendOptimizerPlusDiscardCommentKey = "zend_optimizerplus.save_comments";
         $opCacheDiscardCommentKey = "opcache.save_comments";
 
-        $zendOptimizerCommentsDiscarded 
-            = ini_get($zendOptimizerPlusDiscardCommentKey) !== "1" 
-            && (ini_get($zendOptimizerPlusDiscardCommentKey) === "0" 
-            || (array_key_exists($zendOptimizerPlusDiscardCommentKey, $config) 
-            && $config[$zendOptimizerPlusDiscardCommentKey] === "0"));
+        $zendOptimizerPlusExtensionDiscardedComments
+            = extension_loaded($zendOptimizerPlus) 
+            && ini_get($zendOptimizerPlusDiscardCommentKey) === "0";
+
+        $zendOptimizerDiscardedComments
+            = $zendOptimizerPlusExtensionDiscardedComments === true
+            || (array_key_exists($zendOptimizerPlusDiscardCommentKey, $this->config) 
+            && $this->config[$zendOptimizerPlusDiscardCommentKey] === "0");
         
-        $opCacheCommentsDiscarded 
+        $opCacheDiscardedComments
             = ini_get($opCacheDiscardCommentKey) !== "1"
             && (ini_get($opCacheDiscardCommentKey) === "0"
-            || (array_key_exists($opCacheDiscardCommentKey, $config) 
-            && $config[$opCacheDiscardCommentKey] === "0"));
+            || (array_key_exists($opCacheDiscardCommentKey, $this->config) 
+            && $this->config[$opCacheDiscardCommentKey] === "0"));
         
-        if ($zendOptimizerCommentsDiscarded === true 
-            || $opCacheCommentsDiscarded === true
+        if ($zendOptimizerDiscardedComments === true 
+            || $opCacheDiscardedComments === true
         ) {
             throw JsonMapperException::commentsDisabledInConfigurationException(
                 array($zendOptimizerPlusDiscardCommentKey, $opCacheDiscardCommentKey)
             );
-        }        
+        }
     }
 
     /**
