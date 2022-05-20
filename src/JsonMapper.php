@@ -130,7 +130,6 @@ class JsonMapper
             || (array_key_exists($opCacheDiscardCommentKey, $this->config)
             && $this->config[$opCacheDiscardCommentKey] === "0"));
 
-        var_dump($this->config, ($zendOptimizerDiscardedComments === true || $opCacheDiscardedComments === true));
         if ($zendOptimizerDiscardedComments === true
             || $opCacheDiscardedComments === true
         ) {
