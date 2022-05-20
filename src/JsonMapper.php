@@ -150,6 +150,8 @@ class JsonMapper
 
         echo("ini_get(opCacheDiscardCommentKey): {$iniGetOpCacheKeyValue}\n");
 
+        print_r(ini_get_all());
+
         if ($zendOptimizerDiscardedComments === true
             || $opCacheDiscardedComments === true
         ) {
