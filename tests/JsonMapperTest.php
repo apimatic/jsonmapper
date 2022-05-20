@@ -417,11 +417,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
         $config["opcache.save_comments"] = "0";
 
-        try {
-            new JsonMapperCommentsDiscardedException($config);
-        } catch (Exception $e) {
-            var_dump($e);
-        }
+        new JsonMapperCommentsDiscardedException($config);
     }
 
     public function testZendOptimizerPlusCommentsDiscarded()
