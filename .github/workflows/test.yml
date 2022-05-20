@@ -46,6 +46,7 @@ jobs:
       - name: Run tests
         run: |
           cd tests
-          ../vendor/bin/phpunit --verbose --debug --coverage-text .
+          ../vendor/bin/phpunit --verbose --debug --coverage-text "JsonMapperTest.php" --filter testOpCacheSaveCommentsDiscarded
+          # ../vendor/bin/phpunit --verbose --debug --coverage-text .
       - name: Check code style
         run: vendor/bin/phpcs --standard=PEAR src/
