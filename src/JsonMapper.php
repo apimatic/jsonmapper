@@ -116,21 +116,21 @@ class JsonMapper
         $opCacheDiscardCommentKey = "opcache.save_comments";
 
         $zendOptimizerPlusExtensionDiscardedComments
-            = extension_loaded($zendOptimizerPlus) 
+            = extension_loaded($zendOptimizerPlus)
             && ini_get($zendOptimizerPlusDiscardCommentKey) === "0";
 
         $zendOptimizerDiscardedComments
             = $zendOptimizerPlusExtensionDiscardedComments === true
-            || (array_key_exists($zendOptimizerPlusDiscardCommentKey, $this->config) 
+            || (array_key_exists($zendOptimizerPlusDiscardCommentKey, $this->config)
             && $this->config[$zendOptimizerPlusDiscardCommentKey] === "0");
-        
+
         $opCacheDiscardedComments
             = ini_get($opCacheDiscardCommentKey) !== "1"
             && (ini_get($opCacheDiscardCommentKey) === "0"
-            || (array_key_exists($opCacheDiscardCommentKey, $this->config) 
+            || (array_key_exists($opCacheDiscardCommentKey, $this->config)
             && $this->config[$opCacheDiscardCommentKey] === "0"));
-        
-        if ($zendOptimizerDiscardedComments === true 
+
+        if ($zendOptimizerDiscardedComments === true
             || $opCacheDiscardedComments === true
         ) {
             throw JsonMapperException::commentsDisabledInConfigurationException(
@@ -1474,12 +1474,15 @@ class JsonMapper
     /**
      * Is type registered with mapper
      *
-     * @param string $type Class name
+     * @param string|null $type Class name
      *
-     * @return boolean     True if registered with $this->arChildClasses
+     * @return boolean True if registered with $this->arChildClasses
      */
     protected function isRegisteredType($type)
     {
+        if (!isset($type)) {
+            return false;
+        }
         return isset($this->arChildClasses[ltrim($type, "\\")]);
     }
 

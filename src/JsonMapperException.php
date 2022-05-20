@@ -36,9 +36,9 @@ class JsonMapperException extends \Exception
         $concernedKeys = implode(", ", $concernedKeys);
 
         return new self(
-            "Comments cannot be discarded in the configuration file ". 
-            "i.e. the php.ini file; doc comments are a requirement for JsonMapper. ".
-            "Following configuration keys must have a value set to \"1\": ".
+            "Comments cannot be discarded in the configuration file " .
+            "i.e. the php.ini file; doc comments are a requirement for JsonMapper." .
+            " Following configuration keys must have a value set to \"1\": " .
             "{$concernedKeys}."
         );
     }
