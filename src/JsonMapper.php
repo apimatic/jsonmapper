@@ -116,8 +116,6 @@ class JsonMapper
         $opCacheDiscardCommentKey = "opcache.save_comments";
 
         echo("{$this->config[$opCacheDiscardCommentKey]}\n");
-        print_r($this->config[$opCacheDiscardCommentKey]);
-        echo("\n");
 
         $zendOptimizerPlusExtensionDiscardedComments
             = extension_loaded($zendOptimizerPlus)
@@ -133,6 +131,16 @@ class JsonMapper
             && (ini_get($opCacheDiscardCommentKey) === "0"
             || (array_key_exists($opCacheDiscardCommentKey, $this->config)
             && $this->config[$opCacheDiscardCommentKey] === "0"));
+
+        $subCheck 
+            = (array_key_exists($opCacheDiscardCommentKey, $this->config)
+            && $this->config[$opCacheDiscardCommentKey] === "0");
+        
+        echo("$opCacheDiscardedComments: {$opCacheDiscardedComments}\n");
+
+        echo("$subCheck: {$subCheck}\n");
+
+        echo("IniGet($opCacheDiscardCommentKey): {ini_get($opCacheDiscardCommentKey)}\n");
 
         if ($zendOptimizerDiscardedComments === true
             || $opCacheDiscardedComments === true
