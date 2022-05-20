@@ -417,7 +417,22 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
         $config["opcache.save_comments"] = "0";
 
-        new JsonMapperCommentsDiscardedException($config);
+        try
+        {
+            new JsonMapperCommentsDiscardedException($config);
+        }
+
+        catch(JsonMapperException $ex)
+        {
+            fwrite(STDERR, print_r($ex instanceof JsonMapperException . "\n", TRUE));
+        }
+
+        catch (Exception $ex)
+        {
+            fwrite(STDERR, print_r(gettype($ex) . "\n", TRUE));
+            fwrite(STDERR, print_r($ex  . "\n", TRUE));
+            fwrite(STDERR, print_r("In generic Exception block!"  . "\n", TRUE));
+        }
     }
 
     public function testZendOptimizerPlusCommentsDiscarded()
