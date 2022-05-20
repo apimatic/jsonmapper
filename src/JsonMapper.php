@@ -100,6 +100,8 @@ class JsonMapper
      */
     protected $config = null;
 
+    protected $zendOptimizerPlusExtensionLoaded = null;
+
     /**
      * Constructor for JsonMapper.
      * 
@@ -111,52 +113,52 @@ class JsonMapper
             $this->config = parse_ini_file(php_ini_loaded_file());
         }
 
-        $zendOptimizerPlus = "Zend Optimizer+";
-        $zendOptimizerPlusDiscardCommentKey = "zend_optimizerplus.save_comments";
-        $opCacheDiscardCommentKey = "opcache.save_comments";
+        $On = ["1", "on", "true", "yes"];
+        $Off = ["0", "off", "false", "no"];
 
-        $zendOptimizerPlusExtensionDiscardedComments
-            = extension_loaded($zendOptimizerPlus)
-            && ini_get($zendOptimizerPlusDiscardCommentKey) === "0";
+        $zendOptimizerPlus = "Zend Optimizer+";
+        $zendOptimizerPlusSaveCommentKey = "zend_optimizerplus.save_comments";
+        $opCacheSaveCommentKey = "opcache.save_comments";
+
+        if (!isset($this->zendOptimizerPlusExtensionLoaded)) {
+            $this->zendOptimizerPlusExtensionLoaded 
+                = extension_loaded($zendOptimizerPlus);
+        }
 
         $zendOptimizerDiscardedComments
-            = $zendOptimizerPlusExtensionDiscardedComments === true
-            || (array_key_exists($zendOptimizerPlusDiscardCommentKey, $this->config)
-            && $this->config[$zendOptimizerPlusDiscardCommentKey] === "0");
+            = $this->zendOptimizerPlusExtensionLoaded === true
+            && in_array(
+                strtolower(
+                    ini_get($zendOptimizerPlusSaveCommentKey)
+                ), $On, true
+            ) === false
+            && (in_array(
+                strtolower(ini_get($zendOptimizerPlusSaveCommentKey)), $Off, true
+            ) === true
+            || (array_key_exists($zendOptimizerPlusSaveCommentKey, $this->config) 
+            && in_array(
+                strtolower(
+                    $this->config[$zendOptimizerPlusSaveCommentKey]
+                ), $Off, true
+            ) === true));
 
         $opCacheDiscardedComments
-            = ini_get($opCacheDiscardCommentKey) !== "1"
-            && (ini_get($opCacheDiscardCommentKey) === "0"
-            || (array_key_exists($opCacheDiscardCommentKey, $this->config)
-            && $this->config[$opCacheDiscardCommentKey] === "0"));
-
-        $subCheck 
-            = (array_key_exists($opCacheDiscardCommentKey, $this->config)
-            && $this->config[$opCacheDiscardCommentKey] === "0") ? "true" : "false";
-
-        echo("$opCacheDiscardCommentKey current value: {$this->config[$opCacheDiscardCommentKey]}\n");            
+            = in_array(
+                strtolower(ini_get($opCacheSaveCommentKey)), $On, true
+            ) === false
+            && (in_array(
+                strtolower(ini_get($opCacheSaveCommentKey)), $Off, true
+            ) === true
+            || (array_key_exists($opCacheSaveCommentKey, $this->config) 
+            && in_array(
+                strtolower($this->config[$opCacheSaveCommentKey]), $Off, true
+            ) === true));
         
-        $stringOpCacheDiscardedComments = $opCacheDiscardedComments ? "true" : "false";
-
-        echo("opCacheDiscardedComments: {$stringOpCacheDiscardedComments}\n");
-
-        echo("subCheck: {$subCheck}\n");
-
-        $iniCheck = ini_get($opCacheDiscardCommentKey) !== "1" ? "true" : "false";
-
-        echo("ini_get(opCacheDiscardCommentKey) !== \"1\": {$iniCheck}\n");
-
-        $iniGetOpCacheKeyValue = ini_get($opCacheDiscardCommentKey);
-
-        echo("ini_get(opCacheDiscardCommentKey): {$iniGetOpCacheKeyValue}\n");
-
-        print_r(ini_get_all());
-
-        if ($zendOptimizerDiscardedComments === true
+        if ($zendOptimizerDiscardedComments === true 
             || $opCacheDiscardedComments === true
         ) {
             throw JsonMapperException::commentsDisabledInConfigurationException(
-                array($zendOptimizerPlusDiscardCommentKey, $opCacheDiscardCommentKey)
+                array($zendOptimizerPlusSaveCommentKey, $opCacheSaveCommentKey)
             );
         }
     }
@@ -1496,15 +1498,12 @@ class JsonMapper
     /**
      * Is type registered with mapper
      *
-     * @param string|null $type Class name
+     * @param string $type Class name
      *
-     * @return boolean True if registered with $this->arChildClasses
+     * @return boolean     True if registered with $this->arChildClasses
      */
     protected function isRegisteredType($type)
     {
-        if (!isset($type)) {
-            return false;
-        }
         return isset($this->arChildClasses[ltrim($type, "\\")]);
     }
 

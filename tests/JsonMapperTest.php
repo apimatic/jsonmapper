@@ -410,42 +410,26 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     public function testOpCacheSaveCommentsDiscarded()
     {
-        echo ("Starting testOpCacheSaveCommentsDiscarded!" . "\n");
+        if (ini_get("opcache.save_comments") !== "1") {
+            $this->expectException(JsonMapperException::class);
+            $this->expectExceptionMessage("Comments cannot be discarded in the configuration file i.e. the php.ini file; doc comments are a requirement for JsonMapper. Following configuration keys must have a value set to \"1\": zend_optimizerplus.save_comments, opcache.save_comments.");
 
-        $this->expectException(JsonMapperException::class);
-        $this->expectExceptionMessage("Comments cannot be discarded in the configuration file i.e. the php.ini file; doc comments are a requirement for JsonMapper. Following configuration keys must have a value set to \"1\": zend_optimizerplus.save_comments, opcache.save_comments.");
+            $config = parse_ini_file(php_ini_loaded_file());
 
-        $config = parse_ini_file(php_ini_loaded_file());
+            $config["opcache.save_comments"] = "0";
 
-        $config["opcache.save_comments"] = "0";
-
-        try
-        {
-            echo ("Inside Try!" . "\n");
             new JsonMapperCommentsDiscardedException($config);
-            echo ("After JsonMapper Instantiation!" . "\n");
-        }
-
-        catch(JsonMapperException $ex)
-        {
-            echo ("Inside specific JsonMapperException catch!" . "\n");
-            print_r($ex instanceof JsonMapperException . "\n");
-            fwrite(STDERR, print_r($ex instanceof JsonMapperException . "\n", TRUE));
-            echo ("Ending specific JsonMapperException catch!" . "\n");
-        }
-
-        catch (Exception $ex)
-        {
-            echo ("Inside generic JsonMapperException catch!" . "\n");
-            print_r(gettype($ex) . "\n");
-            print_r($ex  . "\n");
-            fwrite(STDERR, print_r(gettype($ex) . "\n", TRUE));
-            fwrite(STDERR, print_r($ex  . "\n", TRUE));
-            fwrite(STDERR, print_r("In generic Exception block!"  . "\n", TRUE));
-            echo ("Ending generic JsonMapperException catch!" . "\n");
+        } 
+        
+        else {
+            $this->assertInstanceOf(JsonMapper::class, new JsonMapper());
         }
     }
 
+    /**
+     * This test assumes that zend_optimizerplus.save_comments key is either not present in the local PHP directives or is set to "0".
+     * This is true, at the time of writing, for the Github Actions environment, hence an exception is thrown.
+     */
     public function testZendOptimizerPlusCommentsDiscarded()
     {
         $this->expectException(JsonMapperException::class);

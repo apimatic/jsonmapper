@@ -13,6 +13,8 @@ class JsonMapperCommentsDiscardedException extends JsonMapper
     {
         $this->config = $config;
 
+        $this->zendOptimizerPlusExtensionLoaded = true;
+
         parent::__construct();
     }
 }
