@@ -410,7 +410,13 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
 
     public function testOpCacheSaveCommentsDiscarded()
     {
-        if (ini_get("opcache.save_comments") !== "1") {
+        $On = ["1", "on", "true", "yes"];
+
+        $opCahceSaveCommentsLocal = in_array(
+            strtolower(ini_get("opcache.save_comments")), $On, true
+        );
+
+        if ($opCahceSaveCommentsLocal === false) {
             $this->expectException(JsonMapperException::class);
             $this->expectExceptionMessage("Comments cannot be discarded in the configuration file i.e. the php.ini file; doc comments are a requirement for JsonMapper. Following configuration keys must have a value set to \"1\": zend_optimizerplus.save_comments, opcache.save_comments.");
 
@@ -429,6 +435,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     /**
      * This test assumes that zend_optimizerplus.save_comments key is either not present in the local PHP directives or is set to "0".
      * This is true, at the time of writing, for the Github Actions environment, hence an exception is thrown.
+     * Furthermore, the class JsonMapperCommentsDiscardedException mocks the loading of Zend Optimizer+ extension.
      */
     public function testZendOptimizerPlusCommentsDiscarded()
     {
