@@ -8,7 +8,6 @@ class JsonMapperCommentsDiscardedException extends JsonMapper
     /**
      * @throws JsonMapperException
      */
-
     function __construct($config)
     {
         $this->config = $config;
