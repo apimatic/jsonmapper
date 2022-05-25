@@ -809,7 +809,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     public function testMissingDataException()
     {
         $this->expectException(JsonMapperException::class);
-        $this->expectExceptionMessage('Required property "pMissingData" of class JsonMapperTest_Broken is missing in JSON data');
+        $this->expectExceptionMessage("Required property 'pMissingData' of class 'JsonMapperTest_Broken' is missing in JSON data");
         $jm = new JsonMapper();
         $jm->bExceptionOnMissingData = true;
         $sn = $jm->map(
@@ -835,7 +835,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     public function testUndefinedPropertyException()
     {
         $this->expectException(JsonMapperException::class);
-        $this->expectExceptionMessage('JSON property "undefinedProperty" does not exist in object of type JsonMapperTest_Broken');
+        $this->expectExceptionMessage("JSON property 'undefinedProperty' does not exist in object of type 'JsonMapperTest_Broken'");
         $jm = new JsonMapper();
         $jm->bExceptionOnUndefinedProperty = true;
         $sn = $jm->map(
@@ -861,7 +861,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     public function testPrivatePropertyWithNoSetter()
     {
         $this->expectException(JsonMapperException::class);
-        $this->expectExceptionMessage('JSON property "privateNoSetter" has no public setter method in object of type PrivateWithSetter');
+        $this->expectExceptionMessage("JSON property 'privateNoSetter' has no public setter method in object of type 'PrivateWithSetter'");
         $jm = new JsonMapper();
         $jm->bExceptionOnUndefinedProperty = true;
         $logger = new JsonMapperTest_Logger();
@@ -877,7 +877,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     public function testPrivatePropertyWithPrivateSetter()
     {
         $this->expectException(JsonMapperException::class);
-        $this->expectExceptionMessage('JSON property "privatePropertyPrivateSetter" has no public setter method in object of type PrivateWithSetter');
+        $this->expectExceptionMessage("JSON property 'privatePropertyPrivateSetter' has no public setter method in object of type 'PrivateWithSetter'");
         $jm = new JsonMapper();
         $jm->bExceptionOnUndefinedProperty = true;
         $logger = new JsonMapperTest_Logger();
@@ -1157,7 +1157,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     public function testFactoryMethodException()
     {
         $this->expectException(JsonMapperException::class);
-        $this->expectExceptionMessage('Factory method "NonExistentMethod" referenced by "FactoryMethodWithError" is not callable');
+        $this->expectExceptionMessage("Factory method 'NonExistentMethod' referenced by 'FactoryMethodWithError' is not callable");
         $jm = new JsonMapper();
         $fm = $jm->map(
             json_decode('{"simple":"hello world"}'),
