@@ -49,21 +49,25 @@ class JsonMapperException extends \Exception
      * 
      * @param string $key             The missing key/property.
      * @param string $strClassName    The class in which the key is missing.
-     * @param bool   $setterException Raise an exception specific to missing a setter 
-     *                                within the class for the specified string.
+     * @param bool   $setterException Raise an exception specific to 
+     *                                missing a setter within the class for 
+     *                                the specified string.
      * 
      * @return JsonMapperException
      */
-    static function undefinedPropertyException($key, $strClassName, $setterException = false)
-    {
+    static function undefinedPropertyException($key, 
+        $strClassName, $setterException = false
+    ) {
         if ($setterException === true) {
             return new self(
-                "JSON property '{$key}' has no public setter method in object of type '{$strClassName}'"
+                "JSON property '{$key}' has no public setter method " . 
+                "in object of type '{$strClassName}'"
             );
         }
 
         return new self(
-            "JSON property '{$key}' does not exist in object of type '{$strClassName}'"
+            "JSON property '{$key}' does not exist ".
+            "in object of type '{$strClassName}'"
         );
     }
 
@@ -93,7 +97,8 @@ class JsonMapperException extends \Exception
     static function uncallableFactoryMethodException($factoryMethod, $strClassName)
     {
         return new self(
-            "Factory method '{$factoryMethod}' referenced by '{$strClassName}' is not callable."
+            "Factory method '{$factoryMethod}' referenced by ".
+            "'{$strClassName}' is not callable."
         );
     }
 
@@ -109,13 +114,15 @@ class JsonMapperException extends \Exception
     static function unableToMapException($typeName, $typeGroup, $value)
     {
         return new self(
-            "Unable to map {$typeName}: " . TypeCombination::generateTypeString($typeGroup) 
+            "Unable to map {$typeName}: " 
+            . TypeCombination::generateTypeString($typeGroup) 
             . " on: " . json_encode($value)
         );
     }
 
     /**
-     * Exception raised when a json object maps to more than one type within the types specified within OneOf.
+     * Exception raised when a json object maps to more 
+     * than one type within the types specified within OneOf.
      * 
      * @param string $matchedType First type.
      * @param string $mappedWith  Second type.
@@ -161,7 +168,9 @@ class JsonMapperException extends \Exception
     static function requiredPropertyMissingException($property, $rc)
     {
         return new self(
-            "Required property '" . $property->name . "' of class '" . $rc->getName() . "' is missing in JSON data"
+            "Required property '" . $property->name 
+            . "' of class '" . $rc->getName() 
+            . "' is missing in JSON data"
         );
     }
 
@@ -170,17 +179,21 @@ class JsonMapperException extends \Exception
      * 
      * @param object $class                  The concerned class.
      * @param object $ctor                   The concerned class's constructor.
-     * @param bool   $noArguments            Boolean to check if we have to raise an exception 
-     *                                       for no arguments/less arguments provided.
+     * @param bool   $noArguments            Boolean to check if we have to raise 
+     *                                       an exception for no arguments/less 
+     *                                       arguments provided.
      * @param array  $ctorRequiredParamsName Required parameters array.
      * 
      * @return JsonMapperException
      */
-    static function noArgumentsException($class, $ctor = null, $noArguments = false, $ctorRequiredParamsName = null)
-    {
+    static function 
+    noArgumentsException($class, $ctor = null, 
+        $noArguments = false, $ctorRequiredParamsName = null
+    ) {
         if ($noArguments === true) {
             return new self(
-                "{$class} class requires " . $ctor->getNumberOfRequiredParameters()
+                "{$class} class requires " 
+                . $ctor->getNumberOfRequiredParameters()
                 . " arguments in constructor but none provided"
             );
         }
