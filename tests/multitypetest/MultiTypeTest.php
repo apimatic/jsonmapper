@@ -14,6 +14,7 @@ require_once __DIR__ . '/model/Postman.php';
 require_once __DIR__ . '/model/Morning.php';
 require_once __DIR__ . '/model/Evening.php';
 require_once __DIR__ . '/model/Vehicle.php';
+require_once __DIR__ . '/model/Vehicle2.php';
 require_once __DIR__ . '/model/Car.php';
 require_once __DIR__ . '/model/Atom.php';
 require_once __DIR__ . '/model/Orbit.php';
@@ -228,6 +229,26 @@ class MultiTypeTest extends TestCase
         $this->expectException(JsonMapperException::class);
         $this->expectExceptionMessage('Cannot map more than OneOf { int and mixed } on: 502');
         $mapper->mapFor(502, 'oneOf(mixed,int)');
+    }
+
+    public function testOneOfModelsWithSameReqFieldNameAndDifferentType()
+    {
+        $mapper = new JsonMapper();
+        $json = '{"numberOfTyres":"2"}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf(Vehicle,Vehicle2)',
+            'multitypetest\model'
+        );
+        $this->assertInstanceOf('\multitypetest\model\Vehicle', $res);
+
+        $json = '{"numberOfTyres":2}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf(Vehicle,Vehicle2)',
+            'multitypetest\model'
+        );
+        $this->assertInstanceOf('\multitypetest\model\Vehicle2', $res);
     }
 
     
@@ -704,7 +725,7 @@ class MultiTypeTest extends TestCase
     public function testOuterMapOfArrays()
     {
         $mapper = new JsonMapper();
-        $json = '{"value":[{"numberOfElectrons":4},{"haveTrunk":false,"numberOfTyres":6}]}';
+        $json = '{"value":[{"numberOfElectrons":4},{"haveTrunk":false,"numberOfTyres":"6"}]}';
         $res = $mapper->mapFor(
             json_decode($json),
             'array<string,oneOf(Atom,Car)[]>',
@@ -754,7 +775,7 @@ class MultiTypeTest extends TestCase
     public function testOuterArrayOfMaps()
     {
         $mapper = new JsonMapper();
-        $json = '[{"key0":{"numberOfElectrons":4},"key1":{"haveTrunk":false,"numberOfTyres":6}}]';
+        $json = '[{"key0":{"numberOfElectrons":4},"key1":{"haveTrunk":false,"numberOfTyres":"6"}}]';
         $res = $mapper->mapFor(
             json_decode($json),
             'array<string,oneOf(Atom,Car)>[]',
@@ -808,7 +829,7 @@ class MultiTypeTest extends TestCase
     public function testOuterMultiDimensionalMaps()
     {
         $mapper = new JsonMapper();
-        $json = '{"item":{"key0":{"numberOfElectrons":4},"key1":{"haveTrunk":false,"numberOfTyres":6}}}';
+        $json = '{"item":{"key0":{"numberOfElectrons":4},"key1":{"haveTrunk":false,"numberOfTyres":"6"}}}';
         $res = $mapper->mapFor(
             json_decode($json),
             'array<string,array<string,oneOf(Atom,Car)>>',
@@ -862,7 +883,7 @@ class MultiTypeTest extends TestCase
     public function testOuterMultiDimensionalArray()
     {
         $mapper = new JsonMapper();
-        $json = '[[{"numberOfElectrons":4},{"haveTrunk":false,"numberOfTyres":6}]]';
+        $json = '[[{"numberOfElectrons":4},{"haveTrunk":false,"numberOfTyres":"6"}]]';
         $res = $mapper->mapFor(
             json_decode($json),
             'oneOf(Atom,Car)[][]',

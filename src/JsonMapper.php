@@ -365,14 +365,14 @@ class JsonMapper
     /**
      * Get mapped value for a property in an object.
      *
-     * @param $jvalue           mixed          Raw normalized data for the property
-     * @param $type             string         Type found by inspectProperty()
-     * @param $typeOfs          string|null    OneOf/AnyOf types hint found by
-     *                          inspectProperty in maps annotation
-     * @param $factoryMethods   string[]|null  Callable factory methods for property
-     * @param $namespace        string         Namespace of the class
-     * @param $className        string         Name of the class
-     * @param $forMultipleTypes bool           Should map for multiple types?
+     * @param $jvalue         mixed         Raw normalized data for the property
+     * @param $type           string        Type found by inspectProperty()
+     * @param $typeOfs        string|null   OneOf/AnyOf types hint found by
+     *                        inspectProperty in maps annotation
+     * @param $factoryMethods string[]|null Callable factory methods for property
+     * @param $namespace      string        Namespace of the class
+     * @param $className      string        Name of the class
+     * @param $strict         bool          Should map for multiple types?
      *
      * @return array|false|mixed|object|null
      * @throws JsonMapperException|ReflectionException
@@ -384,7 +384,7 @@ class JsonMapper
         $factoryMethods,
         $namespace,
         $className,
-        $forMultipleTypes
+        $strict
     ) {
         if ($typeOfs) {
             return $this->mapFor(
@@ -417,6 +417,12 @@ class JsonMapper
         } else if ($this->isObjectOfSameType($type, $jvalue)) {
             return $jvalue;
         } else if ($this->isSimpleType($type)) {
+            if ($strict && !$this->isValueOfType($jvalue, $type)[0]) {
+                // if mapping strictly for multipleTypes
+                throw new JsonMapperException(
+                    "Could not set type '$type' on value: " . json_encode($jvalue)
+                );
+            }
             settype($jvalue, $type);
             return $jvalue;
         }
@@ -453,7 +459,7 @@ class JsonMapper
                     $jvalue,
                     $subtype,
                     $dimension,
-                    $forMultipleTypes
+                    $strict
                 );
             } else {
                 $child = $this->mapArray(
@@ -461,7 +467,7 @@ class JsonMapper
                     $array,
                     $subtype,
                     $dimension,
-                    $forMultipleTypes
+                    $strict
                 );
             }
         } else if ($this->isFlatType(gettype($jvalue))) {
@@ -475,7 +481,7 @@ class JsonMapper
             }
         } else {
             $type = $this->getFullNamespace($type, $namespace);
-            $child = $this->mapClass($jvalue, $type, $forMultipleTypes);
+            $child = $this->mapClass($jvalue, $type, $strict);
         }
 
         return $child;
@@ -636,8 +642,8 @@ class JsonMapper
                     list($m, $meth) = $this->isValueOfType(
                         $json,
                         $typ,
-                        $deserializers,
-                        $namespace
+                        $namespace,
+                        $deserializers
                     );
                     if (!$m) {
                         // skip this type as it can't be mapped on the given value.
@@ -687,9 +693,10 @@ class JsonMapper
      *
      * @param mixed    $value         param's value
      * @param string   $type          type defined in param's typehint
+     * @param string   $namespace     Namespace of the class, Default: ''
      * @param string[] $deserializers deserializer functions array in the format
      *                                ["pathToCallableFunction typeOfValue", ...]
-     * @param string   $namespace     Namespace of the class
+     *                                Default: []
      *
      * @return array array(bool $matched, ?string $method) $matched represents if
      *               Type matched with value, $method represents the selected
@@ -700,8 +707,8 @@ class JsonMapper
     protected function isValueOfType(
         $value,
         $type,
-        $deserializers,
-        $namespace
+        $namespace = '',
+        $deserializers = []
     ) {
         if (!empty($deserializers)) {
             $methodFound = false;
@@ -731,7 +738,7 @@ class JsonMapper
                 $type = $isMapType ? substr($type, strlen($mapStart), -1)
                     : ($isArrayType ? substr($type, 0, -2) : $type);
                 foreach ($value as $v) {
-                    if (!$this->isValueOfType($v, $type, [], $namespace)[0]) {
+                    if (!$this->isValueOfType($v, $type, $namespace)[0]) {
                         // false if any element is not of same type
                         return array(false, null);
                     }
@@ -990,18 +997,15 @@ class JsonMapper
     /**
      * Map an array
      *
-     * @param array         $jsonArray        JSON array structure from json_decode()
-     * @param mixed         $array            Array or ArrayObject that gets filled
-     *                                        with data from $json.
-     * @param string|object $class            Class name for children objects.
-     *                                        All children will get mapped
-     *                                        onto this type. Supports class
-     *                                        names and simple types like
-     *                                        "string".
-     * @param int           $dimension        Dimension of array to map, i.e. 2 for
-     *                                        2D array, Default: 1
-     * @param bool          $forMultipleTypes Should map for multiple types?
-     *                                        Default: false
+     * @param array         $jsonArray JSON array structure from json_decode()
+     * @param mixed         $array     Array or ArrayObject that gets filled with
+     *                                 data from $json.
+     * @param string|object $class     Class name for children objects. All children
+     *                                 will get mapped onto this type. Supports class
+     *                                 names and simple types like "string".
+     * @param int           $dimension Dimension of array to map, i.e. 2 for 2D
+     *                                 array, Default: 1
+     * @param bool          $strict    Should map for multiple types? Default: false
      *
      * @return mixed Mapped $array is returned
      */
@@ -1010,7 +1014,7 @@ class JsonMapper
         $array,
         $class = null,
         $dimension = 1,
-        $forMultipleTypes = false
+        $strict = false
     ) {
         foreach ($jsonArray as $key => $jvalue) {
             if ($class === null) {
@@ -1021,7 +1025,7 @@ class JsonMapper
                     array(),
                     $class,
                     $dimension - 1,
-                    $forMultipleTypes
+                    $strict
                 );
             } else if ($this->isFlatType(gettype($jvalue))) {
                 // use constructor parameter if we have a class
@@ -1030,6 +1034,13 @@ class JsonMapper
                     $array[$key] = null;
                 } else {
                     if ($this->isSimpleType($class)) {
+                        if ($strict && !$this->isValueOfType($jvalue, $class)[0]) {
+                            // if mapping strictly for multipleTypes
+                            throw new JsonMapperException(
+                                "Could not set type '$class' on value: " .
+                                json_encode($jvalue)
+                            );
+                        }
                         settype($jvalue, $class);
                         $array[$key] = $jvalue;
                     } else {
@@ -1040,9 +1051,9 @@ class JsonMapper
                 $instance = $this->createInstance(
                     $class,
                     $jvalue,
-                    $forMultipleTypes
+                    $strict
                 );
-                $array[$key] = $this->map($jvalue, $instance, $forMultipleTypes);
+                $array[$key] = $this->map($jvalue, $instance, $strict);
             }
         }
         return $array;
