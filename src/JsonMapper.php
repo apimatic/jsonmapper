@@ -116,7 +116,7 @@ class JsonMapper
         if (!isset($this->config)) {
             $iniPath = php_ini_loaded_file();
             if ($iniPath) {
-                $this->config = parse_ini_file(false);
+                $this->config = parse_ini_file($iniPath);
             }
         }
         if (!isset($this->zendOptimizerPlusExtensionLoaded)) {
