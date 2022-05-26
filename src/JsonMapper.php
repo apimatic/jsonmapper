@@ -168,15 +168,15 @@ class JsonMapper
     /**
      * Map data all data in $json into the given $object instance.
      *
-     * @param object $json             JSON object structure from json_decode()
-     * @param object $object           Object to map $json data into
-     * @param bool   $forMultipleTypes True if looking to map for multiple types,
-     *                                 Default: false
+     * @param object $json   JSON object structure from json_decode()
+     * @param object $object Object to map $json data into
+     * @param bool   $strict True if looking to map with strict type checking,
+     *                       Default: false
      *
      * @return object Mapped object is returned.
      * @see    mapArray()
      */
-    public function map($json, $object, $forMultipleTypes = false)
+    public function map($json, $object, $strict = false)
     {
         if ($this->bEnforceMapType && !is_object($json)) {
             throw new \InvalidArgumentException(
@@ -266,7 +266,7 @@ class JsonMapper
                 $factoryMethod,
                 $rc->getNamespaceName(),
                 $rc->getName(),
-                $forMultipleTypes
+                $strict
             );
             $this->setProperty($object, $accessor, $value, $strNs);
         }
@@ -368,11 +368,12 @@ class JsonMapper
      * @param $jvalue         mixed         Raw normalized data for the property
      * @param $type           string        Type found by inspectProperty()
      * @param $typeOfs        string|null   OneOf/AnyOf types hint found by
-     *                        inspectProperty in maps annotation
+     *                                      inspectProperty in maps annotation
      * @param $factoryMethods string[]|null Callable factory methods for property
      * @param $namespace      string        Namespace of the class
      * @param $className      string        Name of the class
-     * @param $strict         bool          Should map for multiple types?
+     * @param $strict         bool          True if looking to map with strict type
+     *                                      checking.
      *
      * @return array|false|mixed|object|null
      * @throws JsonMapperException|ReflectionException
@@ -778,16 +779,16 @@ class JsonMapper
     /**
      * Map all data in $json into a new instance of $type class.
      *
-     * @param object|null $json             JSON object structure from json_decode()
-     * @param string      $type             The type of class instance to map into.
-     * @param bool        $forMultipleTypes Should map for multiple types?
-     *                                      Default: false
+     * @param object|null $json   JSON object structure from json_decode()
+     * @param string      $type   The type of class instance to map into.
+     * @param bool        $strict True if looking to map with strict type checking,
+     *                            Default: false
      *
-     * @return object|null      Mapped object is returned.
+     * @return object|null Mapped object is returned.
      * @throws ReflectionException|JsonMapperException
      * @see    mapClassArray()
      */
-    public function mapClass($json, $type, $forMultipleTypes = false)
+    public function mapClass($json, $type, $strict = false)
     {
         if ($json === null) {
             return null;
@@ -814,17 +815,17 @@ class JsonMapper
         $matchedRc = $this->getDiscriminatorMatch($json, $rc);
         //otherwise fallback to an instance of $type class
         if ($matchedRc === null) {
-            $instance = $this->createInstance($ttype, $json, $forMultipleTypes);
+            $instance = $this->createInstance($ttype, $json, $strict);
         } else {
             $instance = $this->createInstance(
                 $matchedRc->getName(),
                 $json,
-                $forMultipleTypes
+                $strict
             );
         }
 
 
-        return $this->map($json, $instance, $forMultipleTypes);
+        return $this->map($json, $instance, $strict);
     }
 
     /**
@@ -1005,7 +1006,8 @@ class JsonMapper
      *                                 names and simple types like "string".
      * @param int           $dimension Dimension of array to map, i.e. 2 for 2D
      *                                 array, Default: 1
-     * @param bool          $strict    Should map for multiple types? Default: false
+     * @param bool          $strict    True if looking to map with strict type
+     *                                 checking, Default: false
      *
      * @return mixed Mapped $array is returned
      */
@@ -1066,14 +1068,14 @@ class JsonMapper
      * @param string     $type      Class name
      * @param int        $dimension Dimension of array to map, i.e. 2 for 2D array,
      *                              Default: 1
-     * @param bool       $mTypes    True if looking to map for multiple types,
+     * @param bool       $strict    True if looking to map with strict type checking,
      *                              Default: false
      *
      * @return array|null           A new array containing object of $type
      *                              which is mapped from $jsonArray
      * @throws ReflectionException|JsonMapperException
      */
-    public function mapClassArray($jsonArray, $type, $dimension = 1, $mTypes = false)
+    public function mapClassArray($jsonArray, $type, $dimension = 1, $strict = false)
     {
         if ($jsonArray === null) {
             return null;
@@ -1086,10 +1088,10 @@ class JsonMapper
                     $jvalue,
                     $type,
                     $dimension - 1,
-                    $mTypes
+                    $strict
                 );
             } else {
-                $array[$key] = $this->mapClass($jvalue, $type, $mTypes);
+                $array[$key] = $this->mapClass($jvalue, $type, $strict);
             }
         }
 
@@ -1338,19 +1340,16 @@ class JsonMapper
     /**
      * Create a new object of the given type.
      *
-     * @param string $class            Class name to instantiate
-     * @param object $jobject          Use jobject for constructor args
-     * @param bool   $forMultipleTypes True if looking to map for multiple types,
-     *                                 Default: false
+     * @param string $class   Class name to instantiate
+     * @param object $jobject Use jobject for constructor args
+     * @param bool   $strict  True if looking to map with strict type checking,
+     *                        Default: false
      *
      * @return object Freshly created object
      * @throws ReflectionException|JsonMapperException
      */
-    protected function createInstance(
-        $class,
-        &$jobject = null,
-        $forMultipleTypes = false
-    ) {
+    protected function createInstance($class, &$jobject = null, $strict = false)
+    {
         $rc = new ReflectionClass($class);
         $ctor = $rc->getConstructor();
         if ($ctor === null
@@ -1439,10 +1438,10 @@ class JsonMapper
                 $factoryMethod,
                 $rc->getNamespaceName(),
                 $rc->getName(),
-                $forMultipleTypes
+                $strict
             );
 
-            if (!$forMultipleTypes) {
+            if (!$strict) {
                 unset($jobject->{$key});
             }
             unset($ctorRequiredParamsName[$rp->getPosition()]);
