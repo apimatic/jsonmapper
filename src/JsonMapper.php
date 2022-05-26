@@ -509,6 +509,18 @@ class JsonMapper
     }
 
     /**
+     * Converts the given typeCombination into its string format.
+     *
+     * @param TypeCombination|string $type Combined type/Single type.
+     *
+     * @return string
+     */
+    protected static function formatType($type)
+    {
+        return is_string($type) ? $type : $type->getFormat();
+    }
+
+    /**
      * Map the data in $value by the provided $typeGroup i.e. oneOf(A,B)
      * will try to map value with only one of A or B, that matched. While
      * anyOf(A,B) will try to map it with any of A or B and sets its type to
@@ -556,8 +568,8 @@ class JsonMapper
                 $typeName = $isMapGroup ? 'Associative Array' : 'Array';
                 throw JsonMapperException::unableToMapException(
                     $typeName,
-                    $typeGroup,
-                    $value
+                    $this->formatType($typeGroup),
+                    json_encode($value)
                 );
             }
             $mappedObject = [];
@@ -664,9 +676,9 @@ class JsonMapper
                 // if its oneOf and we have a value that is already mapped,
                 // then throw jsonMapperException
                 throw JsonMapperException::moreThanOneOfException(
-                    $matchedType,
-                    $mappedWith,
-                    $json
+                    $this->formatType($matchedType),
+                    $this->formatType($mappedWith),
+                    json_encode($json)
                 );
             }
             $mappedWith = $matchedType;
@@ -676,7 +688,10 @@ class JsonMapper
         }
 
         if (!$mappedWith) {
-            throw JsonMapperException::cannotMapAnyOfException($type, $json);
+            throw JsonMapperException::cannotMapAnyOfException(
+                $this->formatType($type),
+                json_encode($json)
+            );
         }
 
         return $mappedObject;
@@ -939,8 +954,8 @@ class JsonMapper
                 && !isset($providedProperties[$property->name])
             ) {
                 throw JsonMapperException::requiredPropertyMissingException(
-                    $property,
-                    $rc
+                    $property->name,
+                    $rc->getName()
                 );
             }
         }
@@ -1346,7 +1361,10 @@ class JsonMapper
         ) {
             return new $class();
         } else if ($jobject === null) {
-            throw JsonMapperException::noArgumentsException($class, $ctor, true);
+            throw JsonMapperException::noArgumentsException(
+                $class,
+                $ctor->getNumberOfRequiredParameters()
+            );
         }
 
         $ctorRequiredParams = array_slice(
@@ -1434,10 +1452,8 @@ class JsonMapper
         }
 
         if (count($ctorArgs) < $ctorReqParamsCount) {
-            throw JsonMapperException::noArgumentsException(
+            throw JsonMapperException::fewerArgumentsException(
                 $class,
-                null,
-                false,
                 $ctorRequiredParamsName
             );
         }
