@@ -8,6 +8,7 @@ require_once __DIR__ . '/model/ComplexCaseA.php';
 require_once __DIR__ . '/model/ComplexCaseB.php';
     // have field value with anyOf("Evening[]","Morning[]","Employee","Person[]",oneOf("Vehicle","Car"))
     // have field optional with anyOf("ComplexCaseA","SimpleCaseB[]","array")
+require_once __DIR__ . '/model/SimpleCase.php';
 require_once __DIR__ . '/model/Person.php';
 require_once __DIR__ . '/model/Employee.php';
 require_once __DIR__ . '/model/Postman.php';
@@ -231,6 +232,40 @@ class MultiTypeTest extends TestCase
         $mapper->mapFor(502, 'oneOf(mixed,int)');
     }
 
+    public function testMapClassWithStrictType()
+    {
+        $mapper = new JsonMapper();
+        $json = '{"numberOfTyres":"2"}';
+        $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\Vehicle2');
+        $this->assertInstanceOf('\multitypetest\model\Vehicle2', $res);
+    }
+
+    public function testMapClassWithStrictTypeFail()
+    {
+        $mapper = new JsonMapper();
+        $this->expectException(JsonMapperException::class);
+        $this->expectExceptionMessage("Could not set type 'int' on value: \"2\"");
+        $json = '{"numberOfTyres":"2"}';
+        $mapper->mapClass(json_decode($json), '\multitypetest\model\Vehicle2', true);
+    }
+
+    public function testMapClassWithStrictType2()
+    {
+        $mapper = new JsonMapper();
+        $json = '{"value":[2,6]}';
+        $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCase');
+        $this->assertInstanceOf('\multitypetest\model\SimpleCase', $res);
+    }
+
+    public function testMapClassWithStrictType2Fail()
+    {
+        $mapper = new JsonMapper();
+        $this->expectException(JsonMapperException::class);
+        $this->expectExceptionMessage("Could not set type 'string' on value: 2");
+        $json = '{"value":[2,6]}';
+        $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCase', true);
+    }
+
     public function testOneOfModelsWithSameReqFieldNameAndDifferentType()
     {
         $mapper = new JsonMapper();
@@ -249,6 +284,22 @@ class MultiTypeTest extends TestCase
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\Vehicle2', $res);
+
+        $json = '{"value":[2,6]}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf(SimpleCase,SimpleCaseA)',
+            'multitypetest\model'
+        );
+        $this->assertInstanceOf('\multitypetest\model\SimpleCaseA', $res);
+
+        $json = '{"value":["3","2"]}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf(SimpleCase,SimpleCaseA)',
+            'multitypetest\model'
+        );
+        $this->assertInstanceOf('\multitypetest\model\SimpleCase', $res);
     }
 
     

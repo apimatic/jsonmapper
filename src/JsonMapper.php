@@ -371,12 +371,12 @@ class JsonMapper
      * @param $jvalue         mixed         Raw normalized data for the property
      * @param $type           string        Type found by inspectProperty()
      * @param $typeOfs        string|null   OneOf/AnyOf types hint found by
-     *                                      inspectProperty in maps annotation
+     *                        inspectProperty in maps annotation
      * @param $factoryMethods string[]|null Callable factory methods for property
      * @param $namespace      string        Namespace of the class
      * @param $className      string        Name of the class
      * @param $strict         bool          True if looking to map with strict type
-     *                                      checking.
+     *                        checking.
      *
      * @return array|false|mixed|object|null
      * @throws JsonMapperException|ReflectionException
@@ -423,8 +423,9 @@ class JsonMapper
         } else if ($this->isSimpleType($type)) {
             if ($strict && !$this->isValueOfType($jvalue, $type)[0]) {
                 // if mapping strictly for multipleTypes
-                throw new JsonMapperException(
-                    "Could not set type '$type' on value: " . json_encode($jvalue)
+                throw JsonMapperException::unableToSetTypeException(
+                    $type,
+                    json_encode($jvalue)
                 );
             }
             settype($jvalue, $type);
@@ -1037,8 +1038,8 @@ class JsonMapper
                     if ($this->isSimpleType($class)) {
                         if ($strict && !$this->isValueOfType($jvalue, $class)[0]) {
                             // if mapping strictly for multipleTypes
-                            throw new JsonMapperException(
-                                "Could not set type '$class' on value: " .
+                            throw JsonMapperException::unableToSetTypeException(
+                                $class,
                                 json_encode($jvalue)
                             );
                         }
