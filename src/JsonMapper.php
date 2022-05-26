@@ -214,8 +214,10 @@ class JsonMapper
 
             if (!$hasProperty) {
                 if ($this->bExceptionOnUndefinedProperty) {
-                    throw JsonMapperException
-                    ::undefinedPropertyException($key, $strClassName);
+                    throw JsonMapperException::undefinedPropertyException(
+                        $key,
+                        $strClassName
+                    );
                 }
                 $isAdditional = true;
                 $this->log(
@@ -227,8 +229,11 @@ class JsonMapper
 
             if ($accessor === null) {
                 if ($this->bExceptionOnUndefinedProperty) {
-                    throw JsonMapperException
-                    ::undefinedPropertyException($key, $strClassName, true);
+                    throw JsonMapperException::undefinedPropertyException(
+                        $key,
+                        $strClassName,
+                        true
+                    );
                 }
 
                 $isAdditional = true;
@@ -241,8 +246,10 @@ class JsonMapper
 
             //FIXME: check if type exists, give detailled error message if not
             if ($type === '') {
-                throw JsonMapperException
-                ::missingTypePropertyException($key, $strClassName);
+                throw JsonMapperException::missingTypePropertyException(
+                    $key,
+                    $strClassName
+                );
             }
 
             if ($isAdditional) {
@@ -313,8 +320,10 @@ class JsonMapper
     {
         $factoryMethod = explode(' ', $factoryMethod)[0];
         if (!is_callable($factoryMethod)) {
-            throw JsonMapperException
-            ::uncallableFactoryMethodException($factoryMethod, $strClassName);
+            throw JsonMapperException::unCallableFactoryMethodException(
+                $factoryMethod,
+                $strClassName
+            );
         }
 
         return call_user_func($factoryMethod, $value);
@@ -542,8 +551,11 @@ class JsonMapper
                 // IF value is not associative array with groupType == map
                 // Or value is not indexed array with groupType == array
                 $typeName = $isMapGroup ? 'Associative Array' : 'Array';
-                throw JsonMapperException
-                ::unableToMapException($typeName, $typeGroup, $value);
+                throw JsonMapperException::unableToMapException(
+                    $typeName,
+                    $typeGroup,
+                    $value
+                );
             }
             $mappedObject = [];
             foreach ($value as $k => $v) {
@@ -648,8 +660,11 @@ class JsonMapper
             if ($type->getGroupName() == 'oneOf' && $mappedWith) {
                 // if its oneOf and we have a value that is already mapped,
                 // then throw jsonMapperException
-                throw JsonMapperException
-                ::moreThanOneOfException($matchedType, $mappedWith, $json);
+                throw JsonMapperException::moreThanOneOfException(
+                    $matchedType,
+                    $mappedWith,
+                    $json
+                );
             }
             $mappedWith = $matchedType;
             if ($type->getGroupName() == 'anyOf') {
@@ -920,8 +935,10 @@ class JsonMapper
             if (isset($annotations['required'])
                 && !isset($providedProperties[$property->name])
             ) {
-                throw JsonMapperException
-                ::requiredPropertyMissingException($property, $rc);
+                throw JsonMapperException::requiredPropertyMissingException(
+                    $property,
+                    $rc
+                );
             }
         }
     }
@@ -1414,8 +1431,12 @@ class JsonMapper
         }
 
         if (count($ctorArgs) < $ctorReqParamsCount) {
-            throw JsonMapperException
-            ::noArgumentsException($class, null, false, $ctorRequiredParamsName);
+            throw JsonMapperException::noArgumentsException(
+                $class,
+                null,
+                false,
+                $ctorRequiredParamsName
+            );
         }
 
         ksort($ctorArgs);

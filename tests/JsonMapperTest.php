@@ -640,7 +640,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     public function testMapEmpty()
     {
         $this->expectException(JsonMapperException::class);
-        $this->expectExceptionMessage('Empty type at property "JsonMapperTest_Simple::$empty"');
+        $this->expectExceptionMessage("Empty type at property 'JsonMapperTest_Simple::\$empty'");
         $jm = new JsonMapper();
         $sn = $jm->map(
             json_decode(
