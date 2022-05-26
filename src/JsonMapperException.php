@@ -55,8 +55,10 @@ class JsonMapperException extends \Exception
      * 
      * @return JsonMapperException
      */
-    static function undefinedPropertyException($key, 
-        $strClassName, $setterException = false
+    static function undefinedPropertyException(
+        $key,
+        $strClassName,
+        $setterException = false
     ) {
         if ($setterException === true) {
             return new self(
@@ -186,9 +188,11 @@ class JsonMapperException extends \Exception
      * 
      * @return JsonMapperException
      */
-    static function 
-    noArgumentsException($class, $ctor = null, 
-        $noArguments = false, $ctorRequiredParamsName = null
+    static function noArgumentsException(
+        $class,
+        $ctor = null,
+        $noArguments = false,
+        $ctorRequiredParamsName = null
     ) {
         if ($noArguments === true) {
             return new self(
