@@ -232,7 +232,7 @@ class MultiTypeTest extends TestCase
         $mapper->mapFor(502, 'oneOf(mixed,int)');
     }
 
-    public function testMapClassWithStrictType()
+    public function testMapClassWithoutStrictType()
     {
         $mapper = new JsonMapper();
         $json = '{"numberOfTyres":"2"}';
@@ -249,7 +249,7 @@ class MultiTypeTest extends TestCase
         $mapper->mapClass(json_decode($json), '\multitypetest\model\Vehicle2', true);
     }
 
-    public function testMapClassWithStrictType2()
+    public function testMapClassContainingArrayWithoutStrictType()
     {
         $mapper = new JsonMapper();
         $json = '{"value":[2,6]}';
@@ -257,7 +257,7 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\SimpleCase', $res);
     }
 
-    public function testMapClassWithStrictType2Fail()
+    public function testMapClassContainingArrayWithStrictTypeFail()
     {
         $mapper = new JsonMapper();
         $this->expectException(JsonMapperException::class);
