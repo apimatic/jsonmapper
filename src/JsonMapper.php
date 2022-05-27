@@ -290,20 +290,11 @@ class JsonMapper
      */
     public function getArrayTypeAndDimensions($type, $dimensions = 0)
     {
-        $typeEnd = strrpos($type, '>');
-        $typeEnd = $typeEnd == false ? 0 : $typeEnd;
-        $arrayDepth = substr_count($type, '[]', $typeEnd);
-        if ($arrayDepth > 0) {
-            // if its array of some type
-            // excluding subtype from type: TYPE[]
-            $subtype = substr($type, 0, -2 * $arrayDepth);
-            $dimensions += $arrayDepth;
-            return $this->getArrayTypeAndDimensions($subtype, $dimensions);
-        } else if (strpos($type, 'array<string,') === 0 && $typeEnd > 0) {
-            // if its map of some type
-            // excluding subtype from type: array<string,TYPE>
-            $subtype = substr($type, strlen('array<string,'), -1);
-            return $this->getArrayTypeAndDimensions($subtype, ++$dimensions);
+        list($isMap, $isArray, $innerType) = TypeCombination::extractTypeInfo($type);
+        if ($isMap || $isArray) {
+            // if it's an array or map of some type
+            // increment dimension and check for innerType
+            return $this->getArrayTypeAndDimensions($innerType, ++$dimensions);
         }
         return array($type, $dimensions);
     }
@@ -733,20 +724,15 @@ class JsonMapper
                 return array(false, null);
             }
         }
-        $mapStart = 'array<string,';
-        $isMapType = substr($type, -1) == '>' && strpos($type, $mapStart) === 0;
-        $isArrayType = substr($type, -2) == '[]';
-        if ($isArrayType || $isMapType) {
+        list($isMap, $isArray, $innerType) = TypeCombination::extractTypeInfo($type);
+        if ($isMap || $isArray) {
             // if type is array like int[] or map like array<string,int>
             list($isAssociative, $isIndexed) = $this->isAssociativeOrIndexed($value);
-            if (($isMapType && $isAssociative) || ($isArrayType && $isIndexed)) {
+            if (($isMap && $isAssociative) || ($isArray && $isIndexed)) {
                 // Value must be associativeArray/object for MapType
                 // Or it must be indexed array for ArrayType
-                // Extracting inner type for arrays/maps
-                $type = $isMapType ? substr($type, strlen($mapStart), -1)
-                    : ($isArrayType ? substr($type, 0, -2) : $type);
                 foreach ($value as $v) {
-                    if (!$this->isValueOfType($v, $type, [], $namespace)[0]) {
+                    if (!$this->isValueOfType($v, $innerType, [], $namespace)[0]) {
                         // false if any element is not of same type
                         return array(false, null);
                     }

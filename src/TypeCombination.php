@@ -110,6 +110,27 @@ class TypeCombination
     }
 
     /**
+     * Extract type info like: isMap, isArray, and inner type for maps/arrays.
+     *
+     * @param string $type Type to be checked and extracted for information.
+     *
+     * @return array An array with type info in the format:
+     *               (bool isMap, bool isArray, string $internalType).
+     */
+    public static function extractTypeInfo($type)
+    {
+        $mapStart = 'array<string,';
+        // Check if container is array or map?
+        $isMap = substr($type, -1) == '>' && strpos($type, $mapStart) === 0;
+        $isArray = substr($type, -2) == '[]';
+        // Extracting inner type for arrays/maps
+        // Inner type will be same as actual type for non-container type
+        $innerType = $isMap ? substr($type, strlen($mapStart), -1)
+            : ($isArray ? substr($type, 0, -2) : $type);
+        return [$isMap, $isArray, $innerType];
+    }
+
+    /**
      * Wrap the given typeGroup string in the TypeCombination class,
      * i.e. getTypes() method will return all the grouped types,
      * while deserializing factory methods can be obtained by
@@ -131,19 +152,11 @@ class TypeCombination
         $start = strpos($typeGroup, '(');
         $end = strrpos($typeGroup, ')');
         if ($start !== false && $end !== false) {
-            if (substr($typeGroup, -2) == '[]') {
+            list($isMap, $isArray, $innerType) = self::extractTypeInfo($typeGroup);
+            if ($isMap || $isArray) {
                 return self::_createTypeGroup(
-                    'array',
-                    substr($typeGroup, 0, -2),
-                    $deserializers
-                );
-            }
-            if (substr($typeGroup, -1) == '>' 
-                && strpos($typeGroup, 'array<string,') === 0
-            ) {
-                return self::_createTypeGroup(
-                    'map',
-                    substr($typeGroup, strlen('array<string,'), -1),
+                    $isMap ? 'map' : 'array',
+                    $innerType,
                     $deserializers
                 );
             }
