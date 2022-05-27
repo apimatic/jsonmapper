@@ -283,8 +283,8 @@ class JsonMapper
     /**
      * Checks if type is an array, and extracts its dimensions and inner type.
      *
-     * @param $type       string Type to be checked for array.
-     * @param $dimensions int    Dimensions passed in recursions, initial: 0.
+     * @param string $type       Type to be checked for array.
+     * @param int    $dimensions Dimensions passed in recursions, initial: 0.
      *
      * @return array
      */
@@ -311,10 +311,10 @@ class JsonMapper
     /**
      * Try calling the factory method if exists, otherwise throw JsonMapperException
      *
-     * @param $factoryMethod string factory method in the format "type method()"
-     * @param $value         mixed  value to be passed in as param into factory
-     *                       method.
-     * @param $strClassName  string strClassName referencing this factory method
+     * @param string $factoryMethod factory method in the format "type method()"
+     * @param mixed  $value         value to be passed in as param into factory
+     *                              method.
+     * @param string $strClassName  strClassName referencing this factory method
      *
      * @return mixed|false
      * @throws JsonMapperException
@@ -335,9 +335,9 @@ class JsonMapper
     /**
      * Try calling deserializer function with value, return true if call successful.
      *
-     * @param $value        mixed  value to be checked if deserializable.
-     * @param $deserializer string deserializer function string in the format
-     *                      "pathToCallableFunction typeOfValue".
+     * @param mixed  $value        value to be checked if deserializable.
+     * @param string $deserializer deserializer function string in the format
+     *                             "pathToCallableFunction typeOfValue".
      *
      * @return bool Return true if is value Deserializable, false otherwise.
      */
@@ -368,15 +368,15 @@ class JsonMapper
     /**
      * Get mapped value for a property in an object.
      *
-     * @param $jvalue         mixed         Raw normalized data for the property
-     * @param $type           string        Type found by inspectProperty()
-     * @param $typeOfs        string|null   OneOf/AnyOf types hint found by
-     *                        inspectProperty in maps annotation
-     * @param $factoryMethods string[]|null Callable factory methods for property
-     * @param $namespace      string        Namespace of the class
-     * @param $className      string        Name of the class
-     * @param $strict         bool          True if looking to map with strict type
-     *                        checking.
+     * @param mixed         $jvalue         Raw normalized data for the property
+     * @param string        $type           Type found by inspectProperty()
+     * @param string|null   $typeOfs        OneOf/AnyOf types hint found by
+     *                                      inspectProperty in maps annotation
+     * @param string[]|null $factoryMethods Callable factory methods for property
+     * @param string        $namespace      Namespace of the class
+     * @param string        $className      Name of the class
+     * @param bool          $strict         True if looking to map with strict type
+     *                                      checking.
      *
      * @return array|false|mixed|object|null
      * @throws JsonMapperException|ReflectionException
