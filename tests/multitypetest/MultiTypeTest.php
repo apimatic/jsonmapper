@@ -223,47 +223,12 @@ class MultiTypeTest extends TestCase
         $this->assertEquals('passed string', $res);
     }
 
-    
     public function testMixedAndIntFail()
     {
         $mapper = new JsonMapper();
         $this->expectException(JsonMapperException::class);
         $this->expectExceptionMessage('Cannot map more than OneOf { int and mixed } on: 502');
         $mapper->mapFor(502, 'oneOf(mixed,int)');
-    }
-
-    public function testMapClassWithoutStrictType()
-    {
-        $mapper = new JsonMapper();
-        $json = '{"numberOfTyres":"2"}';
-        $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\Vehicle2');
-        $this->assertInstanceOf('\multitypetest\model\Vehicle2', $res);
-    }
-
-    public function testMapClassWithStrictTypeFail()
-    {
-        $mapper = new JsonMapper();
-        $this->expectException(JsonMapperException::class);
-        $this->expectExceptionMessage("Could not set type 'int' on value: \"2\"");
-        $json = '{"numberOfTyres":"2"}';
-        $mapper->mapClass(json_decode($json), '\multitypetest\model\Vehicle2', true);
-    }
-
-    public function testMapClassContainingArrayWithoutStrictType()
-    {
-        $mapper = new JsonMapper();
-        $json = '{"value":[2,6]}';
-        $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCase');
-        $this->assertInstanceOf('\multitypetest\model\SimpleCase', $res);
-    }
-
-    public function testMapClassContainingArrayWithStrictTypeFail()
-    {
-        $mapper = new JsonMapper();
-        $this->expectException(JsonMapperException::class);
-        $this->expectExceptionMessage("Could not set type 'string' on value: 2");
-        $json = '{"value":[2,6]}';
-        $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCase', true);
     }
 
     public function testOneOfModelsWithSameReqFieldNameAndDifferentType()
@@ -302,7 +267,40 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\SimpleCase', $res);
     }
 
-    
+    public function testMapClassWithoutStrictType()
+    {
+        $mapper = new JsonMapper();
+        $json = '{"numberOfTyres":"2"}';
+        $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\Vehicle2');
+        $this->assertInstanceOf('\multitypetest\model\Vehicle2', $res);
+    }
+
+    public function testMapClassWithStrictTypeFail()
+    {
+        $mapper = new JsonMapper();
+        $this->expectException(JsonMapperException::class);
+        $this->expectExceptionMessage("Could not set type 'int' on value: \"2\"");
+        $json = '{"numberOfTyres":"2"}';
+        $mapper->mapClass(json_decode($json), '\multitypetest\model\Vehicle2', true);
+    }
+
+    public function testMapClassContainingArrayWithoutStrictType()
+    {
+        $mapper = new JsonMapper();
+        $json = '{"value":[2,6]}';
+        $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCase');
+        $this->assertInstanceOf('\multitypetest\model\SimpleCase', $res);
+    }
+
+    public function testMapClassContainingArrayWithStrictTypeFail()
+    {
+        $mapper = new JsonMapper();
+        $this->expectException(JsonMapperException::class);
+        $this->expectExceptionMessage("Could not set type 'string' on value: 2");
+        $json = '{"value":[2,6]}';
+        $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCase', true);
+    }
+
     public function testStringOrSimpleCaseA()
     {
         $mapper = new JsonMapper();
