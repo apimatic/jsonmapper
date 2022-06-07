@@ -533,9 +533,13 @@ class JsonMapper
                 }
                 $end = '[]' . $end;
             }
-            $types = array_unique(array_map(function ($v) {
-                return $this->getType($v);
-            }, $value));
+            $types = array_unique(
+                array_map(
+                    function ($v) {
+                        return $this->getType($v);
+                    }, $value
+                )
+            );
             if (count($types) > 1) {
                 // wrap in brackets for multiple types
                 $start .= '(';
@@ -560,17 +564,21 @@ class JsonMapper
      * Check the given type/types in the provided typeGroup, return true if
      * type(s) exists in the typeGroup
      *
-     * @param string|TypeCombination $typeGroup
-     * @param string|TypeCombination $type      Can be a normal type like string[],
+     * @param TypeCombination|string $typeGroup TypesCombination object or string
+     *                                          format for grouped types
+     * @param TypeCombination|string $type      Can be a normal type like string[],
      *                                          int, Car, etc. or a combination of
      *                                          types like (CarA,CarB)[] or
      *                                          array<string,(CarA,CarB)>
-     * @param string                 $start
-     * @param string                 $end
+     * @param string                 $start     prefix used by string $type,
+     *                                          Default: ""
+     * @param string                 $end       postfix used by string $type,
+     *                                          Default: ""
      *
      * @return bool
      */
-    public function checkForType($typeGroup, $type, $start = '', $end = '') {
+    public function checkForType($typeGroup, $type, $start = '', $end = '')
+    {
         if (is_string($typeGroup)) {
             // convert into TypeCombination object
             $typeGroup = TypeCombination::generateTypeCombination($typeGroup);
@@ -631,12 +639,17 @@ class JsonMapper
     }
 
     /**
+     * Extract all internal groups with given group name as a list of TypeCombination
+     * objects from provided group instance
      *
-     * @param TypeCombination $group
+     * @param TypeCombination $group     A group to be extracted for inner groups
+     * @param string          $groupName All inner groups with this group name will
+     *                                   be extracted as a list
      *
      * @return TypeCombination[]
      */
-    protected function extractAllGroups($group, $groupName) {
+    protected function extractAllGroups($group, $groupName)
+    {
         if ($group->getGroupName() == $groupName) {
             return [$group->getTypes()[0]];
         }
