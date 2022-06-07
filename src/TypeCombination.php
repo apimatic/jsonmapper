@@ -142,11 +142,12 @@ class TypeCombination
      *                                represents array types, and array<string,T>
      *                                represents map types, oneOf/anyOf are group
      *                                names, while default group name is anyOf.
-     * @param string[] $deserializers Callable factory methods for the property
+     * @param string[] $deserializers Callable factory methods for the property,
+     *                                Default: []
      *
      * @return TypeCombination
      */
-    public static function generateTypeCombination($typeGroup, $deserializers)
+    public static function generateTypeCombination($typeGroup, $deserializers = [])
     {
         $groupName = 'anyOf';
         $start = strpos($typeGroup, '(');

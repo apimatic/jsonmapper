@@ -508,6 +508,150 @@ class JsonMapper
     }
 
     /**
+     * Extract type from any given value.
+     *
+     * @param mixed  $value Any value to be checked for type, should be an array if
+     *                      checking for inner type
+     * @param string $start string to be appended at the start of the extracted type,
+     *                      Default: ''
+     * @param string $end   string to be appended at the end of the extracted type,
+     *                      Default: ''
+     *
+     * @return string Returns the type that could be mapped on the given value.
+     */
+    public function getType($value, $start = '', $end = '')
+    {
+        if (is_array($value)) {
+            if ($this->isAssociativeOrIndexed($value)[0]) {
+                // if value is associative array
+                $start .= 'array<string,';
+                $end = '>' . $end;
+            } else {
+                // if value is indexed array
+                if (empty($value)) {
+                    return 'array';
+                }
+                $end = '[]' . $end;
+            }
+            $types = array_unique(array_map(function ($v) {
+                return $this->getType($v);
+            }, $value));
+            if (count($types) > 1) {
+                // wrap in brackets for multiple types
+                $start .= '(';
+                $end = ')' . $end;
+            }
+            return $start . join(',', $types) . $end;
+        } elseif (is_object($value)) {
+            $type = get_class($value); // returns full path of class
+            $slashPos = strrpos($type, '\\');
+            if ($slashPos !== false) {
+                $slashPos++; // to get the type after last slash
+            } else {
+                $slashPos = 0; // if did not have any slashes
+            }
+            $type = substr($type, $slashPos);
+            return $start . $type . $end;
+        }
+        return $start . gettype($value) . $end;
+    }
+
+    /**
+     * Check the given type/types in the provided typeGroup, return true if
+     * type(s) exists in the typeGroup
+     *
+     * @param string|TypeCombination $typeGroup
+     * @param string|TypeCombination $type      Can be a normal type like string[],
+     *                                          int, Car, etc. or a combination of
+     *                                          types like (CarA,CarB)[] or
+     *                                          array<string,(CarA,CarB)>
+     * @param string                 $start
+     * @param string                 $end
+     *
+     * @return bool
+     */
+    public function checkForType($typeGroup, $type, $start = '', $end = '') {
+        if (is_string($typeGroup)) {
+            // convert into TypeCombination object
+            $typeGroup = TypeCombination::generateTypeCombination($typeGroup);
+        }
+        if (is_string($type) && strpos($type, '(')) {
+            // for combination of types like: (A,B)[] or array<string,(A,(B,C)[])>
+            // convert into TypeCombination object
+            $type = TypeCombination::generateTypeCombination($type);
+        }
+        if (is_string($type)) {
+            // for checking simple types like: string, int[] or Car[]
+            if ($typeGroup->getGroupName() == 'map') {
+                $start .= 'array<string,';
+                $end = '>' . $end;
+            } elseif ($typeGroup->getGroupName() == 'array') {
+                $end = '[]' . $end;
+            }
+            foreach ($typeGroup->getTypes() as $t) {
+                if (is_string($t)) {
+                    $matched = $t === "$start$type$end";
+                } else {
+                    $matched = $this->checkForType($t, $type, $start, $end);
+                }
+                if ($matched) {
+                    // if any type in the typeGroup matched with given type,
+                    // then early return true
+                    return true;
+                }
+            }
+            return false;
+        }
+        // To handle type if its array/map group of types
+        // extract all internal groups of similar groupTypes from the given typeGroup
+        $groups = $this->extractAllGroups($typeGroup, $type->getGroupName());
+        // extract internal group of array/map type
+        $type = $type->getTypes()[0];
+        $matched = false;
+        // checking each extracted group for given type
+        foreach ($groups as $tg) {
+            $matched = true;
+            // $tg->getTypes() must contain all the types given in $type
+            foreach ($type->getTypes() as $t) {
+                if (is_string($t)) {
+                    if (!in_array($t, $tg->getTypes(), true)) {
+                        $matched = false;
+                    }
+                } else {
+                    if (!$this->checkForType($tg, $t)) {
+                        $matched = false;
+                    }
+                }
+            }
+            if ($matched) {
+                break;
+            }
+        }
+        return $matched;
+    }
+
+    /**
+     *
+     * @param TypeCombination $group
+     *
+     * @return TypeCombination[]
+     */
+    protected function extractAllGroups($group, $groupName) {
+        if ($group->getGroupName() == $groupName) {
+            return [$group->getTypes()[0]];
+        }
+        $groups = [];
+        foreach ($group->getTypes() as $g) {
+            if ($g instanceof TypeCombination) {
+                foreach ($this->extractAllGroups($g, $groupName) as $grp) {
+                    array_push($groups, $grp);
+                }
+            }
+        }
+        return $groups;
+    }
+
+    /**
      * Converts the given typeCombination into its string format.
      *
      * @param TypeCombination|string $type Combined type/Single type.
