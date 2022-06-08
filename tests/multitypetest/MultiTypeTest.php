@@ -23,6 +23,8 @@ require_once __DIR__ . '/model/OuterArrayCase.php';
 
 use apimatic\jsonmapper\JsonMapper;
 use apimatic\jsonmapper\JsonMapperException;
+use multitypetest\model\Atom;
+use multitypetest\model\Car;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -39,7 +41,7 @@ class MultiTypeTest extends TestCase
         $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseA', $res);
     }
-    
+
     public function testSimpleCaseAWithFieldIntArray()
     {
         $mapper = new JsonMapper();
@@ -47,7 +49,7 @@ class MultiTypeTest extends TestCase
         $res = $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseA', $res);
     }
-    
+
     public function testSimpleCaseAWithFieldBoolean()
     {
         $mapper = new JsonMapper();
@@ -56,7 +58,6 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseA', $res);
     }
 
-    
     public function testSimpleCaseAFailWithConstructorArgumentMissing()
     {
         $this->expectException(JsonMapperException::class);
@@ -66,7 +67,6 @@ class MultiTypeTest extends TestCase
         $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
     }
 
-    
     public function testSimpleCaseAFailWithFieldBoolArray()
     {
         $this->expectException(JsonMapperException::class);
@@ -76,7 +76,6 @@ class MultiTypeTest extends TestCase
         $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
     }
 
-    
     public function testSimpleCaseAFailWithFieldString()
     {
         $this->expectException(JsonMapperException::class);
@@ -86,7 +85,6 @@ class MultiTypeTest extends TestCase
         $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseA');
     }
 
-    
     public function testSimpleCaseBWithFieldBoolean()
     {
         $mapper = new JsonMapper();
@@ -95,7 +93,6 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
     }
 
-    
     public function testSimpleCaseBWithFieldArray()
     {
         $mapper = new JsonMapper();
@@ -104,7 +101,6 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
     }
 
-    
     public function testSimpleCaseBFailWithFieldIntArray()
     {
         $this->expectException(JsonMapperException::class);
@@ -114,7 +110,6 @@ class MultiTypeTest extends TestCase
         $mapper->mapClass(json_decode($json), '\multitypetest\model\SimpleCaseB');
     }
 
-    
     public function testStringOrStringList()
     {
         $mapper = new JsonMapper();
@@ -127,7 +122,6 @@ class MultiTypeTest extends TestCase
         $this->assertEquals('value', $res[1]);
     }
 
-    
     public function testNeitherStringNorStringList()
     {
         $this->expectException(JsonMapperException::class);
@@ -137,7 +131,6 @@ class MultiTypeTest extends TestCase
         $mapper->mapFor(json_decode($json), 'anyOf(string[],string)');
     }
 
-    
     public function testAssociativeArray()
     {
         $mapper = new JsonMapper();
@@ -148,7 +141,6 @@ class MultiTypeTest extends TestCase
         self::assertTrue(is_string($res['key1']));
     }
 
-    
     public function testEmptyArrayAndMap()
     {
         $mapper = new JsonMapper();
@@ -161,7 +153,6 @@ class MultiTypeTest extends TestCase
         self::assertTrue(is_array($res));
     }
 
-    
     public function testEmptyArrayFail()
     {
         $this->expectException(JsonMapperException::class);
@@ -171,7 +162,6 @@ class MultiTypeTest extends TestCase
         $mapper->mapFor(json_decode($json), 'oneOf(string[],int[],array<string,int>)');
     }
 
-    
     public function testEmptyMapFail()
     {
         $this->expectException(JsonMapperException::class);
@@ -181,7 +171,6 @@ class MultiTypeTest extends TestCase
         $mapper->mapFor(json_decode($json), 'oneOf(array<string,int>,array<string,string>,string[])');
     }
 
-    
     public function testNullableObjectOrBool()
     {
         $mapper = new JsonMapper();
@@ -201,7 +190,6 @@ class MultiTypeTest extends TestCase
         $this->assertEquals(null, $res);
     }
 
-    
     public function testNullableOnNonNullable()
     {
         $mapper = new JsonMapper();
@@ -210,7 +198,6 @@ class MultiTypeTest extends TestCase
         $mapper->mapFor(null, 'oneOf(array,bool)');
     }
 
-    
     public function testMixedOrInt()
     {
         $mapper = new JsonMapper();
@@ -321,7 +308,6 @@ class MultiTypeTest extends TestCase
         $this->assertEquals('{"value":[1.2]}', $res);
     }
 
-    
     public function testOneOfSimpleCases()
     {
         $mapper = new JsonMapper();
@@ -334,7 +320,6 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
     }
 
-    
     public function testOneOfSimpleCasesWithFieldArrayAndFloatArrayFail()
     {
         $this->expectException(JsonMapperException::class);
@@ -348,7 +333,6 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    
     public function testAnyOfSimpleCases()
     {
         $mapper = new JsonMapper();
@@ -377,7 +361,6 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\SimpleCaseB', $res);
     }
 
-    
     public function testAnyOfSimpleCasesFailWithFieldString()
     {
         $this->expectException(JsonMapperException::class);
@@ -391,7 +374,6 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    
     public function testArrayAndObject()
     {
         $mapper = new JsonMapper();
@@ -405,7 +387,6 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res);
     }
 
-    
     public function testMapAndObject()
     {
         $mapper = new JsonMapper();
@@ -420,7 +401,6 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    
     public function testArrayOfMapAndArrayOfObject()
     {
         $mapper = new JsonMapper();
@@ -435,7 +415,6 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    
     public function testArrayOfMapOrArrayOfObject()
     {
         $mapper = new JsonMapper();
@@ -449,7 +428,6 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res[0]);
     }
 
-    
     public function testOneOfObjectsFailWithSameRequiredFields()
     {
         $this->expectException(JsonMapperException::class);
@@ -464,7 +442,6 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    
     public function testComplexCases()
     {
         $mapper = new JsonMapper();
@@ -491,7 +468,6 @@ class MultiTypeTest extends TestCase
         $this->assertTrue(is_int($res->getOptional()->getOptional()->getOptional()[0]));
     }
 
-    
     public function testComplexCasesWithDiscriminators()
     {
         $mapper = new JsonMapper();
@@ -563,7 +539,6 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Morning', $res->getValue()[1]);
     }
 
-    
     public function testDiscriminatorsFailWithDiscriminatorMatchesParent()
     {
         $mapper = new JsonMapper();
@@ -582,7 +557,6 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    
     public function testDiscriminatorsMatchedButFailedWithOneOf()
     {
         $mapper = new JsonMapper();
@@ -596,7 +570,6 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    
     public function testArrays()
     {
         $mapper = new JsonMapper();
@@ -607,7 +580,6 @@ class MultiTypeTest extends TestCase
         $this->assertTrue(is_bool($res[1]));
     }
 
-    
     public function testMaps()
     {
         $mapper = new JsonMapper();
@@ -618,7 +590,6 @@ class MultiTypeTest extends TestCase
         $this->assertTrue(is_int($res['value2']));
     }
 
-    
     public function testMapOfArrays()
     {
         $mapper = new JsonMapper();
@@ -639,7 +610,6 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res['value'][0]);
     }
 
-    
     public function testArrayOfMaps()
     {
         $mapper = new JsonMapper();
@@ -668,7 +638,6 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res[0]['atom2']);
     }
 
-    
     public function testMultiDimensionalMaps()
     {
         $mapper = new JsonMapper();
@@ -697,7 +666,6 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res['key']['atom2']);
     }
 
-    
     public function testMultiDimensionalArrays()
     {
         $mapper = new JsonMapper();
@@ -726,7 +694,6 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Atom', $res[1][0]);
     }
 
-    
     public function testOuterArrayInModelField()
     {
         $mapper = new JsonMapper();
@@ -738,7 +705,6 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\OuterArrayCase', $res);
     }
 
-    
     public function testOuterArray()
     {
         $mapper = new JsonMapper();
@@ -754,7 +720,6 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($res[2] === false);
     }
 
-    
     public function testOuterMap()
     {
         $mapper = new JsonMapper();
@@ -770,7 +735,6 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($res['key3'] === false);
     }
 
-    
     public function testOuterMapOfArrays()
     {
         $mapper = new JsonMapper();
@@ -820,7 +784,6 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($res['key2'][0] === false);
     }
 
-    
     public function testOuterArrayOfMaps()
     {
         $mapper = new JsonMapper();
@@ -874,7 +837,6 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($res[2]['key1'] === true);
     }
 
-    
     public function testOuterMultiDimensionalMaps()
     {
         $mapper = new JsonMapper();
@@ -928,7 +890,6 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($res['item2']['key1'] === true);
     }
 
-    
     public function testOuterMultiDimensionalArray()
     {
         $mapper = new JsonMapper();
@@ -978,7 +939,6 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($res[2][0] === false);
     }
 
-    
     public function testOuterArrayFailWithAnyOf()
     {
         $mapper = new JsonMapper();
@@ -993,7 +953,6 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    
     public function testOuterArrayFailWith2DMapOfAtomAnd2DMapOfIntArray()
     {
         $mapper = new JsonMapper();
@@ -1007,7 +966,6 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    
     public function testOuterArrayFailWithStringInsteadOfArrayOfString()
     {
         $mapper = new JsonMapper();
@@ -1022,7 +980,6 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    
     public function testOuterArrayFailWithMapOfStringInsteadOfArrayOfString()
     {
         $mapper = new JsonMapper();
@@ -1037,7 +994,6 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    
     public function testOuterMapFailWithStringInsteadOfMapOfString()
     {
         $mapper = new JsonMapper();
@@ -1052,7 +1008,6 @@ class MultiTypeTest extends TestCase
         );
     }
 
-    
     public function testOuterMapFailWithArrayOfStringInsteadOfMapOfString()
     {
         $mapper = new JsonMapper();
@@ -1065,5 +1020,80 @@ class MultiTypeTest extends TestCase
             'array<string,array<string,anyOf(bool,oneOf(int,Atom)[],string)>>',
             'multitypetest\model'
         );
+    }
+
+    public function testGetTypeOfSimpleValues()
+    {
+        $mapper = new JsonMapper();
+        $this->assertEquals('string', $mapper->getType("this is string"));
+        $this->assertEquals('string', $mapper->getType("23"));
+        $this->assertEquals('float', $mapper->getType(23.98));
+        $this->assertEquals('int', $mapper->getType(23));
+        $this->assertEquals('bool', $mapper->getType(false));
+        $this->assertEquals('bool[]', $mapper->getType([false, true]));
+        $this->assertEquals('array<string,int>', $mapper->getType(["key1" => 23, "key2" => 34]));
+        $this->assertEquals('array<string,(float,int)>', $mapper->getType(["key1" => 23, "key2" => 34.9]));
+        $this->assertEquals('(bool,int,null)[]', $mapper->getType([false, true, null, 23]));
+        $this->assertEquals('null[]', $mapper->getType([null, null]));
+
+
+        $this->assertEquals('array<string,(int,int[])>', $mapper->getType(["key1" => 23, "key2" => [34, 46]]));
+        $this->assertEquals('((bool,string)[][],(int,string)[],int)[]', $mapper->getType([23, [34, "46"], [[true, "46"]]]));
+        $this->assertEquals('array<string,(float,string)[]>', $mapper->getType(["key1" => ["string", 2.3], "key2" => [21.3, "some"]]));
+        $this->assertEquals('(array<string,bool[]>,array<string,string[]>)[]', $mapper->getType([["key1" => ["some string"]], ["key1" => [false]]]));
+        $this->assertEquals('array<string,string[]>[]', $mapper->getType([["key1" => ["some string"]], ["key1" => ["false"]]]));
+        $this->assertEquals('array<string,(array<string,string[]>,string[][])>', $mapper->getType(["key" => [["some string"]], ["key" => ["some string"]]]));
+        $this->assertEquals('array<string,array<string,int>[]>', $mapper->getType(["key" => [["key" => 23]], [["key" => 34]]]));
+    }
+
+    public function testGetTypeOfComplexValues()
+    {
+        $mapper = new JsonMapper();
+        $this->assertEquals('DateTime', $mapper->getType(new \DateTime()));
+        $this->assertEquals('Car', $mapper->getType(new Car("3", true)));
+        $this->assertEquals('DateTime[]', $mapper->getType([new \DateTime(), new \DateTime()]));
+        $this->assertEquals('(Car,DateTime)[]', $mapper->getType([new Car("3", true), new \DateTime()]));
+        $this->assertEquals('(Car,bool)[]', $mapper->getType([new Car("3", true), true, new Car("6", false)]));
+        $this->assertEquals('array<string,(Car,bool)>', $mapper->getType(["key1" => true, "key2" => new Car("6", false)]));
+        $this->assertEquals('(Atom,Car,null)[]', $mapper->getType([new Car("3", true), new Atom(6), null]));
+    }
+
+    public function testCheckForSimpleTypes()
+    {
+        $mapper = new JsonMapper();
+        $this->assertTrue($mapper->checkForType('oneof(string,int)', 'string'));
+        $this->assertTrue($mapper->checkForType('oneof(string,anyof(bool,int))', 'int'));
+        $this->assertTrue($mapper->checkForType('oneof(string,int)[]', 'int[]'));
+        $this->assertFalse($mapper->checkForType('oneof(string,int)[]', 'array<string,int>'));
+        $this->assertTrue($mapper->checkForType('array<string,oneof(string,int,bool)>', 'array<string,int>'));
+        $this->assertTrue($mapper->checkForType('array<string,oneof(string,int,bool)>', 'array<string,(bool,int)>'));
+        $this->assertTrue($mapper->checkForType('oneof(string,int,bool)[]', '(bool,int)[]'));
+        $this->assertTrue($mapper->checkForType('oneof(string,anyof(int,bool))[]', '(bool,int)[]'));
+        $this->assertTrue($mapper->checkForType('oneof(string,anyof(int,bool)[])', '(bool,int)[]'));
+        $this->assertFalse($mapper->checkForType('oneof(string,anyof(int,bool[]))', '(bool,int)[]'));
+        $this->assertTrue($mapper->checkForType('oneof(string,anyof(int,bool[]))', 'bool[]'));
+
+    }
+
+    public function testCheckForComplexTypes()
+    {
+        $mapper = new JsonMapper();
+
+        $this->assertTrue($mapper->checkForType('oneof(Car,anyof(Atom,null)[])', 'Atom[]'));
+        $this->assertTrue($mapper->checkForType('oneof(Car,anyof(Atom,null)[])', 'Car'));
+
+        $this->assertTrue($mapper->checkForType('oneof(Car,anyof(Atom,null))[]', '(Atom,Car,null)[]'));
+        $this->assertTrue($mapper->checkForType('oneof(Car,anyof(Atom,null))[]', '(Atom,null)[]'));
+        $this->assertFalse($mapper->checkForType('oneof(Car[],anyof(Atom,null))[]', '(Atom,Car,null)[]'));
+        $this->assertFalse($mapper->checkForType('oneof(Car,oneof(Atom,Orbit)[])[]', '(Atom,null)[]'));
+        $this->assertTrue($mapper->checkForType('oneof(Car,oneof(Atom,Orbit,null)[])', '(Atom,null)[]'));
+        $this->assertTrue($mapper->checkForType('oneof(oneof(Atom,Orbit)[],oneof(Atom,Orbit,null)[])', '(Atom,null)[]'));
+
+        $this->assertTrue($mapper->checkForType('array<string,oneof(Car,anyof(Atom,null))>', 'array<string,(Atom,Car,null)>'));
+        $this->assertTrue($mapper->checkForType('array<string,oneof(Car,anyof(Atom,null))>', 'array<string,(Atom,null)>'));
+        $this->assertFalse($mapper->checkForType('array<string,oneof(Car[],anyof(Atom,null))>', 'array<string,(Atom,Car,null)>'));
+        $this->assertFalse($mapper->checkForType('array<string,oneof(Car,oneof(Atom,Orbit)[])>', 'array<string,(Atom,null)>'));
+        $this->assertTrue($mapper->checkForType('oneof(Car,array<string,oneof(Atom,Orbit,null)>)', 'array<string,(Atom,null)>'));
+        $this->assertTrue($mapper->checkForType('oneof(array<string,oneof(Atom,Orbit)>,array<string,oneof(Atom,Orbit,null)>)', 'array<string,(Atom,null)>'));
     }
 }

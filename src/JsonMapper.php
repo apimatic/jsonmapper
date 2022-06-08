@@ -540,6 +540,7 @@ class JsonMapper
                     }, $value
                 )
             );
+            asort($types);
             if (count($types) > 1) {
                 // wrap in brackets for multiple types
                 $start .= '(';
@@ -549,15 +550,29 @@ class JsonMapper
         } elseif (is_object($value)) {
             $type = get_class($value); // returns full path of class
             $slashPos = strrpos($type, '\\');
-            if ($slashPos !== false) {
-                $slashPos++; // to get the type after last slash
-            } else {
-                $slashPos = 0; // if did not have any slashes
+            if (!$slashPos) {
+                // if slash not found then replace with -1
+                $slashPos = -1;
             }
-            $type = substr($type, $slashPos);
+            $type = substr($type, ++$slashPos);
             return $start . $type . $end;
         }
-        return $start . gettype($value) . $end;
+        $type = gettype($value);
+        switch ($type) {
+        case 'integer':
+            $type = 'int';
+            break;
+        case 'double':
+            $type = 'float';
+            break;
+        case 'boolean':
+            $type = 'bool';
+            break;
+        case 'NULL':
+            $type = 'null';
+            break;
+        }
+        return $start . $type . $end;
     }
 
     /**
@@ -565,11 +580,13 @@ class JsonMapper
      * type(s) exists in the typeGroup
      *
      * @param TypeCombination|string $typeGroup TypesCombination object or string
-     *                                          format for grouped types
+     *                                          format for grouped types. All kind
+     *                                          of groups are allowed here.
      * @param TypeCombination|string $type      Can be a normal type like string[],
      *                                          int, Car, etc. or a combination of
      *                                          types like (CarA,CarB)[] or
-     *                                          array<string,(CarA,CarB)>
+     *                                          array<string,(CarA,CarB)>. Only map
+     *                                          or array groups are allowed here
      * @param string                 $start     prefix used by string $type,
      *                                          Default: ""
      * @param string                 $end       postfix used by string $type,
@@ -583,7 +600,7 @@ class JsonMapper
             // convert into TypeCombination object
             $typeGroup = TypeCombination::generateTypeCombination($typeGroup);
         }
-        if (is_string($type) && strpos($type, '(')) {
+        if (is_string($type) && strpos($type, '(') !== false) {
             // for combination of types like: (A,B)[] or array<string,(A,(B,C)[])>
             // convert into TypeCombination object
             $type = TypeCombination::generateTypeCombination($type);
@@ -598,7 +615,7 @@ class JsonMapper
             }
             foreach ($typeGroup->getTypes() as $t) {
                 if (is_string($t)) {
-                    $matched = $t === "$start$type$end";
+                    $matched = $type === "$start$t$end";
                 } else {
                     $matched = $this->checkForType($t, $type, $start, $end);
                 }
@@ -613,22 +630,17 @@ class JsonMapper
         // To handle type if its array/map group of types
         // extract all internal groups of similar groupTypes from the given typeGroup
         $groups = $this->extractAllGroups($typeGroup, $type->getGroupName());
-        // extract internal group of array/map type
+        // extract internal group, since type will always be an array/map group
         $type = $type->getTypes()[0];
         $matched = false;
         // checking each extracted group for given type
         foreach ($groups as $tg) {
             $matched = true;
-            // $tg->getTypes() must contain all the types given in $type
+            // $tg must contain all the types given in $type
             foreach ($type->getTypes() as $t) {
-                if (is_string($t)) {
-                    if (!in_array($t, $tg->getTypes(), true)) {
-                        $matched = false;
-                    }
-                } else {
-                    if (!$this->checkForType($tg, $t)) {
-                        $matched = false;
-                    }
+                if (!$this->checkForType($tg, $t)) {
+                    $matched = false;
+                    break;
                 }
             }
             if ($matched) {
@@ -671,7 +683,7 @@ class JsonMapper
      *
      * @return string
      */
-    protected static function formatType($type)
+    protected function formatType($type)
     {
         return is_string($type) ? $type : $type->getFormat();
     }
@@ -1389,9 +1401,9 @@ class JsonMapper
         if (is_callable([$param, 'hasType']) && $param->hasType()) {
             $type = $param->getType();
             if ($type->isBuiltIn()) {
-                $typeName = static::reflectionTypeToString($type);
+                $typeName = $this->reflectionTypeToString($type);
             } else {
-                $typeName = "\\" . static::reflectionTypeToString($type);
+                $typeName = "\\" . $this->reflectionTypeToString($type);
             }
             return $type->allowsNull() ? "$typeName|null" : $typeName;
         }
@@ -1406,7 +1418,7 @@ class JsonMapper
      *
      * @return string
      */
-    protected static function reflectionTypeToString($type)
+    protected function reflectionTypeToString($type)
     {
         if (\class_exists('ReflectionNamedType')
             && $type instanceof \ReflectionNamedType
@@ -1714,7 +1726,7 @@ class JsonMapper
      *
      * @return array
      */
-    protected static function parseAnnotations($docblock)
+    protected function parseAnnotations($docblock)
     {
         $annotations = array();
         // Strip away the docblock header and footer
