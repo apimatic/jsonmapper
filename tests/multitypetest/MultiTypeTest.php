@@ -1030,6 +1030,7 @@ class MultiTypeTest extends TestCase
         $this->assertEquals('float', $mapper->getType(23.98));
         $this->assertEquals('int', $mapper->getType(23));
         $this->assertEquals('bool', $mapper->getType(false));
+        $this->assertEquals('array', $mapper->getType([]));
         $this->assertEquals('bool[]', $mapper->getType([false, true]));
         $this->assertEquals('array<string,int>', $mapper->getType(["key1" => 23, "key2" => 34]));
         $this->assertEquals('array<string,(float,int)>', $mapper->getType(["key1" => 23, "key2" => 34.9]));
@@ -1073,6 +1074,8 @@ class MultiTypeTest extends TestCase
         $this->assertFalse($mapper->checkForType('oneof(string,anyof(int,bool[]))', '(bool,int)[]'));
         $this->assertTrue($mapper->checkForType('oneof(string,anyof(int,bool[]))', 'bool[]'));
 
+        $this->assertTrue($mapper->checkForType('oneof(anyof(a,oneof(a[],b)[]),anyof(a,b,c)[])', '(a,b)[]'));
+
     }
 
     public function testCheckForComplexTypes()
@@ -1095,5 +1098,6 @@ class MultiTypeTest extends TestCase
         $this->assertFalse($mapper->checkForType('array<string,oneof(Car,oneof(Atom,Orbit)[])>', 'array<string,(Atom,null)>'));
         $this->assertTrue($mapper->checkForType('oneof(Car,array<string,oneof(Atom,Orbit,null)>)', 'array<string,(Atom,null)>'));
         $this->assertTrue($mapper->checkForType('oneof(array<string,oneof(Atom,Orbit)>,array<string,oneof(Atom,Orbit,null)>)', 'array<string,(Atom,null)>'));
+        $this->assertTrue($mapper->checkForType('array<string,anyOf(Postman,Person,float,null)[]>', 'array<string,(Person,float)[]>'));
     }
 }

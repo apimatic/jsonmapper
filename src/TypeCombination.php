@@ -110,6 +110,59 @@ class TypeCombination
     }
 
     /**
+     * Extract innermost oneof/anyof group hidden inside array/map
+     * type group
+     *
+     * @return TypeCombination
+     */
+    public function extractOneOfAnyOfGroup()
+    {
+        $innerType = $this->getTypes()[0];
+        if (in_array($this->getGroupName(), ["array", "map"])
+            && $innerType instanceof TypeCombination
+        ) {
+            return $innerType->extractOneOfAnyOfGroup();
+        }
+        return $this;
+    }
+
+    /**
+     * Extract all internal groups similar to the given group as a list of
+     * TypeCombination objects, it will only return similar array/map groups
+     *
+     * @param TypeCombination $group All inner groups similar to this array/map
+     *                               type group will be extracted
+     *
+     * @return TypeCombination[] A list of similar TypeCombination objects
+     */
+    public function extractSimilar($group)
+    {
+        $result = [];
+        if (!in_array($this->getGroupName(), ["array", "map"])) {
+            // if group is neither array nor map then call extractSimilar for
+            // each of the internal groups
+            foreach ($this->getTypes() as $typ) {
+                if ($typ instanceof TypeCombination) {
+                    $result = array_merge($result, $typ->extractSimilar($group));
+                }
+            }
+        } elseif ($group->getGroupName() == $this->getGroupName()) {
+            // if groupName is same then check inner group type
+            $internal = $this->getTypes()[0];
+            $group = $group->getTypes()[0];
+            if (in_array($group->getGroupName(), ["array", "map"])) {
+                // if inner group is array/map then return result after
+                // extraction of groups similar to innerGroup
+                $result = $internal->extractSimilar($group);
+            } else {
+                // if inner group is oneof/anyof then only extract $internal
+                $result = [$internal];
+            }
+        }
+        return $result;
+    }
+
+    /**
      * Extract type info like: isMap, isArray, and inner type for maps/arrays.
      *
      * @param string $type Type to be checked and extracted for information.

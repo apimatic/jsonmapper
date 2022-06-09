@@ -628,10 +628,11 @@ class JsonMapper
             return false;
         }
         // To handle type if its array/map group of types
-        // extract all internal groups of similar groupTypes from the given typeGroup
-        $groups = $this->extractAllGroups($typeGroup, $type->getGroupName());
-        // extract internal group, since type will always be an array/map group
-        $type = $type->getTypes()[0];
+        // extract all internal groups from the given typeGroup that
+        // are similar to $type
+        $groups = $typeGroup->extractSimilar($type);
+        // update type to the innermost level of oneof/anyof
+        $type = $type->extractOneOfAnyOfGroup();
         $matched = false;
         // checking each extracted group for given type
         foreach ($groups as $tg) {
@@ -648,32 +649,6 @@ class JsonMapper
             }
         }
         return $matched;
-    }
-
-    /**
-     * Extract all internal groups with given group name as a list of TypeCombination
-     * objects from provided group instance
-     *
-     * @param TypeCombination $group     A group to be extracted for inner groups
-     * @param string          $groupName All inner groups with this group name will
-     *                                   be extracted as a list
-     *
-     * @return TypeCombination[]
-     */
-    protected function extractAllGroups($group, $groupName)
-    {
-        if ($group->getGroupName() == $groupName) {
-            return [$group->getTypes()[0]];
-        }
-        $groups = [];
-        foreach ($group->getTypes() as $g) {
-            if ($g instanceof TypeCombination) {
-                foreach ($this->extractAllGroups($g, $groupName) as $grp) {
-                    array_push($groups, $grp);
-                }
-            }
-        }
-        return $groups;
     }
 
     /**
