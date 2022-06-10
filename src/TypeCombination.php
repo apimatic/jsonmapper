@@ -274,6 +274,7 @@ class TypeCombination
      */
     private static function _insertType(&$types, $type, $deserializers)
     {
+        $type = trim($type);
         if (strpos($type, '(') !== false && strrpos($type, ')') !== false) {
             // If type is Grouped, creating TypeCombination instance for it
             $type = self::generateTypeCombination($type, $deserializers);

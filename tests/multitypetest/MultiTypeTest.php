@@ -1063,7 +1063,7 @@ class MultiTypeTest extends TestCase
     {
         $mapper = new JsonMapper();
         $this->assertTrue($mapper->checkForType('oneof(string,int)', 'string'));
-        $this->assertTrue($mapper->checkForType('oneof(string,anyof(bool,int))', 'int'));
+        $this->assertTrue($mapper->checkForType('oneof(string, anyof(bool, int))', 'int'));
         $this->assertTrue($mapper->checkForType('oneof(string,int)[]', 'int[]'));
         $this->assertFalse($mapper->checkForType('oneof(string,int)[]', 'array<string,int>'));
         $this->assertTrue($mapper->checkForType('array<string,oneof(string,int,bool)>', 'array<string,int>'));

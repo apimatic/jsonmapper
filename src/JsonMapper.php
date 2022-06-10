@@ -521,7 +521,8 @@ class JsonMapper
      */
     public function getType($value, $start = '', $end = '')
     {
-        if (is_array($value)) {
+        $type = $this->getFlatType($value);
+        if (!$type && is_array($value)) {
             if ($this->isAssociativeOrIndexed($value)[0]) {
                 // if value is associative array
                 $start .= 'array<string,';
@@ -546,33 +547,17 @@ class JsonMapper
                 $start .= '(';
                 $end = ')' . $end;
             }
-            return $start . join(',', $types) . $end;
-        } elseif (is_object($value)) {
-            $type = get_class($value); // returns full path of class
-            $slashPos = strrpos($type, '\\');
+            $type = join(',', $types);
+        } elseif (!$type && is_object($value)) {
+            $class = get_class($value); // returns full path of class
+            $slashPos = strrpos($class, '\\');
             if (!$slashPos) {
                 // if slash not found then replace with -1
                 $slashPos = -1;
             }
-            $type = substr($type, ++$slashPos);
-            return $start . $type . $end;
+            $type = substr($class, ++$slashPos);
         }
-        $type = gettype($value);
-        switch ($type) {
-        case 'integer':
-            $type = 'int';
-            break;
-        case 'double':
-            $type = 'float';
-            break;
-        case 'boolean':
-            $type = 'bool';
-            break;
-        case 'NULL':
-            $type = 'null';
-            break;
-        }
-        return $start . $type . $end;
+        return "$start$type$end";
     }
 
     /**
@@ -1650,6 +1635,37 @@ class JsonMapper
             || $type == 'boolean' || $type == 'bool'
             || $type == 'integer' || $type == 'int'
             || $type == 'double';
+    }
+
+    /**
+     * Gets not nested type for the given value
+     *
+     * @param mixed $value Value to be checked for type
+     *
+     * @return string|false Return flat PHP types for the given value
+     *                      and if not flat type return false.
+     */
+    protected function getFlatType($value)
+    {
+        $type = gettype($value);
+        if (!$this->isFlatType($type)) {
+            return false;
+        }
+        switch ($type) {
+        case 'integer':
+            $type = 'int';
+            break;
+        case 'double':
+            $type = 'float';
+            break;
+        case 'boolean':
+            $type = 'bool';
+            break;
+        case 'NULL':
+            $type = 'null';
+            break;
+        }
+        return $type;
     }
 
     /**
