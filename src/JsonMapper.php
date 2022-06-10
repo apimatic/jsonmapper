@@ -569,9 +569,8 @@ class JsonMapper
      *                                          of groups are allowed here.
      * @param TypeCombination|string $type      Can be a normal type like string[],
      *                                          int, Car, etc. or a combination of
-     *                                          types like (CarA,CarB)[] or
-     *                                          array<string,(CarA,CarB)>. Only map
-     *                                          or array groups are allowed here
+     *                                          types like (CarA,CarB)[], (int,Enum),
+     *                                          or array<string,(CarA,CarB)>.
      * @param string                 $start     prefix used by string $type,
      *                                          Default: ""
      * @param string                 $end       postfix used by string $type,
@@ -583,13 +582,14 @@ class JsonMapper
     {
         if (is_string($typeGroup)) {
             // convert into TypeCombination object
-            $typeGroup = TypeCombination::generateTypeCombination($typeGroup);
+            $typeGroup = TypeCombination::withFormat($typeGroup);
         }
         if (is_string($type) && strpos($type, '(') !== false) {
             // for combination of types like: (A,B)[] or array<string,(A,(B,C)[])>
             // convert into TypeCombination object
-            $type = TypeCombination::generateTypeCombination($type);
+            $type = TypeCombination::withFormat($type);
         }
+        $checkAllInner = false; // required when $type instance of TypeCombination.
         if (is_string($type)) {
             // for checking simple types like: string, int[] or Car[]
             if ($typeGroup->getGroupName() == 'map') {
@@ -611,29 +611,31 @@ class JsonMapper
                 }
             }
             return false;
+        } elseif (in_array($type->getGroupName(), ['array','map'])) {
+            // To handle type if its array/map group of types
+            // extract all internal groups from the given typeGroup that
+            // are similar to $type
+            $typeGroup = TypeCombination::with($typeGroup->extractSimilar($type));
+            // update type to the innermost level of oneof/anyof
+            $type = $type->extractOneOfAnyOfGroup();
+            // check all inner elements of $type
+            $checkAllInner = true;
         }
-        // To handle type if its array/map group of types
-        // extract all internal groups from the given typeGroup that
-        // are similar to $type
-        $groups = $typeGroup->extractSimilar($type);
-        // update type to the innermost level of oneof/anyof
-        $type = $type->extractOneOfAnyOfGroup();
-        $matched = false;
-        // checking each extracted group for given type
-        foreach ($groups as $tg) {
-            $matched = true;
-            // $tg must contain all the types given in $type
-            foreach ($type->getTypes() as $t) {
-                if (!$this->checkForType($tg, $t)) {
-                    $matched = false;
-                    break;
-                }
+        // To handle type if its oneof/anyof group of types
+        foreach ($type->getTypes() as $t) {
+            $contains = $this->checkForType($typeGroup, $t);
+            if (!$checkAllInner && $contains) {
+                // if any type is found then
+                // type is matched with $typeGroup
+                return true;
             }
-            if ($matched) {
-                break;
+            if ($checkAllInner && !$contains) {
+                // if any type is missing then
+                // type is not matched with $typeGroup
+                return false;
             }
         }
-        return $matched;
+        return $checkAllInner;
     }
 
     /**
@@ -680,7 +682,7 @@ class JsonMapper
     ) {
         if (is_string($typeGroup)) {
             // convert into TypeCombination object
-            $typeGroup = TypeCombination::generateTypeCombination(
+            $typeGroup = TypeCombination::withFormat(
                 $typeGroup,
                 isset($factoryMethods) ? $factoryMethods : []
             );

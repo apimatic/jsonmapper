@@ -1075,6 +1075,11 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($mapper->checkForType('oneof(string,anyof(int,bool[]))', 'bool[]'));
 
         $this->assertTrue($mapper->checkForType('oneof(anyof(a,oneof(a[],b)[]),anyof(a,b,c)[])', '(a,b)[]'));
+        $this->assertTrue($mapper->checkForType('oneof(anyof(a,oneof(a[],b)),anyof(a,b,c)[])', '((a,b)[],c[])'));
+        $this->assertTrue($mapper->checkForType('oneof(anyof(a,oneof(a[],b)),anyof(a,b,c)[])', '(c,c[])'));
+        $this->assertTrue($mapper->checkForType('oneof(anyof(a,b),anyof(a,b,c)[])', '(b,c)'));
+        $this->assertFalse($mapper->checkForType('oneof(anyof(a,b),anyof(a,b,c)[])[]', '(b,c)'));
+        $this->assertFalse($mapper->checkForType('oneof(anyof(a,b),anyof(a,b,c)[])[]', '(b,c)[]'));
 
     }
 

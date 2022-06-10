@@ -184,6 +184,35 @@ class TypeCombination
     }
 
     /**
+     * Create an oneof/anyof TypeCombination instance, by specifying inner types
+     *
+     * @param array    $types         types array: (TypeCombination,string)[]
+     * @param string   $gName         group name value (anyof, oneof),
+     *                                Default: anyof
+     * @param string[] $deserializers deserializers array, Default: []
+     *
+     * @return TypeCombination
+     */
+    public static function with($types, $gName = 'anyof', array $deserializers = [])
+    {
+        $format = join(
+            ',',
+            array_map(
+                function ($t) {
+                    return is_string($t) ? $t : $t->getFormat();
+                },
+                $types
+            )
+        );
+        return new self(
+            "$gName($format)",
+            $gName,
+            $types,
+            $deserializers
+        );
+    }
+
+    /**
      * Wrap the given typeGroup string in the TypeCombination class,
      * i.e. getTypes() method will return all the grouped types,
      * while deserializing factory methods can be obtained by
@@ -200,7 +229,7 @@ class TypeCombination
      *
      * @return TypeCombination
      */
-    public static function generateTypeCombination($typeGroup, $deserializers = [])
+    public static function withFormat($typeGroup, $deserializers = [])
     {
         $groupName = 'anyOf';
         $start = strpos($typeGroup, '(');
@@ -257,7 +286,7 @@ class TypeCombination
         return new self(
             $format,
             $name,
-            [self::generateTypeCombination($innerGroup, $deserializers)],
+            [self::withFormat($innerGroup, $deserializers)],
             $deserializers
         );
     }
@@ -277,7 +306,7 @@ class TypeCombination
         $type = trim($type);
         if (strpos($type, '(') !== false && strrpos($type, ')') !== false) {
             // If type is Grouped, creating TypeCombination instance for it
-            $type = self::generateTypeCombination($type, $deserializers);
+            $type = self::withFormat($type, $deserializers);
         }
         if (!empty($type)) {
             array_push($types, $type);
