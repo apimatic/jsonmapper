@@ -302,7 +302,8 @@ class JsonMapper
     /**
      * Try calling the factory method if exists, otherwise throw JsonMapperException
      *
-     * @param string $factoryMethod factory method in the format "type method()"
+     * @param string $factoryMethod factory method in the format
+     *                              'path/to/callable/function argType'
      * @param mixed  $value         value to be passed in as param into factory
      *                              method.
      * @param string $strClassName  strClassName referencing this factory method
@@ -324,36 +325,41 @@ class JsonMapper
     }
 
     /**
-     * Try calling deserializer function with value, return true if call successful.
+     * Try calling the given function with value, return [true, updatedValue]
+     * if call successful.
      *
-     * @param mixed  $value        value to be checked if deserializable.
-     * @param string $deserializer deserializer function string in the format
-     *                             "pathToCallableFunction typeOfValue".
+     * @param mixed  $value         value to be passed in argument of factory method.
+     * @param string $factoryMethod factory method string in the format
+     *                              'path/to/callable/function argType'.
      *
-     * @return bool Return true if is value Deserializable, false otherwise.
+     * @return array Return an array [bool $success, $value] and value will be the
+     *               failure cause if not success.
      */
-    protected function isValueDeserializable($value, $deserializer)
+    protected function callFactoryWithErrorHandling($value, $factoryMethod)
     {
+        $success = true;
         if (version_compare(phpversion(), '7.0', '<')) {
             try {
-                $this->callFactoryMethod($deserializer, $value, '');
+                $value = $this->callFactoryMethod($factoryMethod, $value, '');
             } catch (Exception $e) {
                 // In Php versions < 7.0 catching only exceptions but not typeErrors
                 // since strict types were not available for php < 7.0
                 // also we can't use throwable since its only available after php 7.0
-                return false;
+                $success = false;
+                $value = $e->getMessage();
             }
         } else {
             try {
-                $this->callFactoryMethod($deserializer, $value, '');
+                $value = $this->callFactoryMethod($factoryMethod, $value, '');
             } catch (\Throwable $e) {
                 // In Php versions >= 7.0 catching exceptions including typeErrors
                 // using Throwable since its base interface for Exceptions & Errors
                 // since types can be strict for php >= 7.0
-                return false;
+                $success = false;
+                $value = $e->getMessage();
             }
         }
-        return true;
+        return [$success, $value];
     }
 
     /**
@@ -508,20 +514,117 @@ class JsonMapper
     }
 
     /**
+     * Gets not nested type for the given value
+     *
+     * @param mixed $value Value to be checked for type
+     *
+     * @return string|false Return flat PHP types for the given value
+     *                      and if not flat type return false.
+     */
+    protected function getFlatType($value)
+    {
+        $type = gettype($value);
+        if (!$this->isFlatType($type)) {
+            return false;
+        }
+        switch ($type) {
+        case 'integer':
+            $type = 'int';
+            break;
+        case 'double':
+            $type = 'float';
+            break;
+        case 'boolean':
+            $type = 'bool';
+            break;
+        case 'NULL':
+            $type = 'null';
+            break;
+        }
+        return $type;
+    }
+
+    /**
+     * Check all given factory methods that can be called with given value.
+     *
+     * @param mixed    $value          Any value to be checked with factoryMethods.
+     * @param mixed    $newVal         A copy of value to be updated.
+     * @param string   $type           Extracted type of the value.
+     * @param string[] $factoryMethods Methods in the format 'path/to/method argType'
+     *                                 which will be converting $value into any
+     *                                 desirable type.
+     *
+     * @return string Returns the type or typeGroup of value based on
+     *                given factory methods.
+     * @throws JsonMapperException
+     */
+    protected function applyFactoryMethods($value, &$newVal, $type, $factoryMethods)
+    {
+        $errorMsg = [];
+        $types = [$type]; // list of possible types
+        foreach ($factoryMethods as $m) {
+            // checking each provided factory method
+            $method = explode(' ', $m);
+            // try calling factory method
+            list($success, $val) = $this->callFactoryWithErrorHandling($value, $m);
+            if ($success) {
+                if ($type == $method[1]) {
+                    // if method call is successful
+                    // and given type equals to argType of factory method
+                    // update the value with returned $val of factory method
+                    // and return with type early
+                    $newVal = $val;
+                    return $type;
+                }
+                // if method call is successful
+                // and given type is not same as argType of factory method
+                // then add argType in list of possible types for $value
+                array_push($types, $method[1]);
+            } elseif ($type == $method[1]) {
+                // if method call is failure given type equals to argType of
+                // factory method then add reason $val as an error message
+                array_push($errorMsg, "$method[0]: $val");
+            }
+        }
+        if (!empty($errorMsg)) {
+            // if any error msg is added then throw exception
+            throw JsonMapperException::invalidArgumentFactoryMethodException(
+                $type,
+                join("\n", $errorMsg)
+            );
+        }
+        // converting possible types array into the string format
+        // of an anyof typeGroup
+        $types = array_unique($types);
+        asort($types);
+        $type = join(',', $types);
+        if (count($types) > 1) {
+            // wrap in brackets for multiple types
+            $type = "($type)";
+        }
+        return $type;
+    }
+
+    /**
      * Extract type from any given value.
      *
-     * @param mixed  $value Any value to be checked for type, should be an array if
-     *                      checking for inner type
-     * @param string $start string to be appended at the start of the extracted type,
-     *                      Default: ''
-     * @param string $end   string to be appended at the end of the extracted type,
-     *                      Default: ''
+     * @param mixed    $value   Any value to be checked for type, should be
+     *                          an array if checking for inner type
+     * @param string[] $factory Methods in the format 'path/to/method argType'
+     *                          which will be converting $value into any
+     *                          desirable type, Default: []
+     * @param string   $start   string to be appended at the start of the
+     *                          extracted type, Default: ''
+     * @param string   $end     string to be appended at the end of the
+     *                          extracted type, Default: ''
      *
      * @return string Returns the type that could be mapped on the given value.
+     * @throws JsonMapperException
      */
-    public function getType($value, $start = '', $end = '')
+    protected function getType(&$value, $factory = [], $start = '', $end = '')
     {
         $type = $this->getFlatType($value);
+        $newVal = $value;
         if (!$type && is_array($value)) {
             if ($this->isAssociativeOrIndexed($value)[0]) {
                 // if value is associative array
@@ -534,16 +637,16 @@ class JsonMapper
                 }
                 $end = '[]' . $end;
             }
-            $types = array_unique(
-                array_map(
-                    function ($v) {
-                        return $this->getType($v);
-                    }, $value
-                )
-            );
+            $types = [];
+            foreach ($value as $k => $v) {
+                array_push($types, $this->getType($v, $factory));
+                $newVal[$k] = $v;
+            }
+            $types = array_unique($types);
             asort($types);
-            if (count($types) > 1) {
-                // wrap in brackets for multiple types
+            $isOneOfOrAnyOf = !empty($types) && substr($types[0], -1) === ')';
+            if (count($types) > 1 || $isOneOfOrAnyOf) {
+                // wrap in brackets for multiple types or oneof/anyof type
                 $start .= '(';
                 $end = ')' . $end;
             }
@@ -557,7 +660,12 @@ class JsonMapper
             }
             $type = substr($class, ++$slashPos);
         }
-        return "$start$type$end";
+        $type = "$start$type$end";
+        if (!empty($factory)) {
+            $type = $this->applyFactoryMethods($value, $newVal, $type, $factory);
+        }
+        $value = $newVal;
+        return $type;
     }
 
     /**
@@ -578,7 +686,7 @@ class JsonMapper
      *
      * @return bool
      */
-    public function checkForType($typeGroup, $type, $start = '', $end = '')
+    protected function checkForType($typeGroup, $type, $start = '', $end = '')
     {
         if (is_string($typeGroup)) {
             // convert into TypeCombination object
@@ -651,6 +759,34 @@ class JsonMapper
     }
 
     /**
+     * Checks if type of the given value is present in the type group,
+     * also updates the value when necessary.
+     *
+     * @param string $typeGroup      String format for grouped types, i.e.
+     *                               oneof(Car,Atom)
+     * @param mixed  $value          Any value to be checked in type group
+     * @param array  $factoryMethods Callable factory methods for the value, that
+     *                               are required to serialize it into any of the
+     *                               provided types in typeGroup in the format:
+     *                               'path/to/method argType', Default: []
+     *
+     * @return mixed Returns the same value or updated one if any factory method
+     *               is applied
+     * @throws JsonMapperException Throws exception if a factory method is provided
+     *                             but applicable on value, or also throws an
+     *                             exception if type of value didn't match with type
+     *                             group
+     */
+    public function checkTypeGroupFor($typeGroup, $value, $factoryMethods = [])
+    {
+        $type = self::getType($value, $factoryMethods);
+        if ($this->checkForType($typeGroup, $type)) {
+            return $value;
+        }
+        throw JsonMapperException::unableToMapException('Type', $type, $typeGroup);
+    }
+
+    /**
      * Map the data in $value by the provided $typeGroup i.e. oneOf(A,B)
      * will try to map value with only one of A or B, that matched. While
      * anyOf(A,B) will try to map it with any of A or B and sets its type to
@@ -667,6 +803,7 @@ class JsonMapper
      *                                               the value, that are required
      *                                               to deserialize it into any of
      *                                               the provided types in typeGroup
+     *                                               like ['path/to/method argType']
      * @param string|null            $className      Name of the parent class that's
      *                                               holding this property (if any)
      *
@@ -854,7 +991,7 @@ class JsonMapper
             foreach ($deserializers as $method) {
                 if (isset($method) && explode(' ', $method)[1] == $type) {
                     $methodFound = true;
-                    if ($this->isValueDeserializable($value, $method)) {
+                    if ($this->callFactoryWithErrorHandling($value, $method)[0]) {
                         return array(true, $method);
                     }
                 }
@@ -1637,37 +1774,6 @@ class JsonMapper
             || $type == 'boolean' || $type == 'bool'
             || $type == 'integer' || $type == 'int'
             || $type == 'double';
-    }
-
-    /**
-     * Gets not nested type for the given value
-     *
-     * @param mixed $value Value to be checked for type
-     *
-     * @return string|false Return flat PHP types for the given value
-     *                      and if not flat type return false.
-     */
-    protected function getFlatType($value)
-    {
-        $type = gettype($value);
-        if (!$this->isFlatType($type)) {
-            return false;
-        }
-        switch ($type) {
-        case 'integer':
-            $type = 'int';
-            break;
-        case 'double':
-            $type = 'float';
-            break;
-        case 'boolean':
-            $type = 'bool';
-            break;
-        case 'NULL':
-            $type = 'null';
-            break;
-        }
-        return $type;
     }
 
     /**
