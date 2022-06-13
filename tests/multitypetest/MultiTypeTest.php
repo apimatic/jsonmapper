@@ -1386,7 +1386,7 @@ class MultiTypeTest extends TestCase
     public function testGetTypeFailure()
     {
         $this->expectException(JsonMapperException::class);
-        $this->expectExceptionMessage("Provided factory methods are not callable with the value of Type: DateTime\nmultitypetest\model\DateTimeHelper::toRfc1123DateTimeArray: array_map(): Argument #2 (\$array) must be of type array, DateTime given");
+        $this->expectExceptionMessage("Provided factory methods are not callable with the value of Type: DateTime\nmultitypetest\model\DateTimeHelper::toRfc1123DateTimeArray: array_map(): Argument #2");
         $mapper = new MultiTypeJsonMapper();
         $value = new \DateTime();
         $mapper->getType($value, [
