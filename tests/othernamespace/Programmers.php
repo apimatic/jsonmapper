@@ -11,4 +11,10 @@ class Programmers extends Group
      * @var string
      */
     public $language;
+
+    /**
+     * @maps languageUser
+     * @var \namespacetest\model\User
+     */
+    public $languageUser;
 }

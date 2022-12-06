@@ -121,12 +121,12 @@ class NamespaceTest extends \PHPUnit\Framework\TestCase
     public function testParentInDifferentNamespace()
     {
         $mapper = new JsonMapper();
-        $json = '{"language":"PHP","lead":{"name":"phpLead"},"users":[{"name":"member1"},{"name":"member2"}]}';
+        $json = '{"language":"PHP","languageUser":{"name":"phpUser"},"lead":{"name":"phpLead"},"users":[{"name":"member1"},{"name":"member2"}]}';
         $res = $mapper->mapClass(json_decode($json), Programmers::class);
         $this->assertInstanceOf(Programmers::class, $res);
-        $this->assertEquals(
-            'PHP', $res->language
-        );
+        $this->assertEquals('PHP', $res->language);
+        $this->assertInstanceOf(User::class, $res->languageUser);
+        $this->assertEquals('phpUser', $res->languageUser->name);
         $this->assertInstanceOf(User::class, $res->lead);
         $this->assertEquals('phpLead', $res->lead->name);
         $this->assertTrue(is_array($res->getUsers()));
