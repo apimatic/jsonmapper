@@ -2,12 +2,12 @@
 JsonMapper - map nested JSON structures onto PHP classes
 ********************************************************
 
-.. image:: https://github.com/apimatic/jsonmapper/workflows/Tests/badge.svg
-   :target: https://github.com/apimatic/jsonmapper/actions?query=workflow%3ATests
 .. image:: https://img.shields.io/packagist/v/apimatic/jsonmapper.svg?style=flat
    :target: https://packagist.org/packages/apimatic/jsonmapper
 .. image:: https://img.shields.io/packagist/dm/apimatic/jsonmapper.svg?style=flat
    :target: https://packagist.org/packages/apimatic/jsonmapper
+.. image:: https://github.com/apimatic/jsonmapper/workflows/Tests/badge.svg
+   :target: https://github.com/apimatic/jsonmapper/actions?query=workflow%3ATests
 .. image:: https://img.shields.io/packagist/l/apimatic/jsonmapper.svg?style=flat
    :target: https://packagist.org/packages/apimatic/jsonmapper
 
