@@ -4,10 +4,12 @@ JsonMapper - map nested JSON structures onto PHP classes
 
 .. image:: https://github.com/apimatic/jsonmapper/workflows/Tests/badge.svg
    :target: https://github.com/apimatic/jsonmapper/actions?query=workflow%3ATests
-   :align: right
-
-Takes data retrieved from a JSON__ web service and converts them
-into nested object and arrays - using your own model classes.
+.. image:: https://img.shields.io/packagist/v/apimatic/jsonmapper.svg?style=flat
+   :target: https://packagist.org/packages/apimatic/jsonmapper
+.. image:: https://img.shields.io/packagist/dm/apimatic/jsonmapper.svg?style=flat
+   :target: https://packagist.org/packages/apimatic/jsonmapper
+.. image:: https://img.shields.io/packagist/l/apimatic/jsonmapper.svg?style=flat
+   :target: https://packagist.org/packages/apimatic/jsonmapper
 
 Starting from a base object, it maps JSON data on class properties,
 converting them into the correct simple types or objects.
