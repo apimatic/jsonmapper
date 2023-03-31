@@ -34,7 +34,7 @@
     "ext-json": "*"
   },
   "scripts": {
-    "test": "phpunit --coverage-text tests/",
+    "test": "phpunit --coverage-text",
     "test-coverage": "phpunit --path-coverage --coverage-html=CodeCoverage",
     "lint-fix": "phpcbf --standard=PEAR src/",
     "lint": "phpcs --standard=PEAR src/"
