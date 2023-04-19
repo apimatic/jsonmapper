@@ -266,6 +266,7 @@ class JsonMapper
                 $type,
                 $mapsBy,
                 $factoryMethod,
+                [],
                 $namespace,
                 $rc->getName(),
                 $strict
@@ -365,15 +366,21 @@ class JsonMapper
     /**
      * Get mapped value for a property in an object.
      *
-     * @param mixed         $jvalue         Raw normalized data for the property
-     * @param string        $type           Type found by inspectProperty()
-     * @param string|null   $mapsBy         OneOf/AnyOf types hint found by
-     *                                      inspectProperty in mapsBy annotation
-     * @param string[]|null $factoryMethods Callable factory methods for property
-     * @param string        $namespace      Namespace of the class
-     * @param string        $className      Name of the class
-     * @param bool          $strict         True if looking to map with strict type
-     *                                      checking.
+     * @param mixed                $jvalue         Raw normalized data for the
+     *                                             property
+     * @param string               $type           Type found by inspectProperty()
+     * @param string|null          $mapsBy         OneOf/AnyOf types hint found by
+     *                                             inspectProperty in mapsBy
+     *                                             annotation
+     * @param string[]|null        $factoryMethods Callable factory methods for
+     *                                             property
+     * @param array<string,string> $discriminators Map of discriminator values where
+     *                                             keys contain substituted
+     *                                             values in the typeGroup string.
+     * @param string               $namespace      Namespace of the class
+     * @param string               $className      Name of the class
+     * @param bool                 $strict         True if looking to map with strict
+     *                                             type checking.
      *
      * @return array|false|mixed|object|null
      * @throws JsonMapperException|ReflectionException
@@ -383,6 +390,7 @@ class JsonMapper
         $type,
         $mapsBy,
         $factoryMethods,
+        $discriminators,
         $namespace,
         $className,
         $strict
@@ -393,7 +401,8 @@ class JsonMapper
                 $mapsBy,
                 $namespace,
                 $factoryMethods,
-                $className
+                $className,
+                $discriminators
             );
         }
         //use factory method generated value if factory provided
@@ -806,6 +815,10 @@ class JsonMapper
      *                                               like ['path/to/method argType']
      * @param string|null            $className      Name of the parent class that's
      *                                               holding this property (if any)
+     * @param array<string,string>   $discriminators Map of discriminator values
+     *                                               where keys contain substituted
+     *                                               values in the typeGroup string.
+     *                                               Default: []
      *
      * @return array|mixed|object
      * @throws JsonMapperException|ReflectionException
@@ -815,13 +828,15 @@ class JsonMapper
         $typeGroup,
         $namespace = '',
         $factoryMethods = null,
-        $className = null
+        $className = null,
+        $discriminators = []
     ) {
         if (is_string($typeGroup)) {
             // convert into TypeCombination object
             $typeGroup = TypeCombination::withFormat(
                 $typeGroup,
-                isset($factoryMethods) ? $factoryMethods : []
+                isset($factoryMethods) ? $factoryMethods : [],
+                $discriminators
             );
         }
         $isArrayGroup = $typeGroup->getGroupName() == 'array';
@@ -863,6 +878,7 @@ class JsonMapper
                         $type,
                         null,
                         $factoryMethods,
+                        [],
                         $nspace,
                         $className,
                         true
@@ -1765,6 +1781,7 @@ class JsonMapper
                 $jtype,
                 $mapsBy,
                 $factoryMethod,
+                [],
                 $namespace,
                 $rc->getName(),
                 $strict

@@ -1459,6 +1459,27 @@ class MultiTypeTest extends TestCase
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\Lion', $res);
+
+        $json = '{"run":true,"kind":"Hunted"}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf{kind}(Lion{Hunter},Deer{Hunted})',
+            'multitypetest\model'
+        );
+        $this->assertInstanceOf('\multitypetest\model\Deer', $res);
+    }
+
+    public function testDiscriminatorOneOf_SimpleCases_Failure()
+    {
+        $this->expectException(JsonMapperException::class);
+        $this->expectExceptionMessage('Cannot map more than OneOf { Deer and Lion } on: {"run":true,"type":"Hunter"}');
+        $mapper = new JsonMapper();
+        $json = '{"run":true,"type":"Hunter"}';
+        $mapper->mapFor(
+            json_decode($json),
+            'oneOf{kind}(Lion{Hunter},Deer{Hunted})',
+            'multitypetest\model'
+        );
     }
 
     public function testDiscriminatorOneOf_InnerArrayCases_Success()
@@ -1485,6 +1506,19 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Lion', $res['key2']);
     }
 
+    public function testDiscriminatorOneOf_InnerArrayCases_Failure()
+    {
+        $this->expectException(JsonMapperException::class);
+        $this->expectExceptionMessage('Unable to map AnyOf (Lion{Hunter}[],Deer{Hunted}[]){type} on: [{"run":true,"type":"Hunted"},{"run":true,"type":"Hunter"}]');
+        $mapper = new JsonMapper();
+        $json = '[{"run":true,"type":"Hunted"},{"run":true,"type":"Hunter"}]';
+        $mapper->mapFor(
+            json_decode($json),
+            'oneOf{type}(Lion{Hunter}[],Deer{Hunted}[])',
+            'multitypetest\model'
+        );
+    }
+
     public function testDiscriminatorOneOf_OuterArrayCases_Success()
     {
         $mapper = new JsonMapper();
@@ -1507,5 +1541,93 @@ class MultiTypeTest extends TestCase
         $this->assertTrue(is_array($res));
         $this->assertInstanceOf('\multitypetest\model\Lion', $res['key1']);
         $this->assertInstanceOf('\multitypetest\model\Deer', $res['key2']);
+    }
+
+    public function testDiscriminatorOneOf_OuterArrayCases_Failure()
+    {
+        $this->expectException(JsonMapperException::class);
+        $this->expectExceptionMessage('Cannot map more than OneOf { Deer and Lion } on: {"run":true}');
+        $mapper = new JsonMapper();
+        $json = '[{"run":true,"type":"Hunter"},{"run":true}]';
+        $mapper->mapFor(
+            json_decode($json),
+            'oneOf{type}(Lion{Hunter},Deer{Hunted})[]',
+            'multitypetest\model'
+        );
+    }
+
+    public function testDiscriminatorOneOf_MultiLevel_Success()
+    {
+        $mapper = new JsonMapper();
+        $json = '[{"run":true,"type":"Hunter","kind":"Small"},{"run":true,"type":"Hunt","kind":"Big"}]';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'anyOf(oneOf{type}(Lion{Hunter},Deer{Hunted})[],oneOf{kind}(Lion{Big},Deer{Small})[])',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertInstanceOf('\multitypetest\model\Deer', $res[0]);
+        $this->assertInstanceOf('\multitypetest\model\Lion', $res[1]);
+
+        $json = '[{"run":true,"type":"Hunter","kind":"Small"},{"run":true,"type":"Hunted","kind":"Big"}]';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'anyOf(oneOf{type}(Lion{Hunter},Deer{Hunted})[],oneOf{kind}(Lion{Big},Deer{Small})[])',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertInstanceOf('\multitypetest\model\Lion', $res[0]);
+        $this->assertInstanceOf('\multitypetest\model\Deer', $res[1]);
+    }
+
+    public function testDiscriminatorOneOf_MultiLevel_Failure()
+    {
+        $this->expectException(JsonMapperException::class);
+        $this->expectExceptionMessage(
+            'Cannot map more than OneOf { oneOf{kind}(Lion{Big},Deer{Small})[] and ' .
+            'oneOf{type}(Lion{Hunter},Deer{Hunted})[] } on: [{"run":true,"type":"Hunter","kind":"Small"},' .
+            '{"run":true,"type":"Hunted","kind":"Big"}]'
+        );
+        $mapper = new JsonMapper();
+        $json = '[{"run":true,"type":"Hunter","kind":"Small"},{"run":true,"type":"Hunted","kind":"Big"}]';
+        $mapper->mapFor(
+            json_decode($json),
+            'oneOf(oneOf{type}(Lion{Hunter},Deer{Hunted})[],oneOf{kind}(Lion{Big},Deer{Small})[])',
+            'multitypetest\model'
+        );
+    }
+
+    public function testDiscriminatorOneOf_EdgeCase_SpecialCharsInDiscValue()
+    {
+        $mapper = new JsonMapper();
+        $json = '{"run":true,"type":"This, is a value \n \r >)]} $#@** %20"}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf{type}(Lion{Hunter},Deer{This, is a value \n \r >)]} $#@** %20})',
+            'multitypetest\model'
+        );
+        $this->assertInstanceOf('\multitypetest\model\Deer', $res);
+
+        $json = '[{"run":true},{"run":true,"type":"This, is a value \n \r >)]} $#@** %20"}]';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf{type}(Lion{Hunter}[],Deer{This, is a value \n \r >)]} $#@** %20}[])',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertInstanceOf('\multitypetest\model\Deer', $res[0]);
+        $this->assertInstanceOf('\multitypetest\model\Deer', $res[1]);
+    }
+
+    public function testDiscriminatorOneOf_EdgeCase_OafFormatInDiscValue()
+    {
+        $mapper = new JsonMapper();
+        $json = '{"run":true,"type":"oneOf{type}(Lion{Hunter},Deer{Hunted})"}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf{type}(Lion{Hunter},Deer{oneOf{type}(Lion{Hunter},Deer{Hunted})})',
+            'multitypetest\model'
+        );
+        $this->assertInstanceOf('\multitypetest\model\Deer', $res);
     }
 }
