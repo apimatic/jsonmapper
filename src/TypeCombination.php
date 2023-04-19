@@ -38,6 +38,21 @@ class TypeCombination
     private $_groupName;
 
     /**
+     * Name of discriminator field for this typeCombinator group.
+     *
+     * @var string
+     */
+    private $_discriminatorField;
+
+    /**
+     * Mapping of each discriminator value on types in this typeCombinator group.
+     * i.e. [typeName => discriminatorValue]
+     *
+     * @var array
+     */
+    private $_discriminatorMapping = [];
+
+    /**
      * Array of string types or TypeCombination objects
      *
      * @var array
@@ -55,17 +70,62 @@ class TypeCombination
     /**
      * Private constructor for TypeCombination class
      *
-     * @param string   $format        string format value
-     * @param string   $groupName     group name value
-     * @param array    $types         types value
-     * @param string[] $deserializers deserializers value
+     * @param string   $format               string format value
+     * @param string   $groupName            group name value
+     * @param array    $types                types value
+     * @param string[] $deserializers        deserializers value
      */
     private function __construct($format, $groupName, $types, $deserializers)
     {
         $this->_format = $format;
-        $this->_groupName = $groupName;
+        $this->_groupName= $groupName;
         $this->_types = $types;
         $this->_deserializers = $deserializers;
+        $this->updateDiscriminators();
+    }
+
+    /**
+     * Update discriminator and discriminators mapping.
+     */
+    private function updateDiscriminators()
+    {
+        list($this->_groupName, $this->_discriminatorField) =
+            self::extractDiscriminator($this->_groupName);
+        $this->_types = array_map(
+            function ($type) {
+                if (!is_string($type)) {
+                    return $type;
+                }
+                list($type, $discriminator) = self::extractDiscriminator($type);
+                $this->_discriminatorMapping[$type] = $discriminator;
+                return $type;
+            },
+            $this->_types
+        );
+        if (isset($this->_discriminatorField))
+        {
+            $this->_format .= '{' . $this->_discriminatorField . '}';
+        }
+    }
+
+    /**
+     * Extract type discriminator.
+     *
+     * @param string $type Type to be checked and extracted for discriminator.
+     *
+     * @return array An array with type info in the format:
+     *               (string $typeWithoutDiscriminator, string? discriminator).
+     */
+    private function extractDiscriminator($type)
+    {
+        $start = strpos($type, '{');
+        $end = strpos($type, '}');
+        $discriminator = null;
+        if ($start !== false && $end !== false) {
+            $discriminator = substr($type, $start + 1, $end - strlen($type));
+            $type = substr($type, 0, $start) . substr($type, $end + 1);
+        }
+        return [$type, $discriminator];
     }
 
     /**
@@ -86,6 +146,28 @@ class TypeCombination
     public function getGroupName()
     {
         return $this->_groupName;
+    }
+
+    /**
+     * Get discriminator info as an array (if exists)
+     *
+     * @param string $type String type to search discriminators
+     *
+     * @return array|null An array with format: discriminatorFieldName
+     *                    as element 1 and discriminatorValue as
+     *                    element 2
+     */
+    public function getDiscriminator($type)
+    {
+        if (!isset($this->_discriminatorField)
+            || !isset($this->_discriminatorMapping[$type]))
+        {
+            return null;
+        }
+        return [
+            $this->_discriminatorField,
+            $this->_discriminatorMapping[$type]
+        ];
     }
 
     /**

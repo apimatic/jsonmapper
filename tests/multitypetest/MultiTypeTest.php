@@ -24,6 +24,8 @@ require_once __DIR__ . '/model/OuterArrayCase.php';
 require_once __DIR__ . '/model/DaysEnum.php';
 require_once __DIR__ . '/model/MonthNameEnum.php';
 require_once __DIR__ . '/model/MonthNumberEnum.php';
+require_once __DIR__ . '/model/Lion.php';
+require_once __DIR__ . '/model/Deer.php';
 
 use apimatic\jsonmapper\JsonMapper;
 use apimatic\jsonmapper\JsonMapperException;
@@ -1429,7 +1431,7 @@ class MultiTypeTest extends TestCase
         $mapper = new MultiTypeJsonMapper();
 
         $this->assertTrue($mapper->checkForType('oneof(Car,anyof(Atom,null)[])', 'Atom[]'));
-        $this->assertTrue($mapper->checkForType('oneof(Car,anyof(Atom,null)[])', 'Car'));
+        $this->assertTrue($mapper->checkForType('oneof(Car,anyof(array<string,Atom>,null)[])', 'Car'));
 
         $this->assertTrue($mapper->checkForType('oneof(Car,anyof(Atom,null))[]', '(Atom,Car,null)[]'));
         $this->assertTrue($mapper->checkForType('oneof(Car,anyof(Atom,null))[]', '(Atom,null)[]'));
@@ -1445,5 +1447,65 @@ class MultiTypeTest extends TestCase
         $this->assertTrue($mapper->checkForType('oneof(Car,array<string,oneof(Atom,Orbit,null)>)', 'array<string,(Atom,null)>'));
         $this->assertTrue($mapper->checkForType('oneof(array<string,oneof(Atom,Orbit)>,array<string,oneof(Atom,Orbit,null)>)', 'array<string,(Atom,null)>'));
         $this->assertTrue($mapper->checkForType('array<string,anyOf(Postman,Person,float,null)[]>', 'array<string,(Person,float)[]>'));
+    }
+
+    public function testDiscriminatorOneOf_SimpleCases_Success()
+    {
+        $mapper = new JsonMapper();
+        $json = '{"run":true,"type":"Hunter"}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf{type}(Lion{Hunter},Deer{Hunted})',
+            'multitypetest\model'
+        );
+        $this->assertInstanceOf('\multitypetest\model\Lion', $res);
+    }
+
+    public function testDiscriminatorOneOf_InnerArrayCases_Success()
+    {
+        $mapper = new JsonMapper();
+        $json = '[{"run":true,"type":"Hunted"},{"run":true,"type":"Hunted"}]';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf{type}(Lion{Hunter}[],Deer{Hunted}[])',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertInstanceOf('\multitypetest\model\Deer', $res[0]);
+        $this->assertInstanceOf('\multitypetest\model\Deer', $res[1]);
+
+        $json = '{"key1":{"run":true,"type":"Hunter"},"key2":{"run":true,"type":"Hunter"}}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf{type}(array<string,Lion{Hunter}>,array<string,Deer{Hunted}>)',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertInstanceOf('\multitypetest\model\Lion', $res['key1']);
+        $this->assertInstanceOf('\multitypetest\model\Lion', $res['key2']);
+    }
+
+    public function testDiscriminatorOneOf_OuterArrayCases_Success()
+    {
+        $mapper = new JsonMapper();
+        $json = '[{"run":true,"type":"Hunter"},{"run":true,"type":"Hunted"}]';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf{type}(Lion{Hunter},Deer{Hunted})[]',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertInstanceOf('\multitypetest\model\Lion', $res[0]);
+        $this->assertInstanceOf('\multitypetest\model\Deer', $res[1]);
+
+        $json = '{"key1":{"run":true,"type":"Hunter"},"key2":{"run":true,"type":"Hunted"}}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'array<string,oneOf{type}(Lion{Hunter},Deer{Hunted})>',
+            'multitypetest\model'
+        );
+        $this->assertTrue(is_array($res));
+        $this->assertInstanceOf('\multitypetest\model\Lion', $res['key1']);
+        $this->assertInstanceOf('\multitypetest\model\Deer', $res['key2']);
     }
 }
