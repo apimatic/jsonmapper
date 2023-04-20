@@ -834,7 +834,6 @@ class JsonMapper
                 isset($factoryMethods) ? $factoryMethods : [],
                 isset($this->discriminatorSubs) ? $this->discriminatorSubs : []
             );
-            var_dump($typeGroup);
         }
         $isArrayGroup = $typeGroup->getGroupName() == 'array';
         $isMapGroup = $typeGroup->getGroupName() == 'map';
@@ -980,15 +979,15 @@ class JsonMapper
     /**
      * Checks types against the value.
      *
-     * @param mixed      $value         param's value
-     * @param string     $type          type defined in param's typehint
-     * @param array|null $disc          An array with format discriminatorFieldName
-     *                                  as element 1 and discriminatorValue as
-     *                                  element 2, Default: null
-     * @param string     $nspace        Namespace of the class, Default: ''
-     * @param string[]   $deserializers deserializer functions array in the format
-     *                                  ["pathToCallableFunction typeOfValue", ...]
-     *                                  Default: []
+     * @param mixed      $value   Value to be checked
+     * @param string     $type    type defined in param's typehint
+     * @param array|null $disc    An array with format discriminatorFieldName
+     *                            as element 1 and discriminatorValue as
+     *                            element 2
+     * @param string     $nspace  Namespace of the class
+     * @param string[]   $methods deserializer functions array in the format
+     *                            ["pathToCallableFunction typeOfValue", ...]
+     *                            Default: []
      *
      * @return array array(bool $matched, ?string $method) $matched represents if
      *               Type matched with value, $method represents the selected
@@ -996,16 +995,11 @@ class JsonMapper
      * @throws ReflectionException
      * @throws JsonMapperException
      */
-    protected function isValueOfType(
-        $value,
-        $type,
-        $disc = null,
-        $nspace = '',
-        $deserializers = []
-    ) {
-        if (!empty($deserializers)) {
+    protected function isValueOfType($value, $type, $disc, $nspace, $methods = [])
+    {
+        if (!empty($methods)) {
             $methodFound = false;
-            foreach ($deserializers as $method) {
+            foreach ($methods as $method) {
                 if (isset($method) && explode(' ', $method)[1] == $type) {
                     $methodFound = true;
                     if ($this->callFactoryWithErrorHandling($value, $method)[0]) {
@@ -1055,7 +1049,7 @@ class JsonMapper
     /**
      * Check if value is a complex type with provided discriminator
      *
-     * @param mixed      $value         Param's value
+     * @param mixed      $value         Value to be checked
      * @param array|null $discriminator An array with format discriminatorFieldName
      *                                  as element 1 and discriminatorValue as
      *                                  element 2
@@ -1073,7 +1067,6 @@ class JsonMapper
             // if value didn't have discriminatorField
             return true;
         }
-        var_dump($discriminatorValue, $value->{$discriminatorField});
         // if discriminator field is set then decide w.r.t its value
         return $value->{$discriminatorField} == $discriminatorValue;
     }
@@ -1096,7 +1089,7 @@ class JsonMapper
     /**
      * Check if value is of simple type
      *
-     * @param mixed  $value Param's value
+     * @param mixed  $value Value to be checked
      * @param string $type  Type defined in param's typehint
      *
      * @return bool True if value is of the given simple type
