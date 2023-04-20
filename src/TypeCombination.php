@@ -91,54 +91,7 @@ class TypeCombination
         $this->_types = $types;
         $this->_deserializers = $methods;
         $this->_discMap = $discMap;
-        $this->updateDiscriminators();
-    }
-
-    /**
-     * Update discriminator and discriminators mapping.
-     */
-    private function updateDiscriminators()
-    {
-        list($this->_groupName, $this->_discriminatorField) =
-            self::extractDiscriminator($this->_groupName);
-        $this->_types = array_map(
-            function ($type) {
-                if (!is_string($type)) {
-                    return $type;
-                }
-                list($type, $discriminator) = self::extractDiscriminator($type);
-                $this->_discriminatorMapping[$type] = $discriminator;
-                return $type;
-            },
-            $this->_types
-        );
-        if (isset($this->_discriminatorField))
-        {
-            $this->_format .= '{' . $this->_discriminatorField . '}';
-        }
-    }
-
-    /**
-     * Extract type discriminator.
-     *
-     * @param string $type Type to be checked and extracted for discriminator.
-     *
-     * @return array An array with type info in the format:
-     *               (string $typeWithoutDiscriminator, string? discriminator).
-     */
-    private function extractDiscriminator($type)
-    {
-        $start = strpos($type, '{');
-        $end = strpos($type, '}');
-        $discriminator = null;
-        if ($start !== false && $end !== false) {
-            $discriminator = substr($type, $start + 1, $end - strlen($type));
-            if (isset($this->_discMap[$discriminator])) {
-                $discriminator = $this->_discMap[$discriminator];
-            }
-            $type = substr($type, 0, $start) . substr($type, $end + 1);
-        }
-        return [$type, $discriminator];
+        $this->_updateDiscriminators();
     }
 
     /**
@@ -173,8 +126,8 @@ class TypeCombination
     public function getDiscriminator($type)
     {
         if (!isset($this->_discriminatorField)
-            || !isset($this->_discriminatorMapping[$type]))
-        {
+            || !isset($this->_discriminatorMapping[$type])
+        ) {
             return null;
         }
         return [
@@ -281,9 +234,9 @@ class TypeCombination
     /**
      * Create an oneof/anyof TypeCombination instance, by specifying inner types
      *
-     * @param array                $types         i.e. (TypeCombination,string)[]
-     * @param string               $gName         group name value (anyof, oneof),
-     *                                            Default: anyof
+     * @param array  $types i.e. (TypeCombination,string)[]
+     * @param string $gName group name value (anyof, oneof),
+     *                      Default: anyof
      *
      * @return TypeCombination
      */
@@ -417,5 +370,53 @@ class TypeCombination
         if (!empty($type)) {
             $types[] = $type;
         }
+    }
+
+    /**
+     * Update discriminator and discriminators mapping.
+     *
+     * @return void
+     */
+    private function _updateDiscriminators()
+    {
+        list($this->_groupName, $this->_discriminatorField)
+            = self::_extractDiscriminator($this->_groupName);
+        $this->_types = array_map(
+            function ($type) {
+                if (!is_string($type)) {
+                    return $type;
+                }
+                list($type, $discriminator) = self::_extractDiscriminator($type);
+                $this->_discriminatorMapping[$type] = $discriminator;
+                return $type;
+            },
+            $this->_types
+        );
+        if (isset($this->_discriminatorField)) {
+            $this->_format .= '{' . $this->_discriminatorField . '}';
+        }
+    }
+
+    /**
+     * Extract type discriminator.
+     *
+     * @param string $type Type to be checked and extracted for discriminator.
+     *
+     * @return array An array with type info in the format:
+     *               (string $typeWithoutDiscriminator, string? discriminator).
+     */
+    private function _extractDiscriminator($type)
+    {
+        $start = strpos($type, '{');
+        $end = strpos($type, '}');
+        $discriminator = null;
+        if ($start !== false && $end !== false) {
+            $discriminator = substr($type, $start + 1, $end - strlen($type));
+            if (isset($this->_discMap[$discriminator])) {
+                $discriminator = $this->_discMap[$discriminator];
+            }
+            $type = substr($type, 0, $start) . substr($type, $end + 1);
+        }
+        return [$type, $discriminator];
     }
 }
