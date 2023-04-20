@@ -86,6 +86,16 @@ class JsonMapper
     public $arChildClasses = array();
 
     /**
+     * Contains user provided map of discriminators substitution along with
+     * its actual value.
+     * This is only needed if discriminators are to be used in type combinators,
+     * and their actual values are substituted in the type combinator templates.
+     *
+     * @var array<string,string>
+     */
+    public $discriminatorSubs = array();
+
+    /**
      * Runtime cache for inspected classes. This is particularly effective if
      * mapArray() is called with a large number of objects
      *
@@ -266,7 +276,6 @@ class JsonMapper
                 $type,
                 $mapsBy,
                 $factoryMethod,
-                [],
                 $namespace,
                 $rc->getName(),
                 $strict
@@ -366,21 +375,15 @@ class JsonMapper
     /**
      * Get mapped value for a property in an object.
      *
-     * @param mixed                $jvalue         Raw normalized data for the
-     *                                             property
-     * @param string               $type           Type found by inspectProperty()
-     * @param string|null          $mapsBy         OneOf/AnyOf types hint found by
-     *                                             inspectProperty in mapsBy
-     *                                             annotation
-     * @param string[]|null        $factoryMethods Callable factory methods for
-     *                                             property
-     * @param array<string,string> $discriminators Map of discriminator values where
-     *                                             keys contain substituted
-     *                                             values in the typeGroup string.
-     * @param string               $namespace      Namespace of the class
-     * @param string               $className      Name of the class
-     * @param bool                 $strict         True if looking to map with strict
-     *                                             type checking.
+     * @param mixed         $jvalue         Raw normalized data for the property
+     * @param string        $type           Type found by inspectProperty()
+     * @param string|null   $mapsBy         OneOf/AnyOf types hint found by
+     *                                      inspectProperty in mapsBy annotation
+     * @param string[]|null $factoryMethods Callable factory methods for property
+     * @param string        $namespace      Namespace of the class
+     * @param string        $className      Name of the class
+     * @param bool          $strict         True if looking to map with strict
+     *                                      type checking.
      *
      * @return array|false|mixed|object|null
      * @throws JsonMapperException|ReflectionException
@@ -390,7 +393,6 @@ class JsonMapper
         $type,
         $mapsBy,
         $factoryMethods,
-        $discriminators,
         $namespace,
         $className,
         $strict
@@ -401,8 +403,7 @@ class JsonMapper
                 $mapsBy,
                 $namespace,
                 $factoryMethods,
-                $className,
-                $discriminators
+                $className
             );
         }
         //use factory method generated value if factory provided
@@ -815,10 +816,6 @@ class JsonMapper
      *                                               like ['path/to/method argType']
      * @param string|null            $className      Name of the parent class that's
      *                                               holding this property (if any)
-     * @param array<string,string>   $discriminators Map of discriminator values
-     *                                               where keys contain substituted
-     *                                               values in the typeGroup string.
-     *                                               Default: []
      *
      * @return array|mixed|object
      * @throws JsonMapperException|ReflectionException
@@ -828,16 +825,16 @@ class JsonMapper
         $typeGroup,
         $namespace = '',
         $factoryMethods = null,
-        $className = null,
-        $discriminators = []
+        $className = null
     ) {
         if (is_string($typeGroup)) {
             // convert into TypeCombination object
             $typeGroup = TypeCombination::withFormat(
                 $typeGroup,
                 isset($factoryMethods) ? $factoryMethods : [],
-                $discriminators
+                isset($this->discriminatorSubs) ? $this->discriminatorSubs : []
             );
+            var_dump($typeGroup);
         }
         $isArrayGroup = $typeGroup->getGroupName() == 'array';
         $isMapGroup = $typeGroup->getGroupName() == 'map';
@@ -878,7 +875,6 @@ class JsonMapper
                         $type,
                         null,
                         $factoryMethods,
-                        [],
                         $nspace,
                         $className,
                         true
@@ -1077,6 +1073,7 @@ class JsonMapper
             // if value didn't have discriminatorField
             return true;
         }
+        var_dump($discriminatorValue, $value->{$discriminatorField});
         // if discriminator field is set then decide w.r.t its value
         return $value->{$discriminatorField} == $discriminatorValue;
     }
@@ -1781,7 +1778,6 @@ class JsonMapper
                 $jtype,
                 $mapsBy,
                 $factoryMethod,
-                [],
                 $namespace,
                 $rc->getName(),
                 $strict

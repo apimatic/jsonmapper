@@ -1600,18 +1600,22 @@ class MultiTypeTest extends TestCase
     public function testDiscriminatorOneOf_EdgeCase_SpecialCharsInDiscValue()
     {
         $mapper = new JsonMapper();
-        $json = '{"run":true,"type":"This, is a value \n \r >)]} $#@** %20"}';
+        $mapper->discriminatorSubs = [
+            'Val1' => "This, is a value\n >)]} #@** %20",
+            'Val2' => 'This, is a value >)]} $#@** %20'
+        ];
+        $json = '{"run":true,"type":"This, is a value\n >)]} #@** %20"}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'oneOf{type}(Lion{Hunter},Deer{This, is a value \n \r >)]} $#@** %20})',
+            'oneOf{type}(Lion{Hunter},Deer{Val1})',
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\Deer', $res);
 
-        $json = '[{"run":true},{"run":true,"type":"This, is a value \n \r >)]} $#@** %20"}]';
+        $json = '[{"run":true},{"run":true,"type":"This, is a value >)]} $#@** %20"}]';
         $res = $mapper->mapFor(
             json_decode($json),
-            'oneOf{type}(Lion{Hunter}[],Deer{This, is a value \n \r >)]} $#@** %20}[])',
+            'oneOf{type}(Lion{Hunter}[],Deer{Val2}[])',
             'multitypetest\model'
         );
         $this->assertTrue(is_array($res));
@@ -1619,13 +1623,31 @@ class MultiTypeTest extends TestCase
         $this->assertInstanceOf('\multitypetest\model\Deer', $res[1]);
     }
 
+    public function testDiscriminatorOneOf_EdgeCase_SpecialCharsInDiscField()
+    {
+        $mapper = new JsonMapper();
+        $mapper->discriminatorSubs = [
+            'type' => 'oneOf{type}(Lion{Hunter},Deer{Hunted})'
+        ];
+        $json = '{"run":true,"oneOf{type}(Lion{Hunter},Deer{Hunted})":"Hunted"}';
+        $res = $mapper->mapFor(
+            json_decode($json),
+            'oneOf{type}(Lion{Hunter},Deer{Hunted})',
+            'multitypetest\model'
+        );
+        $this->assertInstanceOf('\multitypetest\model\Deer', $res);
+    }
+
     public function testDiscriminatorOneOf_EdgeCase_OafFormatInDiscValue()
     {
         $mapper = new JsonMapper();
-        $json = '{"run":true,"type":"oneOf{type}(Lion{Hunter},Deer{Hunted})"}';
+        $mapper->discriminatorSubs = [
+            'type' => 'animal type'
+        ];
+        $json = '{"run":true,"animal type":"Hunted"}';
         $res = $mapper->mapFor(
             json_decode($json),
-            'oneOf{type}(Lion{Hunter},Deer{oneOf{type}(Lion{Hunter},Deer{Hunted})})',
+            'oneOf{type}(Lion{Hunter},Deer{Hunted})',
             'multitypetest\model'
         );
         $this->assertInstanceOf('\multitypetest\model\Deer', $res);
