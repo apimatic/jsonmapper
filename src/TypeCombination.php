@@ -68,30 +68,77 @@ class TypeCombination
     private $_deserializers;
 
     /**
-     * Map of discriminator values where keys contain substituted values in
-     * the `discriminatorField` and `discriminatorMapping values`
-     *
-     * @var array<string,string>
-     */
-    private $_discMap;
-
-    /**
      * Private constructor for TypeCombination class
      *
-     * @param string   $format    string format value
-     * @param string   $groupName group name value
-     * @param array    $types     types value
-     * @param string[] $methods   deserializers value
-     * @param string[] $discMap   discMap value
+     * @param string   $format        string format value
+     * @param string   $groupName     group name value
+     * @param array    $types         types value
+     * @param string[] $deserializers deserializers value
      */
-    private function __construct($format, $groupName, $types, $methods, $discMap)
+    private function __construct($format, $groupName, $types, $deserializers)
     {
         $this->_format = $format;
         $this->_groupName= $groupName;
         $this->_types = $types;
-        $this->_deserializers = $methods;
-        $this->_discMap = $discMap;
-        $this->_updateDiscriminators();
+        $this->_deserializers = $deserializers;
+        $this->_insertDiscriminators();
+    }
+
+    /**
+     * Wrap the given typeGroup string in the TypeCombination class,
+     * i.e. getTypes() method will return all the grouped types,
+     * while deserializing factory methods can be obtained by
+     * getDeserializers() and group name can be obtained from getGroupName()
+     *
+     * @param string   $typeGroup     Format of multiple types i.e oneOf(int,bool)[],
+     *                                onyOf(int[], bool,anyOf(string,float)[],...),
+     *                                array<string,oneOf(int,float)[]> here []
+     *                                represents array types, and array<string,T>
+     *                                represents map types, oneOf/anyOf are group
+     *                                names, while default group name is anyOf.
+     * @param string[] $deserializers Callable factory methods for the property,
+     *                                Default: []
+     *
+     * @return TypeCombination
+     */
+    public static function withFormat($typeGroup, $deserializers = [])
+    {
+        $groupName = 'anyOf';
+        $start = strpos($typeGroup, '(');
+        $end = strrpos($typeGroup, ')');
+        if ($start !== false && $end !== false) {
+            list($isMap, $isArray, $innerType) = self::extractTypeInfo($typeGroup);
+            if ($isMap || $isArray) {
+                return self::_createTypeGroup(
+                    $isMap ? 'map' : 'array',
+                    $innerType,
+                    $deserializers
+                );
+            }
+            $name = substr($typeGroup, 0, $start);
+            $groupName = empty($name) ? $groupName : $name;
+            $typeGroup = substr($typeGroup, $start + 1, -1);
+        }
+        $format = "($typeGroup)";
+        $types = [];
+        $type = '';
+        $groupCount = 0;
+        foreach (str_split($typeGroup) as $c) {
+            if ($c == '(' || $c == '<') {
+                $groupCount++;
+            }
+            if ($c == ')' || $c == '>') {
+                $groupCount--;
+            }
+            if ($c == ',' && $groupCount == 0) {
+                self::_insertType($types, $type, $deserializers);
+                $type = '';
+                continue;
+            }
+            $type .= $c;
+        }
+        self::_insertType($types, $type, $deserializers);
+        return new self($format, $groupName, $types, $deserializers);
     }
 
     /**
@@ -115,28 +162,6 @@ class TypeCombination
     }
 
     /**
-     * Get discriminator info as an array (if exists)
-     *
-     * @param string $type String type to search discriminators
-     *
-     * @return array|null An array with format: discriminatorFieldName
-     *                    as element 1 and discriminatorValue as
-     *                    element 2
-     */
-    public function getDiscriminator($type)
-    {
-        if (!isset($this->_discriminatorField)
-            || !isset($this->_discriminatorMapping[$type])
-        ) {
-            return null;
-        }
-        return [
-            $this->_discriminatorField,
-            $this->_discriminatorMapping[$type]
-        ];
-    }
-
-    /**
      * Array of string types or TypeCombination objects
      *
      * @return array
@@ -155,6 +180,38 @@ class TypeCombination
     public function getDeserializers()
     {
         return $this->_deserializers;
+    }
+
+    /**
+     * Get discriminator info as an array (if exists)
+     *
+     * @param string               $type              String type to search
+     *                                                discriminators
+     * @param array<string,string> $discriminatorSubs Map of actual discriminator
+     *                                                values where keys contain
+     *                                                substituted values in the
+     *                                                typeGroup string, Default: []
+     *
+     * @return array|null An array with format: discriminatorFieldName
+     *                    as element 1 and discriminatorValue as
+     *                    element 2
+     */
+    public function getDiscriminator($type, $discriminatorSubs = [])
+    {
+        if (!isset($this->_discriminatorField)
+            || !isset($this->_discriminatorMapping[$type])
+        ) {
+            return null;
+        }
+        $fieldName = $this->_discriminatorField;
+        if (isset($discriminatorSubs[$fieldName])) {
+            $fieldName = $discriminatorSubs[$fieldName];
+        }
+        $discValue = $this->_discriminatorMapping[$type];
+        if (isset($discriminatorSubs[$discValue])) {
+            $discValue = $discriminatorSubs[$discValue];
+        }
+        return [$fieldName, $discValue];
     }
 
     /**
@@ -255,98 +312,28 @@ class TypeCombination
             "$gName($format)",
             $gName,
             $types,
-            [],
             []
         );
-    }
-
-    /**
-     * Wrap the given typeGroup string in the TypeCombination class,
-     * i.e. getTypes() method will return all the grouped types,
-     * while deserializing factory methods can be obtained by
-     * getDeserializers() and group name can be obtained from getGroupName()
-     *
-     * @param string               $typeGroup     Format of multiple types i.e.
-     *                                            oneOf(int,bool)[], onyOf(int[],
-     *                                            bool,anyOf(string,float)[],...),
-     *                                            array<string,oneOf(int,float)[]>,
-     *                                            here [] represents array types, and
-     *                                            array<string,T> represents map
-     *                                            types, oneOf/anyOf are group names,
-     *                                            while default group name is anyOf.
-     * @param string[]             $deserializers Callable factory methods for the
-     *                                            property, Default: []
-     * @param array<string,string> $discMap       Map of discriminator values where
-     *                                            keys contain substituted values in
-     *                                            the typeGroup string, Default: []
-     *
-     * @return TypeCombination
-     */
-    public static function withFormat($typeGroup, $deserializers = [], $discMap = [])
-    {
-        $groupName = 'anyOf';
-        $start = strpos($typeGroup, '(');
-        $end = strrpos($typeGroup, ')');
-        if ($start !== false && $end !== false) {
-            list($isMap, $isArray, $innerType) = self::extractTypeInfo($typeGroup);
-            if ($isMap || $isArray) {
-                return self::_createTypeGroup(
-                    $isMap ? 'map' : 'array',
-                    $innerType,
-                    $deserializers,
-                    $discMap
-                );
-            }
-            $name = substr($typeGroup, 0, $start);
-            $groupName = empty($name) ? $groupName : $name;
-            $typeGroup = substr($typeGroup, $start + 1, -1);
-        }
-        $format = "($typeGroup)";
-        $types = [];
-        $type = '';
-        $groupCount = 0;
-        foreach (str_split($typeGroup) as $c) {
-            if ($c == '(' || $c == '<') {
-                $groupCount++;
-            }
-            if ($c == ')' || $c == '>') {
-                $groupCount--;
-            }
-            if ($c == ',' && $groupCount == 0) {
-                self::_insertType($types, $type, $deserializers);
-                $type = '';
-                continue;
-            }
-            $type .= $c;
-        }
-        self::_insertType($types, $type, $deserializers);
-        return new self($format, $groupName, $types, $deserializers, $discMap);
     }
 
     /**
      * Creates a TypeCombination object with the given name and inner
      * types group that must be another typeCombination object
      *
-     * @param string               $name          Group name for the outer
-     *                                            typeCombination object.
-     * @param string               $type          typeGroup to be created and
-     *                                            inserted
-     * @param string[]             $deserializers deserializer for the type group
-     * @param array<string,string> $discMap       Map of discriminator values where
-     *                                            keys contain substituted values in
-     *                                            the typeGroup string
+     * @param string   $name          Group name for the typeCombination object.
+     * @param string   $type          typeGroup to be created and inserted.
+     * @param string[] $deserializers deserializer for the type group.
      *
      * @return TypeCombination
      */
-    private static function _createTypeGroup($name, $type, $deserializers, $discMap)
+    private static function _createTypeGroup($name, $type, $deserializers)
     {
         $format = $name == 'map' ? "array<string,$type>" : $type . '[]';
         return new self(
             $format,
             $name,
-            [self::withFormat($type, $deserializers, $discMap)],
-            $deserializers,
-            $discMap
+            [self::withFormat($type, $deserializers)],
+            $deserializers
         );
     }
 
@@ -373,11 +360,12 @@ class TypeCombination
     }
 
     /**
-     * Update discriminator and discriminators mapping.
+     * Insert discriminator and discriminators mapping from group and
+     * type names.
      *
      * @return void
      */
-    private function _updateDiscriminators()
+    private function _insertDiscriminators()
     {
         list($this->_groupName, $this->_discriminatorField)
             = self::_extractDiscriminator($this->_groupName);
@@ -412,9 +400,6 @@ class TypeCombination
         $discriminator = null;
         if ($start !== false && $end !== false) {
             $discriminator = substr($type, $start + 1, $end - strlen($type));
-            if (isset($this->_discMap[$discriminator])) {
-                $discriminator = $this->_discMap[$discriminator];
-            }
             $type = substr($type, 0, $start) . substr($type, $end + 1);
         }
         return [$type, $discriminator];

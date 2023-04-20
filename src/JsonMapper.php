@@ -831,8 +831,7 @@ class JsonMapper
             // convert into TypeCombination object
             $typeGroup = TypeCombination::withFormat(
                 $typeGroup,
-                isset($factoryMethods) ? $factoryMethods : [],
-                isset($this->discriminatorSubs) ? $this->discriminatorSubs : []
+                isset($factoryMethods) ? $factoryMethods : []
             );
         }
         $isArrayGroup = $typeGroup->getGroupName() == 'array';
@@ -922,6 +921,7 @@ class JsonMapper
         $mappedWith = '';
         $deserializers = $typeGroup->getDeserializers();
         $selectedDeserializer = null;
+        $discSubs = isset($this->discriminatorSubs) ? $this->discriminatorSubs : [];
         // check json value for each type in types array
         foreach ($typeGroup->getTypes() as $type) {
             try {
@@ -929,7 +929,7 @@ class JsonMapper
                     list($matched, $method) = $this->isValueOfType(
                         $value,
                         $type,
-                        $typeGroup->getDiscriminator($type),
+                        $typeGroup->getDiscriminator($type, $discSubs),
                         $namespace,
                         $deserializers
                     );
