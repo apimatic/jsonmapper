@@ -78,7 +78,7 @@ class TypeCombination
     private function __construct($format, $groupName, $types, $deserializers)
     {
         $this->_format = $format;
-        $this->_groupName= $groupName;
+        $this->_groupName = $groupName;
         $this->_types = $types;
         $this->_deserializers = $deserializers;
         $this->_insertDiscriminators();
