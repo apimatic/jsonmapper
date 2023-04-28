@@ -29,16 +29,19 @@ require_once __DIR__ . '/model/Deer.php';
 
 use apimatic\jsonmapper\JsonMapper;
 use apimatic\jsonmapper\JsonMapperException;
+use apimatic\jsonmapper\OneOfValidationException;
+use apimatic\jsonmapper\AnyOfValidationException;
 use multitypetest\model\Atom;
 use multitypetest\model\Car;
 use multitypetest\model\Vehicle;
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Util\Json;
 
 /**
  * @covers \apimatic\jsonmapper\JsonMapper
  * @covers \apimatic\jsonmapper\TypeCombination
  * @covers \apimatic\jsonmapper\JsonMapperException
+ * @covers \apimatic\jsonmapper\OneOfValidationException
+ * @covers \apimatic\jsonmapper\AnyOfValidationException
  */
 class MultiTypeTest extends TestCase
 {
@@ -77,7 +80,7 @@ class MultiTypeTest extends TestCase
 
     public function testSimpleCaseAFailWithFieldBoolArray()
     {
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(AnyOfValidationException::class);
         $this->expectExceptionMessage('Unable to map AnyOf (int[],float[],bool) on: [false,true]');
         $mapper = new JsonMapper();
         $json = '{"value":[false,true]}';
@@ -86,7 +89,7 @@ class MultiTypeTest extends TestCase
 
     public function testSimpleCaseAFailWithFieldString()
     {
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(AnyOfValidationException::class);
         $this->expectExceptionMessage('Unable to map AnyOf (int[],float[],bool) on: "some string"');
         $mapper = new JsonMapper();
         $json = '{"value":"some string"}';
@@ -111,7 +114,7 @@ class MultiTypeTest extends TestCase
 
     public function testSimpleCaseBFailWithFieldIntArray()
     {
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(OneOfValidationException::class);
         $this->expectExceptionMessage('Cannot map more than OneOf { array and int[] } on: [2,3]');
         $mapper = new JsonMapper();
         $json = '{"value":[2,3]}';
@@ -132,7 +135,7 @@ class MultiTypeTest extends TestCase
 
     public function testNeitherStringNorStringList()
     {
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(AnyOfValidationException::class);
         $this->expectExceptionMessage('Unable to map AnyOf (string[],string) on: [false,"value"]');
         $mapper = new JsonMapper();
         $json = '[false,"value"]';
@@ -163,7 +166,7 @@ class MultiTypeTest extends TestCase
 
     public function testEmptyArrayFail()
     {
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(OneOfValidationException::class);
         $this->expectExceptionMessage('Cannot map more than OneOf { int[] and string[] } on: []');
         $mapper = new JsonMapper();
         $json = '[]';
@@ -172,7 +175,7 @@ class MultiTypeTest extends TestCase
 
     public function testEmptyMapFail()
     {
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(OneOfValidationException::class);
         $this->expectExceptionMessage('Cannot map more than OneOf { array<string,string> and array<string,int> } on: {}');
         $mapper = new JsonMapper();
         $json = '{}';
@@ -201,7 +204,7 @@ class MultiTypeTest extends TestCase
     public function testNullableOnNonNullable()
     {
         $mapper = new JsonMapper();
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(AnyOfValidationException::class);
         $this->expectExceptionMessage('Unable to map AnyOf (array,bool) on: null');
         $mapper->mapFor(null, 'oneOf(array,bool)');
     }
@@ -221,7 +224,7 @@ class MultiTypeTest extends TestCase
     public function testMixedAndIntFail()
     {
         $mapper = new JsonMapper();
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(OneOfValidationException::class);
         $this->expectExceptionMessage('Cannot map more than OneOf { int and mixed } on: 502');
         $mapper->mapFor(502, 'oneOf(mixed,int)');
     }
@@ -330,7 +333,7 @@ class MultiTypeTest extends TestCase
 
     public function testOneOfSimpleCasesWithFieldArrayAndFloatArrayFail()
     {
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(OneOfValidationException::class);
         $this->expectExceptionMessage('Cannot map more than OneOf { SimpleCaseB and SimpleCaseA } on: {"value":[2.2,3.3]}');
         $mapper = new JsonMapper();
         $json = '{"value":[2.2,3.3]}';
@@ -371,7 +374,7 @@ class MultiTypeTest extends TestCase
 
     public function testAnyOfSimpleCasesFailWithFieldString()
     {
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(AnyOfValidationException::class);
         $this->expectExceptionMessage('Unable to map AnyOf (SimpleCaseA,SimpleCaseB) on: {"value":"some value"}');
         $mapper = new JsonMapper();
         $json = '{"value":"some value"}';
@@ -398,7 +401,7 @@ class MultiTypeTest extends TestCase
     public function testMapAndObject()
     {
         $mapper = new JsonMapper();
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(OneOfValidationException::class);
         $this->expectExceptionMessage('Cannot map more than OneOf { array<string,int> and Atom } on: {"numberOfElectrons":4}');
         $json = '{"numberOfElectrons":4}';
         // oneof map of int & Atom (having all int fields)
@@ -412,7 +415,7 @@ class MultiTypeTest extends TestCase
     public function testArrayOfMapAndArrayOfObject()
     {
         $mapper = new JsonMapper();
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(OneOfValidationException::class);
         $this->expectExceptionMessage('Cannot map more than OneOf { array<string,int>[] and Atom[] } on: [{"numberOfElectrons":4,"numberOfProtons":2}]');
         $json = '[{"numberOfElectrons":4,"numberOfProtons":2}]';
         // oneof arrayOfmap of int & array of Atom (having all int fields)
@@ -438,7 +441,7 @@ class MultiTypeTest extends TestCase
 
     public function testOneOfObjectsFailWithSameRequiredFields()
     {
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(OneOfValidationException::class);
         $this->expectExceptionMessage('Cannot map more than OneOf { Orbit and Atom } on: {"numberOfProtons":4,"numberOfElectrons":4}');
         $mapper = new JsonMapper();
         $json = '{"numberOfProtons":4,"numberOfElectrons":4}';
@@ -554,7 +557,7 @@ class MultiTypeTest extends TestCase
             'multitypetest\model\Postman',
             'multitypetest\model\Employee',
         ];
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(AnyOfValidationException::class);
         $this->expectExceptionMessage('Unable to map AnyOf (Postman,Employee) on: {"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321","birthday":"1994-02-13","personType":"Per"}');
         $json = '{"name":"Shahid Khaliq","age":5147483645,"address":"H # 531, S # 20","uid":"123321",' .
             '"birthday":"1994-02-13","personType":"Per"}';
@@ -568,7 +571,7 @@ class MultiTypeTest extends TestCase
     public function testDiscriminatorsMatchedButFailedWithOneOf()
     {
         $mapper = new JsonMapper();
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(OneOfValidationException::class);
         $this->expectExceptionMessage('Cannot map more than OneOf { array and Morning } on: {"startsAt":"15:00","endsAt":"21:00","sessionType":"Morning"}');
         $json = '{"startsAt":"15:00","endsAt":"21:00","sessionType":"Morning"}';
         $mapper->mapFor(
@@ -950,7 +953,7 @@ class MultiTypeTest extends TestCase
     public function testOuterArrayFailWithAnyOf()
     {
         $mapper = new JsonMapper();
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(AnyOfValidationException::class);
         $this->expectExceptionMessage('Unable to map AnyOf (float[],anyOf(bool,oneOf(int,Atom)[],string)[][]) on: {"key0":["alpha",true],"key2":[false,true],"key3":[1.1,3.3],"key1":["beta",[12,{"numberOfElectrons":4}],[1,3]]}');
         $json = '{"key0":["alpha",true],"key2":[false,true],"key3":[1.1,3.3]' .
             ',"key1":["beta",[12,{"numberOfElectrons":4}],[1,3]]}';
@@ -964,7 +967,7 @@ class MultiTypeTest extends TestCase
     public function testOuterArrayFailWith2DMapOfAtomAnd2DMapOfIntArray()
     {
         $mapper = new JsonMapper();
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(OneOfValidationException::class);
         $this->expectExceptionMessage('Cannot map more than OneOf { array<string,array<string,anyOf(bool,array<string,oneOf(int,Atom)>,string)>> and array<string,array<string,array<string,int>>> } on: {"key":{"element":{"atom":1,"orbits":9},"compound":{"num1":4,"num2":8}}}');
         $json = '{"key":{"element":{"atom":1,"orbits":9},"compound":{"num1":4,"num2":8}}}';
         $mapper->mapFor(
@@ -1471,7 +1474,7 @@ class MultiTypeTest extends TestCase
 
     public function testDiscriminatorOneOf_SimpleCases_Failure()
     {
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(OneOfValidationException::class);
         $this->expectExceptionMessage('Cannot map more than OneOf { Deer and Lion } on: {"run":true,"type":"Hunter"}');
         $mapper = new JsonMapper();
         $json = '{"run":true,"type":"Hunter"}';
@@ -1508,7 +1511,7 @@ class MultiTypeTest extends TestCase
 
     public function testDiscriminatorOneOf_InnerArrayCases_Failure()
     {
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(AnyOfValidationException::class);
         $this->expectExceptionMessage('Unable to map AnyOf (Lion{Hunter}[],Deer{Hunted}[]){type} on: [{"run":true,"type":"Hunted"},{"run":true,"type":"Hunter"}]');
         $mapper = new JsonMapper();
         $json = '[{"run":true,"type":"Hunted"},{"run":true,"type":"Hunter"}]';
@@ -1545,7 +1548,7 @@ class MultiTypeTest extends TestCase
 
     public function testDiscriminatorOneOf_OuterArrayCases_Failure()
     {
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(OneOfValidationException::class);
         $this->expectExceptionMessage('Cannot map more than OneOf { Deer and Lion } on: {"run":true}');
         $mapper = new JsonMapper();
         $json = '[{"run":true,"type":"Hunter"},{"run":true}]';
@@ -1582,7 +1585,7 @@ class MultiTypeTest extends TestCase
 
     public function testDiscriminatorOneOf_MultiLevel_Failure()
     {
-        $this->expectException(JsonMapperException::class);
+        $this->expectException(OneOfValidationException::class);
         $this->expectExceptionMessage(
             'Cannot map more than OneOf { oneOf{kind}(Lion{Big},Deer{Small})[] and ' .
             'oneOf{type}(Lion{Hunter},Deer{Hunted})[] } on: [{"run":true,"type":"Hunter","kind":"Small"},' .
