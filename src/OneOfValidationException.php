@@ -32,7 +32,7 @@ class OneOfValidationException extends JsonMapperException
      * @param string $mappedWith  Second type.
      * @param string $json        JSON string.
      * 
-     * @return JsonMapperException
+     * @return OneOfValidationException
      */
     static function moreThanOneOfException($matchedType, $mappedWith, $json)
     {
