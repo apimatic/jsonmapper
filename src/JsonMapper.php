@@ -967,6 +967,12 @@ class JsonMapper
         }
 
         if (!$mappedWith) {
+            if ($typeGroup->getGroupName() == 'oneOf') {
+                throw OneOfValidationException::cannotMapAnyOfException(
+                    $this->formatType($typeGroup),
+                    json_encode($value)
+                );
+            }
             throw AnyOfValidationException::cannotMapAnyOfException(
                 $this->formatType($typeGroup),
                 json_encode($value)

@@ -34,6 +34,6 @@ class AnyOfValidationException extends JsonMapperException
      */
     static function cannotMapAnyOfException($type, $json)
     {
-        return new self("Unable to map AnyOf $type on: $json");
+        return new self("We could not match any acceptable type from $type on: $json");
     }
 }
