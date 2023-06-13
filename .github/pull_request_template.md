@@ -20,7 +20,7 @@ Select multiple if applicable.
 If a new dependency is being added, please ensure that it adheres to the following guideline https://github.com/apimatic/apimatic-codegen/wiki/Policy-of-adding-new-dependencies-in-the-core-libraries
 
 ## Breaking change
-If the PR is introducing a breaking change, please ensure that it adhares to the following guideline 
+If the PR is introducing a breaking change, please ensure that it adheres to the following guideline https://github.com/apimatic/apimatic-codegen/wiki/Guidelines-for-maintaining-core-libraries
 
 ## Testing
 List the steps that were taken to test the changes
