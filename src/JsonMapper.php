@@ -127,7 +127,7 @@ class JsonMapper
             $iniPath = php_ini_loaded_file();
             $functionEnabled = !in_array(
                 'parse_ini_file',
-                explode(PATH_SEPARATOR, ini_get('disable_functions'))
+                explode(',', ini_get('disable_functions'))
             );
             $accessAllowed = $this->isPathAllowed($iniPath, ini_get('open_basedir'));
             if ($accessAllowed && $functionEnabled && is_readable($iniPath)) {
