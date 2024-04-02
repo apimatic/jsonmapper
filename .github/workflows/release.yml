@@ -28,3 +28,12 @@ jobs:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release Version ${{ github.event.inputs.Version }}
           body: ${{ steps.tag_version.outputs.changelog }}
+
+      - name: Send slack notification
+        id: slack
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          channel-id: 'C012YFE3D6D'
+          slack-message: "apimatic-jsonmapper release has been triggered!"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
