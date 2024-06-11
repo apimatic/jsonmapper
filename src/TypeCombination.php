@@ -220,16 +220,23 @@ class TypeCombination
      */
     public static function extractTypeInfo($type)
     {
-        $mapStart = 'array<string,';
-        // Check if container is array or map?
-        $isMap = substr($type, -1) == '>' && strpos($type, $mapStart) === 0;
-        $isArray = !$isMap && self::_isArrayType($type);
-        // Extracting inner type for arrays/maps
-        // Inner type will be same as actual type for non-container type
-        $innerType = $isMap ? substr($type, strlen($mapStart), -1)
-            : self::_getInnerArrayType($type);
+        // Check if the type is map, i.e. wrapped in array<string,...>
+        if (preg_match('/^array<string,.*>$/', $type)) {
+            return [true, false, substr($type, strlen('array<string,'), -1)];
+        }
 
-        return [$isMap, $isArray, $innerType];
+        // Check if the type is array, i.e. ends with '[]'
+        if (preg_match('/\[]$/', $type)) {
+            return [false, true, substr($type, 0, -2)];
+        }
+
+        // Check if the type is array, i.e. wrapped in 'array<...>'
+        if (preg_match('/^array<.*>$/', $type)) {
+            return [false, true, substr($type, strlen('array<'), -1)];
+        }
+
+        // If the type does not match the array formats, return the original type
+        return [false, false, $type];
     }
 
     /**
@@ -315,47 +322,6 @@ class TypeCombination
         }
         self::_insertType($types, $type, $deserializers);
         return new self($format, $groupName, $types, $deserializers);
-    }
-
-    /**
-     * Checks if type is an array.
-     *
-     * @param string $type Type to be checked for array.
-     *
-     * @return bool
-     */
-    private static function _isArrayType($type)
-    {
-        // Match types that end with '[]' or 'array<...>'
-        return substr($type, -2) == '[]'
-            || preg_match('/^array<.*>$/', $type);
-    }
-
-    /**
-     * Get inner type of array.
-     *
-     * @param string $type Array Type.
-     *
-     * @return string
-     */
-    private static function _getInnerArrayType($type)
-    {
-        // Check if the type ends with ']'
-        if (preg_match('/\[]$/', $type)) {
-            // Remove the last character (which is ']') and return the result
-            return substr($type, 0, -2);
-        }
-
-        // Check if the type is in the form of 'array<...>'
-        if (preg_match('/^array<.*>$/', $type, $matches)) {
-            // Extract the inner type using a regular expression
-            if (preg_match('/^array<(.+)>$/', $type, $matches)) {
-                return $matches[1];
-            }
-        }
-
-        // If the type does not match the array formats, return the original type
-        return $type;
     }
 
     /**
