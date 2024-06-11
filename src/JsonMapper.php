@@ -105,7 +105,7 @@ class JsonMapper
 
     /**
      * An array of directives from php defined configuration files.
-     * 
+     *
      * @var array|null Array of values from the configuration files.
      */
     protected $config = null;
@@ -114,7 +114,7 @@ class JsonMapper
 
     /**
      * Constructor for JsonMapper.
-     * 
+     *
      * @throws JsonMapperException
      */
     function __construct()
@@ -488,6 +488,9 @@ class JsonMapper
         }
 
         if ($array !== null) {
+            if ($this->isNullable($subtype)) {
+                $subtype = $this->removeNullable($subtype);
+            }
             if (!$this->isSimpleType($subtype)) {
                 $subtype = $this->getFullNamespace($subtype, $namespace);
             }
@@ -1901,7 +1904,8 @@ class JsonMapper
     {
         return substr(
             str_ireplace('|null|', '|', '|' . $type . '|'),
-            1, -1
+            1,
+            -1
         );
     }
 

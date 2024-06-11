@@ -34,6 +34,11 @@ class JsonMapperTest_Array
     public $strArray;
 
     /**
+     * @var array<string|null>
+     */
+    public $nullableStrArray;
+
+    /**
      * @var array<string,string>
      */
     public $strMap;
@@ -53,6 +58,12 @@ class JsonMapperTest_Array
      * @see http://phpdoc.org/docs/latest/references/phpdoc/types.html#arrays
      */
     public $typedArray;
+
+    /**
+     * @var array<JsonMapperTest_Simple|null>
+     * @see http://phpdoc.org/docs/latest/references/phpdoc/types.html#arrays
+     */
+    public $nullableTypedArray;
 
     /**
      * @var array<string,JsonMapperTest_Simple>

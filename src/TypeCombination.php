@@ -220,15 +220,23 @@ class TypeCombination
      */
     public static function extractTypeInfo($type)
     {
-        $mapStart = 'array<string,';
-        // Check if container is array or map?
-        $isMap = substr($type, -1) == '>' && strpos($type, $mapStart) === 0;
-        $isArray = substr($type, -2) == '[]';
-        // Extracting inner type for arrays/maps
-        // Inner type will be same as actual type for non-container type
-        $innerType = $isMap ? substr($type, strlen($mapStart), -1)
-            : ($isArray ? substr($type, 0, -2) : $type);
-        return [$isMap, $isArray, $innerType];
+        // Check if the type is map, i.e. wrapped in array<string,...>
+        if (preg_match('/^array<string,.*>$/', $type)) {
+            return [true, false, substr($type, strlen('array<string,'), -1)];
+        }
+
+        // Check if the type is array, i.e. ends with '[]'
+        if (preg_match('/\[]$/', $type)) {
+            return [false, true, substr($type, 0, -2)];
+        }
+
+        // Check if the type is array, i.e. wrapped in 'array<...>'
+        if (preg_match('/^array<.*>$/', $type)) {
+            return [false, true, substr($type, strlen('array<'), -1)];
+        }
+
+        // If the type does not match the array formats, return the original type
+        return [false, false, $type];
     }
 
     /**
