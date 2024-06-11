@@ -309,6 +309,24 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * Test for an array of classes "@var array<Classname|null>"
+     */
+    public function testMapNullableTypedArray()
+    {
+        $jm = new JsonMapper();
+        $jm->arChildClasses['JsonMapperTest_Simple'] = array();
+        $sn = $jm->map(
+            json_decode('{"nullableTypedArray":[{"str":"stringvalue"}, null]}'),
+            new JsonMapperTest_Array()
+        );
+        $this->assertTrue(is_array($sn->nullableTypedArray));
+        $this->assertEquals(2, count($sn->nullableTypedArray));
+        $this->assertInstanceOf('JsonMapperTest_Simple', $sn->nullableTypedArray[0]);
+        $this->assertEquals('stringvalue', $sn->nullableTypedArray[0]->str);
+        $this->assertTrue(is_null($sn->nullableTypedArray[1]));
+    }
+
+    /**
      * Test for a map of classes "@var array<string,Classname>"
      */
     public function testMapTypedMap()
@@ -516,6 +534,23 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue(is_string($sn->strArray[0]));
         $this->assertTrue(is_string($sn->strArray[1]));
         $this->assertTrue(is_string($sn->strArray[2]));
+    }
+
+    /**
+     * Test for an array of strings - "@var array<string|null>"
+     */
+    public function testNullableStrArray()
+    {
+        $jm = new JsonMapper();
+        $sn = $jm->map(
+            json_decode('{"nullableStrArray":["str",null,"123"]}'),
+            new JsonMapperTest_Array()
+        );
+        $this->assertTrue(is_array($sn->nullableStrArray));
+        $this->assertEquals(3, count($sn->nullableStrArray));
+        $this->assertTrue(is_string($sn->nullableStrArray[0]));
+        $this->assertTrue(is_null($sn->nullableStrArray[1]));
+        $this->assertTrue(is_string($sn->nullableStrArray[2]));
     }
 
     /**
