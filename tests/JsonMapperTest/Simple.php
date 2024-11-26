@@ -168,7 +168,7 @@ class JsonMapperTest_Simple
 
     /**
      * @param string $key
-     * @param string $value
+     * @param int $value
      */
     public function addTypedAdditionalProperty($key, $value)
     {

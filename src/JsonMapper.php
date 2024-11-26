@@ -323,10 +323,15 @@ class JsonMapper
     }
 
     /**
-     * @param ReflectionMethod|null $method
-     * @param object $object
-     * @param int|string $key
-     * @param mixed $value
+     * Add additional properties by invoking the specified method.
+     *
+     * @param ReflectionMethod|null $method Method to be called to add
+     *                                      additional properties to the class.
+     * @param object                $object Class instance on which the method
+     *                                      is invoked.
+     * @param int|string            $key    The name of additional property.
+     * @param mixed                 $value  The value of additional property.
+     *
      * @return void
      */
     protected function addAdditionalProperty($method, $object, $key, $value)
@@ -339,8 +344,9 @@ class JsonMapper
             $value = $this->getMappedValue(
                 $value,
                 $this->getDocTypeForArrayOrMixed(
-                    $this->getParameterType($method->getParameters()[0]),
-                    $annotations
+                    $this->getParameterType($method->getParameters()[1]),
+                    $annotations,
+                    1
                 ),
                 $this->getMapByAnnotationFromParsed($annotations),
                 $this->getFactoryMethods($annotations),
@@ -1654,24 +1660,31 @@ class JsonMapper
     }
 
     /**
-     * @param string|null $type
-     * @param array $annotations
+     * If the actual type is array or mixed, use the annotations to extract
+     * the type.
+     *
+     * @param string|null $type        The actual type of the parameter.
+     * @param array       $annotations The annotations to search the type.
+     * @param int         $index       The position of parameter in the function.
      *
      * @return string|null
      */
-    public function getDocTypeForArrayOrMixed($type, $annotations)
+    public function getDocTypeForArrayOrMixed($type, $annotations, $index = 0)
     {
         if (($type === null || $type === 'array' || $type === 'array|null')
-            && isset($annotations['param'][0])
+            && isset($annotations['param'][$index])
         ) {
-            list($type) = explode(' ', trim($annotations['param'][0]));
+            list($type) = explode(' ', trim($annotations['param'][$index]));
         }
 
         return $type;
     }
 
     /**
-     * @param array $annotations
+     * Get all factory methods from the list of annotations.
+     *
+     * @param array $annotations The annotations list.
+     *
      * @return string[]
      */
     public function getFactoryMethods(array $annotations)

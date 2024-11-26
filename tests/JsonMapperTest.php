@@ -1235,7 +1235,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             new JsonMapperTest_Simple()
         );
         $this->assertEquals(1, count($fm->additional));
-        $this->assertEquals("hello", $fm->additional['random11']);
+        $this->assertEquals(123123, $fm->additional['random22']);
     }
 
     public function testAdditionalPropertiesFactory()
