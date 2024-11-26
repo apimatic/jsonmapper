@@ -233,7 +233,6 @@ class JsonMapper
 
         $strClassName = get_class($object);
         $rc = new ReflectionClass($object);
-        $strNs = $rc->getNamespaceName();
         $providedProperties = array();
         $additionalPropertiesMethod = $this->getAdditionalPropertiesMethod($rc);
 
@@ -296,9 +295,12 @@ class JsonMapper
             }
 
             if ($isAdditional) {
-                if ($additionalPropertiesMethod !== null) {
-                    $additionalPropertiesMethod->invoke($object, $key, $jvalue);
-                }
+                $this->addAdditionalProperty(
+                    $additionalPropertiesMethod,
+                    $object,
+                    $key,
+                    $jvalue
+                );
                 continue;
             }
             $value = $this->getMappedValue(
@@ -310,7 +312,7 @@ class JsonMapper
                 $rc->getName(),
                 $strict
             );
-            $this->setProperty($object, $accessor, $value, $strNs);
+            $this->setProperty($object, $accessor, $value);
         }
 
         if ($this->bExceptionOnMissingData) {
@@ -318,6 +320,38 @@ class JsonMapper
         }
 
         return $object;
+    }
+
+    /**
+     * @param ReflectionMethod|null $method
+     * @param object $object
+     * @param int|string $key
+     * @param mixed $value
+     * @return void
+     */
+    protected function addAdditionalProperty($method, $object, $key, $value)
+    {
+        if (is_null($method)) {
+            return;
+        }
+        $annotations = $this->parseAnnotations($method->getDocComment());
+        try {
+            $value = $this->getMappedValue(
+                $value,
+                $this->getDocTypeForArrayOrMixed(
+                    $this->getParameterType($method->getParameters()[0]),
+                    $annotations
+                ),
+                $this->getMapByAnnotationFromParsed($annotations),
+                $this->getFactoryMethods($annotations),
+                $method->getDeclaringClass()->getNamespaceName(),
+                $method->getDeclaringClass()->getName(),
+                true
+            );
+            $method->invoke($object, $key, $value);
+        } catch (Exception $_) {
+            // Ignore the thrown error
+        }
     }
 
     /**
@@ -1507,24 +1541,15 @@ class JsonMapper
             }
         }
         if ($rmeth !== null && $rmeth->isPublic()) {
-            $type = null;
-            $factoryMethod = null;
+            $factoryMethod = $this->getFactoryMethods($annotations);
             $namespace = $rmeth->getDeclaringClass()->getNamespaceName();
+
+            $type = null;
             $rparams = $rmeth->getParameters();
             if (count($rparams) > 0) {
                 $type = $this->getParameterType($rparams[0]);
             }
-
-            if (($type === null || $type === 'array' || $type === 'array|null')
-                && isset($annotations['param'][0])
-            ) {
-                list($type) = explode(' ', trim($annotations['param'][0]));
-            }
-
-            //support "@factory method_name"
-            if (isset($annotations['factory'])) {
-                $factoryMethod = $annotations['factory'];
-            }
+            $type = $this->getDocTypeForArrayOrMixed($type, $annotations);
 
             return array(true, $rmeth, $type, $factoryMethod, $mapsBy, $namespace);
         }
@@ -1565,16 +1590,11 @@ class JsonMapper
                 $annotations   = $this->parseAnnotations($docblock);
                 $namespace = $rprop->getDeclaringClass()->getNamespaceName();
                 $type          = null;
-                $factoryMethod = null;
+                $factoryMethod = $this->getFactoryMethods($annotations);
 
                 //support "@var type description"
                 if (isset($annotations['var'][0])) {
                     list($type) = explode(' ', $annotations['var'][0]);
-                }
-
-                //support "@factory method_name"
-                if (isset($annotations['factory'])) {
-                    $factoryMethod = $annotations['factory'];
                 }
 
                 return array(true, $rprop, $type, $factoryMethod, $mapsBy,
@@ -1631,6 +1651,37 @@ class JsonMapper
         } else {
             return (string)$type;
         }
+    }
+
+    /**
+     * @param string|null $type
+     * @param array $annotations
+     *
+     * @return string|null
+     */
+    public function getDocTypeForArrayOrMixed($type, $annotations)
+    {
+        if (($type === null || $type === 'array' || $type === 'array|null')
+            && isset($annotations['param'][0])
+        ) {
+            list($type) = explode(' ', trim($annotations['param'][0]));
+        }
+
+        return $type;
+    }
+
+    /**
+     * @param array $annotations
+     * @return string[]
+     */
+    public function getFactoryMethods(array $annotations)
+    {
+        $factoryMethod = null;
+        if (isset($annotations['factory'])) {
+            //support "@factory method_name"
+            $factoryMethod = $annotations['factory'];
+        }
+        return $factoryMethod;
     }
 
     /**
@@ -1702,7 +1753,9 @@ class JsonMapper
      * @return void
      */
     protected function setProperty(
-        $object, $accessor, $value
+        $object,
+        $accessor,
+        $value
     ) {
         if ($accessor instanceof \ReflectionProperty) {
             $object->{$accessor->getName()} = $value;

@@ -52,6 +52,8 @@ use apimatic\jsonmapper\JsonMapperException;
  * @covers \apimatic\jsonmapper\JsonMapper
  * @covers \apimatic\jsonmapper\TypeCombination
  * @covers \apimatic\jsonmapper\JsonMapperException
+ * @covers \apimatic\jsonmapper\OneOfValidationException
+ * @covers \apimatic\jsonmapper\AnyOfValidationException
  */
 class JsonMapperTest extends \PHPUnit\Framework\TestCase
 {
@@ -1222,6 +1224,60 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(123123, $fm->getAge());
         $this->assertEquals("value is factval", $fm->getMappedAndFactory());
         $this->assertEquals("yes", $fm->publicProp);
+    }
+
+    public function testAdditionalPropertiesTyped()
+    {
+        $jm = new JsonMapper();
+        $jm->sAdditionalPropertiesCollectionMethod = 'addTypedAdditionalProperty';
+        $fm = $jm->map(
+            json_decode('{"random11":"hello","random22":123123}'),
+            new JsonMapperTest_Simple()
+        );
+        $this->assertEquals(1, count($fm->additional));
+        $this->assertEquals("hello", $fm->additional['random11']);
+    }
+
+    public function testAdditionalPropertiesFactory()
+    {
+        $jm = new JsonMapper();
+        $jm->sAdditionalPropertiesCollectionMethod = 'addFactoryAdditionalProperty';
+        $fm = $jm->map(
+            json_decode('{"random11":"hello","random22":123123,"random23":1,"random33":true}'),
+            new JsonMapperTest_Simple()
+        );
+        $this->assertEquals(4, count($fm->additional));
+        $this->assertEquals(false, $fm->additional['random11']);
+        $this->assertEquals(false, $fm->additional['random22']);
+        $this->assertEquals(true, $fm->additional['random23']);
+        $this->assertEquals(false, $fm->additional['random33']);
+    }
+
+    public function testAdditionalPropertiesMapsBy()
+    {
+        $jm = new JsonMapper();
+        $jm->sAdditionalPropertiesCollectionMethod = 'addMapsByAdditionalProperty';
+        $fm = $jm->map(
+            json_decode('{"random11":"hello","random22":123.123,"random23":1.0,"random33":true}'),
+            new JsonMapperTest_Simple()
+        );
+        $this->assertEquals(2, count($fm->additional));
+        $this->assertEquals('hello', $fm->additional['random11']);
+        $this->assertEquals(true, $fm->additional['random33']);
+    }
+
+    public function testAdditionalPropertiesMapsByFactory()
+    {
+        $jm = new JsonMapper();
+        $jm->sAdditionalPropertiesCollectionMethod = 'addMapsByFactoryAdditionalProperty';
+        $fm = $jm->map(
+            json_decode('{"random11":"hello","random22":123123,"random23":1,"random33":true}'),
+            new JsonMapperTest_Simple()
+        );
+        $this->assertEquals(3, count($fm->additional));
+        $this->assertEquals(false, $fm->additional['random22']);
+        $this->assertEquals(true, $fm->additional['random23']);
+        $this->assertEquals('value is 1', $fm->additional['random33']);
     }
 
     public function testAdditionalProperties()
