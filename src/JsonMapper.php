@@ -498,9 +498,13 @@ class JsonMapper
         if ($type === null || $type === 'mixed' || $type === '') {
             //no given type - simply return the json data
             return $jvalue;
-        } else if ($this->isObjectOfSameType($type, $jvalue)) {
+        }
+
+        if ($this->isObjectOfSameType($type, $jvalue)) {
             return $jvalue;
-        } else if ($this->isSimpleType($type)) {
+        }
+
+        if ($this->isSimpleType($type)) {
             if ($strict && !$this->isSimpleValue($jvalue, $type)) {
                 // if mapping strictly for multipleTypes
                 throw JsonMapperException::unableToSetTypeException(
@@ -512,67 +516,91 @@ class JsonMapper
             return $jvalue;
         }
 
-        $array = null;
+        list($array, $innerArrayType, $dimension) = $this->getArrayInfo(
+            $type,
+            $namespace
+        );
+
+        $fullTypeName = $this->getFullNamespace($type, $namespace);
+        if (is_null($array)) {
+            // Handling non array types
+            if ($this->isFlatType(gettype($jvalue)) && !$strict) {
+                // use constructor parameter if we have a class
+                // but only a flat type (i.e. string, int)
+                if ($jvalue === null) {
+                    return null;
+                }
+
+                return new $fullTypeName($jvalue);
+            }
+
+            return $this->mapClass($jvalue, $fullTypeName, $strict);
+        }
+
+        // Handling array types
+        if ($jvalue === null) {
+            return null;
+        }
+
+        if ($this->isNullable($innerArrayType)) {
+            $innerArrayType = $this->removeNullable($innerArrayType);
+        }
+
+        $fullTypeName = $this->getFullNamespace($innerArrayType, $namespace);
+        if (!$this->isSimpleType($innerArrayType)) {
+            $innerArrayType = $fullTypeName;
+        }
+
+        if ($this->isRegisteredType($fullTypeName)) {
+            return $this->mapClassArray(
+                $jvalue,
+                $innerArrayType,
+                $dimension,
+                $strict
+            );
+        }
+
+        return $this->mapArray(
+            $jvalue,
+            $array,
+            $innerArrayType,
+            $dimension,
+            $strict
+        );
+    }
+
+    /**
+     * Returns the complete array info with array instance, its subType and
+     * its dimensions.
+     *
+     * @param string $type      Type to be checked for array info
+     * @param string $namespace Models namespace in case the type is a model
+     *
+     * @return array An array where 1st element is array's instance, 2nd is
+     *               inner type info, and 3rd is dimensions of array.
+     * @throws ReflectionException
+     */
+    protected function getArrayInfo($type, $namespace)
+    {
         list($subtype, $dimension) = $this->getArrayTypeAndDimensions($type);
+
         if ($dimension > 0) {
-            // array with some dimensions
-            $array = array();
-        } else if (substr($type, -1) == ']') {
-            list($proptype, $subtype) = explode('[', substr($type, 0, -1));
-            if (!$this->isSimpleType($proptype)) {
-                $proptype = $this->getFullNamespace($proptype, $namespace);
-            }
-            $array = $this->createInstance($proptype);
-        } else if ($type == 'ArrayObject'
-            || is_subclass_of($type, 'ArrayObject')
-        ) {
-            $subtype = null;
-            $array = $this->createInstance($type);
+            return array(array(), $subtype, $dimension);
         }
 
-        if ($array !== null) {
-            if ($this->isNullable($subtype)) {
-                $subtype = $this->removeNullable($subtype);
+        if (substr($type, -1) == ']') {
+            list($propType, $subtype) = explode('[', substr($type, 0, -1));
+            if (!$this->isSimpleType($propType)) {
+                $propType = $this->getFullNamespace($propType, $namespace);
             }
-            if (!$this->isSimpleType($subtype)) {
-                $subtype = $this->getFullNamespace($subtype, $namespace);
-            }
-            if ($jvalue === null) {
-                $child = null;
-            } else if ($this->isRegisteredType(
-                $this->getFullNamespace($subtype, $namespace)
-            )
-            ) {
-                $child = $this->mapClassArray(
-                    $jvalue,
-                    $subtype,
-                    $dimension,
-                    $strict
-                );
-            } else {
-                $child = $this->mapArray(
-                    $jvalue,
-                    $array,
-                    $subtype,
-                    $dimension,
-                    $strict
-                );
-            }
-        } else if ($this->isFlatType(gettype($jvalue)) && !$strict) {
-            //use constructor parameter if we have a class
-            // but only a flat type (i.e. string, int)
-            if ($jvalue === null) {
-                $child = null;
-            } else {
-                $type = $this->getFullNamespace($type, $namespace);
-                $child = new $type($jvalue);
-            }
-        } else {
-            $type = $this->getFullNamespace($type, $namespace);
-            $child = $this->mapClass($jvalue, $type, $strict);
+            return array($this->createInstance($propType), $subtype, $dimension);
         }
 
-        return $child;
+        if ($type == 'ArrayObject' || is_subclass_of($type, 'ArrayObject')) {
+            return array($this->createInstance($type), null, $dimension);
+        }
+
+        return array(null, $subtype, $dimension);
     }
 
     /**
