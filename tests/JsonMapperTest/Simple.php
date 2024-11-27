@@ -176,6 +176,15 @@ class JsonMapperTest_Simple
     }
 
     /**
+     * @param string $key
+     * @param JsonMapperTest_Simple $value
+     */
+    public function addCustomTypedAdditionalProperty($key, $value)
+    {
+        $this->additional[$key] = $value;
+    }
+
+    /**
      * @factory FactoryMethod::createFromInt
      *
      * @param string $key

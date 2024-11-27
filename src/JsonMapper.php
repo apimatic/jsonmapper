@@ -341,22 +341,25 @@ class JsonMapper
         }
         $annotations = $this->parseAnnotations($method->getDocComment());
         try {
+            $type = $this->getDocTypeForArrayOrMixed(
+                $this->getParameterType($method->getParameters()[1]),
+                $annotations,
+                1
+            );
+            $mapsBy = $this->getMapByAnnotationFromParsed($annotations);
+            $factoryMethods = $this->getFactoryMethods($annotations);
             $value = $this->getMappedValue(
                 $value,
-                $this->getDocTypeForArrayOrMixed(
-                    $this->getParameterType($method->getParameters()[1]),
-                    $annotations,
-                    1
-                ),
-                $this->getMapByAnnotationFromParsed($annotations),
-                $this->getFactoryMethods($annotations),
+                $type,
+                $mapsBy,
+                $factoryMethods,
                 $method->getDeclaringClass()->getNamespaceName(),
                 $method->getDeclaringClass()->getName(),
                 true
             );
             $method->invoke($object, $key, $value);
         } catch (Exception $_) {
-            // Ignore the thrown error
+            // Ignore the thrown error to skip this additional property
         }
     }
 
@@ -555,7 +558,7 @@ class JsonMapper
                     $strict
                 );
             }
-        } else if ($this->isFlatType(gettype($jvalue))) {
+        } else if ($this->isFlatType(gettype($jvalue)) && !$strict) {
             //use constructor parameter if we have a class
             // but only a flat type (i.e. string, int)
             if ($jvalue === null) {

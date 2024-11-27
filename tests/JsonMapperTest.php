@@ -1226,7 +1226,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals("yes", $fm->publicProp);
     }
 
-    public function testAdditionalPropertiesTyped()
+    public function testAdditionalPropertiesTypedNative()
     {
         $jm = new JsonMapper();
         $jm->sAdditionalPropertiesCollectionMethod = 'addTypedAdditionalProperty';
@@ -1236,6 +1236,23 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         );
         $this->assertEquals(1, count($fm->additional));
         $this->assertEquals(123123, $fm->additional['random22']);
+    }
+
+    public function testAdditionalPropertiesTypedCustom()
+    {
+        $jm = new JsonMapper();
+        $jm->sAdditionalPropertiesCollectionMethod = 'addCustomTypedAdditionalProperty';
+        $fm = $jm->map(
+            json_decode('{"random11":"hello","random22":123123,"random33":{"under_score":"abc","random11":"hello","random33":{"fl":1.214}}}'),
+            new JsonMapperTest_Simple()
+        );
+        $this->assertEquals(1, count($fm->additional));
+        $expected = new JsonMapperTest_Simple();
+        $expected->under_score = "abc";
+        $innerClass = new JsonMapperTest_Simple();
+        $innerClass->fl = 1.214;
+        $expected->addCustomTypedAdditionalProperty('random33', $innerClass);
+        $this->assertEquals($expected, $fm->additional['random33']);
     }
 
     public function testAdditionalPropertiesFactory()
