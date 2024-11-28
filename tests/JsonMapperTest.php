@@ -1305,9 +1305,20 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
             json_decode('{"random11":"hello","random22":123123}'),
             new JsonMapperTest_Simple()
         );
+        $this->assertEquals(2, count($fm->additional));
         $this->assertEquals("hello", $fm->additional['random11']);
         $this->assertEquals(123123, $fm->additional['random22']);
-        $this->assertEquals(2, count($fm->additional));
+    }
+
+    public function testAdditionalPropertiesWithMissingMethod()
+    {
+        $jm = new JsonMapper();
+        $jm->sAdditionalPropertiesCollectionMethod = 'missingMethod';
+        $fm = $jm->map(
+            json_decode('{"random11":"hello","random22":123123}'),
+            new JsonMapperTest_Simple()
+        );
+        $this->assertEquals(0, count($fm->additional));
     }
 
     public function testAdditionalPropertiesWithPrivateMethod()
@@ -1316,7 +1327,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->expectExceptionMessage('privateAddAdditionalProperty method is not public on the given class.');
         $jm = new JsonMapper();
         $jm->sAdditionalPropertiesCollectionMethod = 'privateAddAdditionalProperty';
-        $fm = $jm->map(new stdClass, new JsonMapperTest_Simple());
+        $jm->map(new stdClass, new JsonMapperTest_Simple());
     }
 
     public function testAdditionalPropertiesWithBrokenMethod()
@@ -1325,16 +1336,7 @@ class JsonMapperTest extends \PHPUnit\Framework\TestCase
         $this->expectExceptionMessage('brokenAddAdditionalProperty method does not receive two args, $key and $value.');
         $jm = new JsonMapper();
         $jm->sAdditionalPropertiesCollectionMethod = 'brokenAddAdditionalProperty';
-        $fm = $jm->map(new stdClass, new JsonMapperTest_Simple());
-    }
-
-    public function testAdditionalPropertiesWithMissingMethod()
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('missingMethod method is not available on the given class.');
-        $jm = new JsonMapper();
-        $jm->sAdditionalPropertiesCollectionMethod = 'missingMethod';
-        $fm = $jm->map(new stdClass, new JsonMapperTest_Simple());
+        $jm->map(new stdClass, new JsonMapperTest_Simple());
     }
     
     public function testMapTypeWithCtor()
