@@ -1405,35 +1405,31 @@ class JsonMapper
      */
     protected function getAdditionalPropertiesMethod(ReflectionClass $rc)
     {
-        if ($this->bExceptionOnUndefinedProperty === false
-            && $this->sAdditionalPropertiesCollectionMethod !== null
+        if ($this->bExceptionOnUndefinedProperty !== false
+            || $this->sAdditionalPropertiesCollectionMethod === null
         ) {
-            $additionalPropertiesMethod = null;
-            try {
-                $additionalPropertiesMethod
-                    = $rc->getMethod($this->sAdditionalPropertiesCollectionMethod);
-                if (!$additionalPropertiesMethod->isPublic()) {
-                    throw new  \InvalidArgumentException(
-                        $this->sAdditionalPropertiesCollectionMethod .
-                        " method is not public on the given class."
-                    );
-                }
-                if ($additionalPropertiesMethod->getNumberOfParameters() < 2) {
-                    throw new  \InvalidArgumentException(
-                        $this->sAdditionalPropertiesCollectionMethod .
-                        ' method does not receive two args, $key and $value.'
-                    );
-                }
-            } catch (\ReflectionException $e) {
-                throw new  \InvalidArgumentException(
-                    $this->sAdditionalPropertiesCollectionMethod .
-                    " method is not available on the given class."
-                );
-            }
-            return $additionalPropertiesMethod;
-        } else {
             return null;
         }
+        $additionalPropertiesMethod = null;
+        try {
+            $additionalPropertiesMethod
+                = $rc->getMethod($this->sAdditionalPropertiesCollectionMethod);
+            if (!$additionalPropertiesMethod->isPublic()) {
+                throw new  \InvalidArgumentException(
+                    $this->sAdditionalPropertiesCollectionMethod .
+                    " method is not public on the given class."
+                );
+            }
+            if ($additionalPropertiesMethod->getNumberOfParameters() < 2) {
+                throw new  \InvalidArgumentException(
+                    $this->sAdditionalPropertiesCollectionMethod .
+                    ' method does not receive two args, $key and $value.'
+                );
+            }
+        } catch (\ReflectionException $_) {
+            // Ignore if the method is not available on the given class
+        }
+        return $additionalPropertiesMethod;
     }
 
     /**
