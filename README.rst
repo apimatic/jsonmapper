@@ -15,7 +15,7 @@ JsonMapper - map nested JSON structures onto PHP classes
 .. image:: https://sonarcloud.io/api/project_badges/measure?project=apimatic_jsonmapper&metric=vulnerabilities
    :target: https://sonarcloud.io/summary/new_code?id=apimatic_jsonmapper
 .. image:: https://img.shields.io/packagist/l/apimatic/jsonmapper.svg?style=flat
-   :target: https://packagist.org/packages/apimatic/jsonmapper
+   :target: LICENSE
 
 Takes data retrieved from a JSON__ web service and converts them
 into nested object and arrays - using your own model classes.
