@@ -151,7 +151,7 @@ class TypeCombination
             $fieldName = $discriminatorSubs[$fieldName];
         }
         $discValues = array_map(
-            function ($value) {
+            function ($value) use ($discriminatorSubs) {
                 if (isset($discriminatorSubs[$value])) {
                     return $discriminatorSubs[$value];
                 }
